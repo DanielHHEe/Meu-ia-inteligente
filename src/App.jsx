@@ -507,8 +507,8 @@ const PricingSection = () => {
               className={`relative ${plan.popular ? "md:-mt-4 md:mb-4" : ""}`}
             >
               {plan.popular && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10 w-[90%]">
-                  <div className="flex items-center justify-center gap-1.5 bg-gradient-to-r from-amber-400 to-amber-500 text-white px-4 py-1.5 rounded-full text-sm font-semibold shadow-lg whitespace-nowrap">
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
+                  <div className="inline-flex items-center justify-center gap-1.5 bg-gradient-to-r from-amber-400 to-amber-500 text-white px-5 py-2 rounded-full text-sm font-semibold shadow-lg">
                     <Star className="w-4 h-4 fill-current" />
                     <span>Mais Popular</span>
                   </div>
@@ -518,7 +518,7 @@ const PricingSection = () => {
               <div
                 className={`bg-white rounded-2xl p-6 lg:p-8 shadow-lg border-2 transition-all duration-300 h-full ${
                   plan.popular
-                    ? "border-emerald-500 shadow-xl pt-8 md:pt-6"
+                    ? "border-emerald-500 shadow-xl pt-10 md:pt-8"
                     : "border-gray-100 hover:border-emerald-200"
                 }`}
               >
@@ -562,14 +562,14 @@ const PricingSection = () => {
                 </ul>
 
                 <button
-                  className={`w-full py-3 px-4 rounded-xl font-semibold transition-all text-sm md:text-base ${
+                  className={`w-full py-3.5 px-4 rounded-xl font-semibold transition-all text-sm md:text-base flex items-center justify-center ${
                     plan.popular
                       ? "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:from-emerald-600 hover:to-emerald-700 shadow-lg"
                       : "border-2 border-gray-300 text-gray-700 hover:border-[#1e3a5f] hover:text-[#1e3a5f]"
                   }`}
                 >
                   {plan.popular && (
-                    <Sparkles className="w-4 h-4 mr-2 inline align-middle" />
+                    <Sparkles className="w-4 h-4 mr-2" />
                   )}
                   {plan.cta}
                 </button>
