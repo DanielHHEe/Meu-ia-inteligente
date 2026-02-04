@@ -179,7 +179,12 @@ const HeroSection = () => {
               transition={{ delay: 0.6 }}
               className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
             >
-              <button className="group px-8 py-4 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-xl hover:from-emerald-600 hover:to-emerald-700 transition-all shadow-lg flex items-center justify-center">
+              <button 
+                className="group px-8 py-4 text-white font-semibold rounded-xl transition-all shadow-lg flex items-center justify-center"
+                style={{
+                  background: 'linear-gradient(to right, #10b981, #059669)',
+                }}
+              >
                 Criar Meu Contrato
                 <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
               </button>
@@ -507,8 +512,20 @@ const PricingSection = () => {
               className={`relative ${plan.popular ? "md:-mt-4 md:mb-4" : ""}`}
             >
               {plan.popular && (
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
-                  <div className="inline-flex items-center justify-center gap-1.5 bg-gradient-to-r from-amber-400 to-amber-500 text-white px-5 py-2 rounded-full text-sm font-semibold shadow-lg">
+                <div 
+                  className="absolute z-10"
+                  style={{
+                    top: '-16px',
+                    left: '50%',
+                    transform: 'translateX(-50%)'
+                  }}
+                >
+                  <div 
+                    className="flex items-center justify-center gap-1.5 text-white px-5 py-2 rounded-full text-sm font-semibold shadow-lg whitespace-nowrap"
+                    style={{
+                      background: 'linear-gradient(to right, #fbbf24, #f59e0b)'
+                    }}
+                  >
                     <Star className="w-4 h-4 fill-current" />
                     <span>Mais Popular</span>
                   </div>
@@ -516,11 +533,17 @@ const PricingSection = () => {
               )}
 
               <div
-                className={`bg-white rounded-2xl p-6 lg:p-8 shadow-lg border-2 transition-all duration-300 h-full ${
-                  plan.popular
-                    ? "border-emerald-500 shadow-xl pt-10 md:pt-8"
-                    : "border-gray-100 hover:border-emerald-200"
-                }`}
+                className="bg-white rounded-2xl p-6 lg:p-8 shadow-lg transition-all duration-300 h-full"
+                style={plan.popular ? {
+                  borderWidth: '2px',
+                  borderStyle: 'solid',
+                  borderColor: '#10b981',
+                  paddingTop: '2.5rem'
+                } : {
+                  borderWidth: '2px',
+                  borderStyle: 'solid',
+                  borderColor: '#f3f4f6'
+                }}
               >
                 <div className="text-center mb-6 pb-6 border-b border-gray-100">
                   <h3 className="text-xl font-semibold text-gray-800 mb-2">
@@ -562,11 +585,15 @@ const PricingSection = () => {
                 </ul>
 
                 <button
-                  className={`w-full py-3.5 px-4 rounded-xl font-semibold transition-all text-sm md:text-base flex items-center justify-center ${
-                    plan.popular
-                      ? "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:from-emerald-600 hover:to-emerald-700 shadow-lg"
-                      : "border-2 border-gray-300 text-gray-700 hover:border-[#1e3a5f] hover:text-[#1e3a5f]"
-                  }`}
+                  className="w-full py-3.5 px-4 rounded-xl font-semibold transition-all text-sm md:text-base flex items-center justify-center"
+                  style={plan.popular ? {
+                    background: 'linear-gradient(to right, #10b981, #059669)',
+                    color: 'white',
+                    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+                  } : {
+                    border: '2px solid #d1d5db',
+                    color: '#374151'
+                  }}
                 >
                   {plan.popular && (
                     <Sparkles className="w-4 h-4 mr-2" />
