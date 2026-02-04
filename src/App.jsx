@@ -507,7 +507,7 @@ const PricingSection = () => {
               className={`relative ${plan.popular ? "md:-mt-4 md:mb-4" : ""}`}
             >
               {plan.popular && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10 w-[90%]">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10 w-[90%] sm:w-auto">
                   <div className="flex items-center justify-center gap-1.5 bg-gradient-to-r from-amber-400 to-amber-500 text-white px-4 py-1.5 rounded-full text-sm font-semibold shadow-lg whitespace-nowrap">
                     <Star className="w-4 h-4 fill-current" />
                     <span>Mais Popular</span>
@@ -518,7 +518,7 @@ const PricingSection = () => {
               <div
                 className={`bg-white rounded-2xl p-6 lg:p-8 shadow-lg border-2 transition-all duration-300 h-full ${
                   plan.popular
-                    ? "border-emerald-500 shadow-xl pt-8 md:pt-6"
+                    ? "border-emerald-500 shadow-xl pt-10 sm:pt-8 md:pt-6"
                     : "border-gray-100 hover:border-emerald-200"
                 }`}
               >
@@ -699,7 +699,7 @@ const FAQSection = () => {
 // ==================== CTA SECTION ====================
 const CTASection = () => {
   return (
-    <section className="py-20 md:py-32 bg-[#1e3a5f] bg-gradient-to-br from-[#1e3a5f] via-[#1a3360] to-[#0f1f33] relative overflow-hidden">
+    <section className="py-20 md:py-32 bg-gradient-to-br from-[#1e3a5f] via-[#1a3360] to-[#0f1f33] relative overflow-hidden">
       <div className="absolute inset-0 opacity-20">
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500 rounded-full blur-3xl" />
         <div className="absolute bottom-0 right-1/4 w-72 h-72 bg-amber-500 rounded-full blur-3xl" />
