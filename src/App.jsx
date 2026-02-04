@@ -25,6 +25,7 @@ import {
   ArrowUpRight,
   Play,
 } from "lucide-react";
+
 // ==================== FLOATING PARTICLES ====================
 const FloatingParticles = () => {
   return (
@@ -56,6 +57,7 @@ const FloatingParticles = () => {
     </div>
   );
 };
+
 // ==================== ANIMATED GRADIENT TEXT ====================
 const GradientText = ({ children, className = "" }) => (
   <motion.span
@@ -73,21 +75,25 @@ const GradientText = ({ children, className = "" }) => (
     {children}
   </motion.span>
 );
+
 // ==================== HEADER ====================
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
   const navLinks = [
     { label: "Como Funciona", href: "#como-funciona" },
     { label: "Vantagens", href: "#vantagens" },
     { label: "Preços", href: "#precos" },
     { label: "FAQ", href: "#faq" },
   ];
+
   return (
     <motion.header
       initial={{ y: -100 }}
@@ -118,6 +124,7 @@ const Header = () => {
               Contrate-me
             </span>
           </motion.a>
+
           <nav className="hidden md:flex items-center gap-2">
             {navLinks.map((link, index) => (
               <motion.a
@@ -136,6 +143,7 @@ const Header = () => {
               </motion.a>
             ))}
           </nav>
+
           <motion.div
             className="hidden md:block"
             initial={{ opacity: 0, x: 20 }}
@@ -160,6 +168,7 @@ const Header = () => {
               <ArrowRight className="relative z-10 w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </motion.a>
           </motion.div>
+
           <motion.button
             className="md:hidden p-2 rounded-xl bg-gray-100 hover:bg-gray-200 transition-colors"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -188,6 +197,7 @@ const Header = () => {
             </AnimatePresence>
           </motion.button>
         </div>
+
         <AnimatePresence>
           {isMenuOpen && (
             <motion.nav
@@ -228,6 +238,7 @@ const Header = () => {
     </motion.header>
   );
 };
+
 // ==================== HERO SECTION ====================
 const HeroSection = () => {
   const benefits = [
@@ -235,6 +246,7 @@ const HeroSection = () => {
     "Pronto em 2 minutos",
     "Pagamento via Pix",
   ];
+
   return (
     <section className="relative min-h-screen flex items-center pt-20 overflow-hidden">
       {/* Background Elements */}
@@ -260,6 +272,7 @@ const HeroSection = () => {
         }}
         transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
       />
+
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           {/* Left Content */}
@@ -285,6 +298,7 @@ const HeroSection = () => {
                 Gerado por Inteligência Artificial
               </span>
             </motion.div>
+
             <motion.h1
               className="text-4xl sm:text-5xl lg:text-6xl font-black text-gray-900 leading-tight mb-6"
               initial={{ opacity: 0, y: 20 }}
@@ -294,6 +308,7 @@ const HeroSection = () => {
               Seu contrato profissional em{" "}
               <GradientText>2 minutos</GradientText>
             </motion.h1>
+
             <motion.p
               className="text-lg sm:text-xl text-gray-600 mb-8 max-w-xl mx-auto lg:mx-0"
               initial={{ opacity: 0, y: 20 }}
@@ -303,6 +318,7 @@ const HeroSection = () => {
               Sem advogados caros. Sem burocracia. Pague via Pix e baixe seu
               contrato personalizado instantaneamente.
             </motion.p>
+
             <motion.div
               className="flex flex-wrap justify-center lg:justify-start gap-4 mb-10"
               initial={{ opacity: 0, y: 20 }}
@@ -325,6 +341,7 @@ const HeroSection = () => {
                 </motion.div>
               ))}
             </motion.div>
+
             <motion.div
               className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
               initial={{ opacity: 0, y: 20 }}
@@ -365,6 +382,7 @@ const HeroSection = () => {
                 Ver Exemplo
               </motion.a>
             </motion.div>
+
             <motion.p
               className="mt-8 text-sm text-gray-500"
               initial={{ opacity: 0 }}
@@ -375,6 +393,7 @@ const HeroSection = () => {
               gerados com sucesso
             </motion.p>
           </motion.div>
+
           {/* Right Content - Contract Preview */}
           <motion.div
             className="relative"
@@ -407,6 +426,7 @@ const HeroSection = () => {
                   </p>
                 </div>
               </div>
+
               {/* Animated skeleton lines */}
               <div className="space-y-3 mb-8">
                 {[100, 95, 80, 90, 70, 85].map((width, index) => (
@@ -420,6 +440,7 @@ const HeroSection = () => {
                   />
                 ))}
               </div>
+
               <div className="flex items-center justify-between pt-6 border-t border-gray-100">
                 <div className="flex items-center gap-2">
                   <motion.div
@@ -436,6 +457,7 @@ const HeroSection = () => {
                 </span>
               </div>
             </motion.div>
+
             {/* Floating badges */}
             <motion.div
               className="absolute -top-4 -right-4 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-sm font-bold shadow-lg"
@@ -461,6 +483,7 @@ const HeroSection = () => {
     </section>
   );
 };
+
 // ==================== HOW IT WORKS SECTION ====================
 const HowItWorksSection = () => {
   const steps = [
@@ -497,6 +520,7 @@ const HowItWorksSection = () => {
       color: "from-cyan-500 to-blue-500",
     },
   ];
+
   return (
     <section id="como-funciona" className="relative py-32 overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-white via-gray-50 to-white" />
@@ -522,6 +546,7 @@ const HowItWorksSection = () => {
             pronto para uso.
           </p>
         </motion.div>
+
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           {steps.map((step, index) => (
             <motion.div
@@ -543,15 +568,18 @@ const HowItWorksSection = () => {
                 <span className={`text-6xl font-black bg-gradient-to-br ${step.color} bg-clip-text text-transparent opacity-20`}>
                   {step.number}
                 </span>
+
                 <motion.div
                   className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${step.color} flex items-center justify-center mb-6 shadow-lg`}
                   whileHover={{ scale: 1.1, rotate: 5 }}
                 >
                   <step.icon className="w-8 h-8 text-white" />
                 </motion.div>
+
                 <h3 className="text-xl font-bold text-gray-900 mb-3">
                   {step.title}
                 </h3>
+
                 <p className="text-gray-600 leading-relaxed">
                   {step.description}
                 </p>
@@ -563,6 +591,7 @@ const HowItWorksSection = () => {
     </section>
   );
 };
+
 // ==================== BENEFITS SECTION ====================
 const BenefitsSection = () => {
   const benefits = [
@@ -609,10 +638,12 @@ const BenefitsSection = () => {
       gradient: "from-indigo-500 to-violet-600",
     },
   ];
+
   return (
     <section id="vantagens" className="relative py-32 overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" />
       <FloatingParticles />
+
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           className="text-center mb-20"
@@ -634,6 +665,7 @@ const BenefitsSection = () => {
             complicação.
           </p>
         </motion.div>
+
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {benefits.map((benefit, index) => (
             <motion.div
@@ -657,9 +689,11 @@ const BenefitsSection = () => {
                 >
                   <benefit.icon className="w-7 h-7 text-white" />
                 </motion.div>
+
                 <h3 className="text-xl font-bold text-white mb-3">
                   {benefit.title}
                 </h3>
+
                 <p className="text-gray-400 leading-relaxed">
                   {benefit.description}
                 </p>
@@ -671,6 +705,7 @@ const BenefitsSection = () => {
     </section>
   );
 };
+
 // ==================== PRICING SECTION ====================
 const PricingSection = () => {
   const plans = [
@@ -705,9 +740,11 @@ const PricingSection = () => {
       cta: "Escolher Pack",
     },
   ];
+
   return (
     <section id="precos" className="relative py-32 overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-white via-emerald-50/30 to-white" />
+
       <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           className="text-center mb-20"
@@ -728,6 +765,7 @@ const PricingSection = () => {
             Sem mensalidades. Sem surpresas. Pague apenas pelo que usar.
           </p>
         </motion.div>
+
         <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
           {plans.map((plan, index) => (
             <motion.div
@@ -750,6 +788,7 @@ const PricingSection = () => {
                   </span>
                 </motion.div>
               )}
+
               <motion.div
                 className={`h-full p-8 rounded-3xl ${
                   plan.popular
@@ -782,6 +821,7 @@ const PricingSection = () => {
                     </div>
                   )}
                 </div>
+
                 <ul className="space-y-4 mb-8">
                   {plan.features.map((feature) => (
                     <motion.li
@@ -800,6 +840,7 @@ const PricingSection = () => {
                     </motion.li>
                   ))}
                 </ul>
+
                 <motion.button
                   className={`w-full py-4 rounded-2xl font-bold transition-all ${
                     plan.popular
@@ -816,6 +857,7 @@ const PricingSection = () => {
             </motion.div>
           ))}
         </div>
+
         <motion.div
           className="mt-16 text-center"
           initial={{ opacity: 0 }}
@@ -836,9 +878,11 @@ const PricingSection = () => {
     </section>
   );
 };
+
 // ==================== FAQ SECTION ====================
 const FAQSection = () => {
   const [openItem, setOpenItem] = useState(null);
+
   const faqs = [
     {
       question: "Os contratos são válidos juridicamente?",
@@ -871,9 +915,11 @@ const FAQSection = () => {
         "Não! Você pode gerar quantos contratos precisar. Cada contrato é cobrado individualmente, ou você pode aproveitar nossos packs com desconto para múltiplos contratos.",
     },
   ];
+
   return (
     <section id="faq" className="relative py-32 overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-white to-gray-50" />
+
       <div className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           className="text-center mb-16"
@@ -894,6 +940,7 @@ const FAQSection = () => {
             Tudo que você precisa saber sobre o Contrate-me.
           </p>
         </motion.div>
+
         <div className="space-y-4">
           {faqs.map((faq, index) => (
             <motion.div
@@ -939,6 +986,7 @@ const FAQSection = () => {
     </section>
   );
 };
+
 // ==================== CTA SECTION ====================
 const CTASection = () => {
   return (
@@ -963,6 +1011,7 @@ const CTASection = () => {
         }}
         transition={{ duration: 5, repeat: Infinity }}
       />
+
       <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -978,14 +1027,17 @@ const CTASection = () => {
               Comece agora mesmo
             </span>
           </motion.div>
+
           <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white mb-6">
             Pronto para criar seu contrato{" "}
             <GradientText>profissional?</GradientText>
           </h2>
+
           <p className="text-xl text-gray-400 mb-10 max-w-2xl mx-auto">
             Junte-se a centenas de pessoas que já simplificaram a criação de
             contratos com o Contrate-me.
           </p>
+
           <div className="flex flex-wrap justify-center gap-6 mb-10">
             <motion.div
               className="flex items-center gap-2 text-gray-400"
@@ -1002,6 +1054,7 @@ const CTASection = () => {
               Pronto em 2 minutos
             </motion.div>
           </div>
+
           <motion.a
             href="#criar"
             className="group relative inline-flex items-center gap-2 px-10 py-5 font-bold text-white text-lg rounded-2xl overflow-hidden"
@@ -1019,6 +1072,7 @@ const CTASection = () => {
             <span className="relative z-10">Criar Meu Contrato Agora</span>
             <ArrowRight className="relative z-10 w-5 h-5 group-hover:translate-x-2 transition-transform" />
           </motion.a>
+
           <motion.p
             className="mt-8 text-gray-500"
             initial={{ opacity: 0 }}
@@ -1032,9 +1086,11 @@ const CTASection = () => {
     </section>
   );
 };
+
 // ==================== FOOTER ====================
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+
   const links = {
     produto: [
       { label: "Como Funciona", href: "#como-funciona" },
@@ -1050,6 +1106,7 @@ const Footer = () => {
       { label: "contato@contrate-me.com.br", href: "mailto:contato@contrate-me.com.br" },
     ],
   };
+
   return (
     <footer className="bg-gray-900 border-t border-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
@@ -1084,6 +1141,7 @@ const Footer = () => {
               ))}
             </div>
           </div>
+
           {[
             { title: "Produto", items: links.produto },
             { title: "Legal", items: links.legal },
@@ -1114,6 +1172,7 @@ const Footer = () => {
             </div>
           ))}
         </div>
+
         <div className="mt-16 pt-8 border-t border-gray-800">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-gray-500 text-sm">
@@ -1128,6 +1187,7 @@ const Footer = () => {
     </footer>
   );
 };
+
 // ==================== MAIN APP ====================
 const App = () => (
   <div className="min-h-screen bg-white font-sans antialiased">
@@ -1143,4 +1203,5 @@ const App = () => (
     <Footer />
   </div>
 );
+
 export default App;
