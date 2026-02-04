@@ -504,13 +504,13 @@ const PricingSection = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.15 }}
-              className={`relative ${plan.popular ? "lg:-mt-4 lg:mb-4" : ""}`}
+              className={`relative ${plan.popular ? "md:-mt-4 md:mb-4" : ""}`}
             >
               {plan.popular && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
-                  <div className="flex items-center gap-1.5 bg-gradient-to-r from-amber-400 to-amber-500 text-white px-4 py-1.5 rounded-full text-sm font-semibold shadow-lg">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-10 w-[90%]">
+                  <div className="flex items-center justify-center gap-1.5 bg-gradient-to-r from-amber-400 to-amber-500 text-white px-4 py-1.5 rounded-full text-sm font-semibold shadow-lg whitespace-nowrap">
                     <Star className="w-4 h-4 fill-current" />
-                    Mais Popular
+                    <span>Mais Popular</span>
                   </div>
                 </div>
               )}
@@ -518,7 +518,7 @@ const PricingSection = () => {
               <div
                 className={`bg-white rounded-2xl p-6 lg:p-8 shadow-lg border-2 transition-all duration-300 h-full ${
                   plan.popular
-                    ? "border-emerald-500 shadow-xl"
+                    ? "border-emerald-500 shadow-xl pt-8 md:pt-6"
                     : "border-gray-100 hover:border-emerald-200"
                 }`}
               >
@@ -536,12 +536,14 @@ const PricingSection = () => {
                     </span>
                   </div>
                   {plan.originalPrice && (
-                    <p className="text-sm text-gray-500 mt-2">
-                      <span className="line-through">R$ {plan.originalPrice}</span>
-                      <span className="text-emerald-600 ml-2 font-medium">
-                        Economize R$ 9,80
-                      </span>
-                    </p>
+                    <div className="mt-2">
+                      <p className="text-sm text-gray-500">
+                        <span className="line-through">R$ {plan.originalPrice}</span>
+                        <span className="text-emerald-600 ml-2 font-medium">
+                          Economize R$ 9,80
+                        </span>
+                      </p>
+                    </div>
                   )}
                 </div>
 
@@ -549,24 +551,26 @@ const PricingSection = () => {
                   {plan.features.map((feature) => (
                     <li
                       key={feature}
-                      className="flex items-center gap-3 text-gray-700"
+                      className="flex items-start gap-3 text-gray-700"
                     >
-                      <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                      <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
                         <Check className="w-3 h-3 text-emerald-600" />
                       </div>
-                      <span className="text-sm">{feature}</span>
+                      <span className="text-sm leading-tight">{feature}</span>
                     </li>
                   ))}
                 </ul>
 
                 <button
-                  className={`w-full py-3 px-6 rounded-xl font-semibold transition-all ${
+                  className={`w-full py-3 px-4 rounded-xl font-semibold transition-all text-sm md:text-base ${
                     plan.popular
                       ? "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:from-emerald-600 hover:to-emerald-700 shadow-lg"
                       : "border-2 border-gray-300 text-gray-700 hover:border-[#1e3a5f] hover:text-[#1e3a5f]"
                   }`}
                 >
-                  {plan.popular && <Sparkles className="w-4 h-4 mr-2 inline" />}
+                  {plan.popular && (
+                    <Sparkles className="w-4 h-4 mr-2 inline align-middle" />
+                  )}
                   {plan.cta}
                 </button>
               </div>
@@ -695,7 +699,7 @@ const FAQSection = () => {
 // ==================== CTA SECTION ====================
 const CTASection = () => {
   return (
-    <section className="py-20 md:py-32 bg-gradient-to-br from-[#1e3a5f] to-[#0f1f33] relative overflow-hidden">
+    <section className="py-20 md:py-32 bg-[#1e3a5f] bg-gradient-to-br from-[#1e3a5f] via-[#1a3360] to-[#0f1f33] relative overflow-hidden">
       <div className="absolute inset-0 opacity-20">
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500 rounded-full blur-3xl" />
         <div className="absolute bottom-0 right-1/4 w-72 h-72 bg-amber-500 rounded-full blur-3xl" />
@@ -716,16 +720,16 @@ const CTASection = () => {
             </span>
           </div>
 
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6 px-4">
             Pronto para criar seu contrato profissional?
           </h2>
 
-          <p className="text-lg text-white/80 mb-8 max-w-xl mx-auto">
+          <p className="text-lg text-white/80 mb-8 max-w-xl mx-auto px-4">
             Junte-se a centenas de pessoas que já simplificaram a criação de
             contratos com o Contrate-me.
           </p>
 
-          <div className="flex flex-wrap justify-center gap-6 mb-10">
+          <div className="flex flex-wrap justify-center gap-6 mb-10 px-4">
             <div className="flex items-center gap-2 text-white/90">
               <Shield className="w-5 h-5 text-emerald-400" />
               <span className="text-sm font-medium">100% Seguro</span>
@@ -736,12 +740,12 @@ const CTASection = () => {
             </div>
           </div>
 
-          <button className="group px-8 py-4 bg-white text-[#1e3a5f] font-bold rounded-xl hover:bg-gray-100 transition-all shadow-xl flex items-center justify-center mx-auto">
+          <button className="group px-6 md:px-8 py-4 bg-white text-[#1e3a5f] font-bold rounded-xl hover:bg-gray-100 transition-all shadow-xl flex items-center justify-center mx-auto text-sm md:text-base">
             Criar Meu Contrato Agora
             <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
           </button>
 
-          <p className="mt-6 text-sm text-white/60">
+          <p className="mt-6 text-sm text-white/60 px-4">
             A partir de R$ 19,90 • Pagamento via Pix
           </p>
         </motion.div>
