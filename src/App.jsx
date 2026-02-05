@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import {
   FileText,
   Menu,
@@ -27,6 +27,17 @@ import {
 // ==================== HEADER ====================
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { scrollY } = useScroll();
+  const headerBackground = useTransform(
+    scrollY,
+    [0, 100],
+    ["rgba(255, 255, 255, 0)", "rgba(255, 255, 255, 0.95)"]
+  );
+  const headerShadow = useTransform(
+    scrollY,
+    [0, 100],
+    ["0px 0px 0px rgba(0,0,0,0)", "0px 4px 20px rgba(0,0,0,0.08)"]
+  );
 
   const navLinks = [
     { label: "Como Funciona", href: "#como-funciona" },
@@ -37,74 +48,104 @@ const Header = () => {
 
   return (
     <motion.header
-      initial={{ y: -100, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.6 }}
-      className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200"
+      style={{ backgroundColor: headerBackground, boxShadow: headerShadow }}
+      className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md"
     >
-      <div className="container mx-auto px-4 md:px-6">
-        <div className="flex items-center justify-between h-16 md:h-20">
-          <a href="#" className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-lg bg-[#1e3a5f] flex items-center justify-center">
-              <FileText className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xl font-semibold text-[#1e3a5f]">
+      <nav className="max-w-7xl mx-auto px-6 py-4">
+        <div className="flex items-center justify-between">
+          <motion.a
+            href="#"
+            className="flex items-center gap-2 group"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <motion.div
+              className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg"
+              whileHover={{ rotate: 5 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
+              <FileText className="w-6 h-6 text-white" />
+            </motion.div>
+            <span className="text-xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
               Contrate-me
             </span>
-          </a>
+          </motion.a>
 
-          <nav className="hidden md:flex items-center gap-8">
-            {navLinks.map((link) => (
-              <a
-                key={link.href}
+          <div className="hidden md:flex items-center gap-8">
+            {navLinks.map((link, index) => (
+              <motion.a
+                key={link.label}
                 href={link.href}
-                className="text-sm font-medium text-gray-600 hover:text-[#1e3a5f] transition-colors"
+                className="text-gray-700 hover:text-emerald-600 font-medium transition-colors relative group"
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
               >
                 {link.label}
-              </a>
+                <motion.span
+                  className="absolute -bottom-1 left-0 w-0 h-0.5 bg-emerald-600 group-hover:w-full transition-all duration-300"
+                />
+              </motion.a>
             ))}
-          </nav>
-
-          <div className="hidden md:flex items-center gap-4">
-            <button className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-xl hover:from-emerald-600 hover:to-emerald-700 transition-all shadow-lg">
-              Criar Contrato
-            </button>
           </div>
 
-          <button
-            className="md:hidden p-2 text-gray-800"
+          <div className="hidden md:block">
+            <motion.a
+              href="#precos"
+              className="px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all relative overflow-hidden group"
+              whileHover={{ scale: 1.05, y: -2 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <motion.div
+                className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 transition-opacity"
+              />
+              Criar Contrato
+            </motion.a>
+          </div>
+
+          <motion.button
+            className="md:hidden p-2 text-gray-700 hover:text-emerald-600"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label="Toggle menu"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
           >
             {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
+          </motion.button>
         </div>
 
         {isMenuOpen && (
           <motion.div
+            className="md:hidden mt-4 pb-4 space-y-3"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden border-t border-gray-200 py-4"
           >
-            <nav className="flex flex-col gap-4">
-              {navLinks.map((link) => (
-                <a
-                  key={link.href}
-                  href={link.href}
-                  className="text-sm font-medium text-gray-600 hover:text-[#1e3a5f] transition-colors px-2 py-2"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {link.label}
-                </a>
-              ))}
-              <button className="mt-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-xl">
-                Criar Contrato
-              </button>
-            </nav>
+            {navLinks.map((link, index) => (
+              <motion.a
+                key={link.label}
+                href={link.href}
+                className="block py-2 text-gray-700 hover:text-emerald-600 font-medium"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.05 }}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                {link.label}
+              </motion.a>
+            ))}
+            <motion.a
+              href="#precos"
+              className="block text-center py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-semibold shadow-lg"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              Criar Contrato
+            </motion.a>
           </motion.div>
         )}
-      </div>
+      </nav>
     </motion.header>
   );
 };
@@ -118,144 +159,208 @@ const HeroSection = () => {
   ];
 
   return (
-    <section className="relative min-h-screen flex items-center pt-20 overflow-hidden bg-gradient-to-br from-gray-50 via-white to-white">
-      <div className="absolute inset-0 opacity-30">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-emerald-100 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-blue-50 rounded-full blur-3xl" />
-      </div>
+    <section className="relative pt-32 pb-20 overflow-hidden">
+      {/* Background Elements */}
+      <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-white to-teal-50" />
+      <motion.div
+        className="absolute top-20 right-10 w-72 h-72 bg-emerald-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30"
+        animate={{
+          scale: [1, 1.2, 1],
+          x: [0, 30, 0],
+          y: [0, -30, 0],
+        }}
+        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+      />
+      <motion.div
+        className="absolute bottom-20 left-10 w-96 h-96 bg-teal-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30"
+        animate={{
+          scale: [1, 1.3, 1],
+          x: [0, -30, 0],
+          y: [0, 30, 0],
+        }}
+        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+      />
 
-      <div className="container mx-auto px-4 md:px-6 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+      <div className="max-w-7xl mx-auto px-6 relative">
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
           <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7 }}
-            className="text-center lg:text-left"
+            className="text-left"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
           >
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+              className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full shadow-md mb-6 border border-emerald-100"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2 }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 border border-emerald-200 mb-6"
             >
               <Sparkles className="w-4 h-4 text-emerald-600" />
-              <span className="text-sm font-medium text-emerald-700">
+              <span className="text-sm font-semibold text-emerald-700">
                 Gerado por Inteligência Artificial
               </span>
             </motion.div>
 
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[#1e3a5f] leading-tight mb-6">
-              Seu contrato profissional em{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-emerald-600">
-                2 minutos
-              </span>
-            </h1>
-
-            <p className="text-lg md:text-xl text-gray-600 mb-8 max-w-xl mx-auto lg:mx-0">
-              Sem advogados caros. Sem burocracia. Pague via Pix e baixe seu
-              contrato personalizado instantaneamente.
-            </p>
-
-            <div className="flex flex-wrap justify-center lg:justify-start gap-4 mb-8">
-              {benefits.map((benefit, index) => (
-                <motion.div
-                  key={benefit}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 + index * 0.1 }}
-                  className="flex items-center gap-2"
-                >
-                  <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-                  <span className="text-sm font-medium text-gray-800">
-                    {benefit}
-                  </span>
-                </motion.div>
-              ))}
-            </div>
-
-            <motion.div
+            <motion.h1
+              className="text-5xl lg:text-6xl font-extrabold mb-6 leading-tight"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6 }}
-              className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
+              transition={{ delay: 0.3 }}
             >
-              <button 
-                className="group px-8 py-4 text-white font-semibold rounded-xl transition-all shadow-lg flex items-center justify-center"
-                style={{
-                  background: 'linear-gradient(to right, #10b981, #059669)',
-                }}
+              Seu contrato profissional em{" "}
+              <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+                2 minutos
+              </span>
+            </motion.h1>
+
+            <motion.p
+              className="text-xl text-gray-600 mb-8 leading-relaxed"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+            >
+              Sem advogados caros. Sem burocracia. Pague via Pix e baixe seu
+              contrato personalizado instantaneamente.
+            </motion.p>
+
+            <motion.div
+              className="flex flex-wrap gap-4 mb-10"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+            >
+              {benefits.map((benefit, index) => (
+                <motion.div
+                  key={index}
+                  className="flex items-center gap-2"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.6 + index * 0.1 }}
+                >
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                  <span className="text-gray-700 font-medium">{benefit}</span>
+                </motion.div>
+              ))}
+            </motion.div>
+
+            <motion.div
+              className="flex flex-col sm:flex-row gap-4 mb-8"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7 }}
+            >
+              <motion.a
+                href="#precos"
+                className="px-8 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-bold shadow-xl hover:shadow-2xl transition-all flex items-center justify-center gap-2 group"
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
               >
                 Criar Meu Contrato
-                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-              </button>
-              <button className="px-8 py-4 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:border-[#1e3a5f] hover:text-[#1e3a5f] transition-all">
+                <motion.div
+                  animate={{ x: [0, 5, 0] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                >
+                  <ArrowRight className="w-5 h-5" />
+                </motion.div>
+              </motion.a>
+              <motion.a
+                href="#exemplo"
+                className="px-8 py-4 bg-white border-2 border-emerald-600 text-emerald-600 rounded-xl font-bold hover:bg-emerald-50 transition-all"
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+              >
                 Ver Exemplo
-              </button>
+              </motion.a>
             </motion.div>
 
             <motion.p
+              className="text-sm text-gray-500"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.8 }}
-              className="mt-6 text-sm text-gray-500"
             >
-              <span className="text-amber-600 font-semibold">+500 contratos</span>{" "}
+              <span className="font-bold text-emerald-600">+500 contratos</span>{" "}
               gerados com sucesso
             </motion.p>
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, x: 30 }}
+            className="relative"
+            initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7, delay: 0.3 }}
-            className="relative hidden lg:block"
+            transition={{ delay: 0.4, duration: 0.8 }}
           >
-            <div className="relative">
-              <motion.div
-                animate={{ y: [0, -10, 0] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                className="bg-white rounded-2xl shadow-2xl p-8 border border-gray-100"
-              >
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 rounded-lg bg-blue-50 flex items-center justify-center">
-                    <span className="text-2xl">📄</span>
+            <motion.div
+              className="bg-white rounded-3xl shadow-2xl p-8 border border-gray-100 relative overflow-hidden"
+              whileHover={{ y: -5 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
+              {/* Decorative corner */}
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-400 to-teal-500 opacity-10 rounded-bl-full" />
+
+              <div className="relative">
+                <motion.div
+                  className="flex items-center gap-4 mb-6 pb-6 border-b border-gray-100"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6 }}
+                >
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-3xl shadow-lg">
+                    📄
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-800">
+                  <div className="flex-1">
+                    <h3 className="font-bold text-gray-800 text-lg">
                       Contrato de Prestação de Serviços
                     </h3>
                     <p className="text-sm text-gray-500">
                       Gerado em 03/02/2026
                     </p>
                   </div>
+                </motion.div>
+
+                <div className="space-y-3 mb-6">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <motion.div
+                      key={i}
+                      className="h-3 bg-gradient-to-r from-gray-200 to-gray-100 rounded-full"
+                      style={{ width: `${100 - i * 8}%` }}
+                      initial={{ scaleX: 0, originX: 0 }}
+                      animate={{ scaleX: 1 }}
+                      transition={{ delay: 0.7 + i * 0.05, duration: 0.5 }}
+                    />
+                  ))}
                 </div>
 
-                <div className="space-y-4">
-                  <div className="h-3 bg-gray-100 rounded-full w-full" />
-                  <div className="h-3 bg-gray-100 rounded-full w-5/6" />
-                  <div className="h-3 bg-gray-100 rounded-full w-4/5" />
-                  <div className="h-3 bg-gray-100 rounded-full w-full" />
-                  <div className="h-3 bg-gray-100 rounded-full w-3/4" />
-                </div>
-
-                <div className="mt-6 pt-6 border-t border-gray-100">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-                      <span className="text-sm font-medium text-emerald-600">
-                        Pronto para download
-                      </span>
-                    </div>
-                    <span className="text-sm font-semibold text-[#1e3a5f]">
-                      R$ 19,90
+                <motion.div
+                  className="flex items-center justify-between pt-6 border-t border-gray-100"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 1 }}
+                >
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                    <span className="text-sm font-semibold text-emerald-700">
+                      Pronto para download
                     </span>
                   </div>
-                </div>
-              </motion.div>
+                  <div className="text-2xl font-bold text-emerald-600">
+                    R$ 19,90
+                  </div>
+                </motion.div>
+              </div>
 
-              <div className="absolute -top-4 -right-4 w-24 h-24 bg-emerald-200 rounded-full blur-2xl opacity-50" />
-              <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-amber-200 rounded-full blur-2xl opacity-50" />
-            </div>
+              {/* Floating badge */}
+              <motion.div
+                className="absolute -top-4 -right-4 bg-gradient-to-br from-amber-400 to-orange-500 text-white px-4 py-2 rounded-xl font-bold text-sm shadow-lg"
+                animate={{
+                  rotate: [0, -5, 0],
+                  y: [0, -5, 0],
+                }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              >
+                ⚡ Rápido
+              </motion.div>
+            </motion.div>
           </motion.div>
         </div>
       </div>
@@ -297,53 +402,85 @@ const HowItWorksSection = () => {
   ];
 
   return (
-    <section id="como-funciona" className="py-20 md:py-32 bg-gray-50">
-      <div className="container mx-auto px-4 md:px-6">
+    <section id="como-funciona" className="py-20 bg-white relative overflow-hidden">
+      {/* Decorative elements */}
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-emerald-500 to-transparent opacity-30" />
+
+      <div className="max-w-7xl mx-auto px-6">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          className="text-center mb-16"
+          initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-16"
         >
-          <span className="inline-block text-sm font-semibold text-emerald-600 uppercase tracking-wider mb-4">
+          <motion.span
+            className="inline-block px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full font-semibold text-sm mb-4"
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+          >
             Simples e Rápido
-          </span>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#1e3a5f] mb-4">
+          </motion.span>
+          <h2 className="text-4xl lg:text-5xl font-extrabold mb-4 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
             Como Funciona
           </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             Em apenas 4 passos simples, você terá um contrato profissional
             pronto para uso.
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           {steps.map((step, index) => (
             <motion.div
-              key={step.number}
+              key={index}
+              className="relative group"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="relative group"
+              transition={{ delay: index * 0.15, duration: 0.6 }}
             >
-              <div className="relative bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 h-full">
-                <span className="absolute -top-3 -right-3 w-12 h-12 rounded-full bg-[#1e3a5f] flex items-center justify-center text-sm font-bold text-white shadow-lg">
-                  {step.number}
-                </span>
+              <motion.div
+                className="bg-gradient-to-br from-white to-gray-50 p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all border border-gray-100 relative overflow-hidden h-full"
+                whileHover={{ y: -8, scale: 1.02 }}
+                transition={{ type: "spring", stiffness: 300 }}
+              >
+                {/* Gradient overlay on hover */}
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-teal-500/5 opacity-0 group-hover:opacity-100 transition-opacity"
+                />
 
-                <div className="w-14 h-14 rounded-xl bg-emerald-50 flex items-center justify-center mb-4 group-hover:bg-emerald-100 transition-colors">
-                  <step.icon className="w-7 h-7 text-emerald-600" />
+                <div className="relative">
+                  <div className="flex items-start justify-between mb-6">
+                    <motion.div
+                      className="text-6xl font-bold text-emerald-100"
+                      whileHover={{ scale: 1.1, rotate: 5 }}
+                    >
+                      {step.number}
+                    </motion.div>
+                    <motion.div
+                      className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg"
+                      whileHover={{ rotate: 360 }}
+                      transition={{ duration: 0.6 }}
+                    >
+                      <step.icon className="w-7 h-7 text-white" />
+                    </motion.div>
+                  </div>
+
+                  <h3 className="text-xl font-bold text-gray-800 mb-3">
+                    {step.title}
+                  </h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    {step.description}
+                  </p>
                 </div>
 
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                  {step.title}
-                </h3>
-                <p className="text-gray-600 text-sm leading-relaxed">
-                  {step.description}
-                </p>
-              </div>
+                {/* Connection line (except for last item) */}
+                {index < steps.length - 1 && (
+                  <div className="hidden lg:block absolute top-1/2 -right-4 w-8 h-0.5 bg-gradient-to-r from-emerald-300 to-transparent" />
+                )}
+              </motion.div>
             </motion.div>
           ))}
         </div>
@@ -394,49 +531,79 @@ const BenefitsSection = () => {
   ];
 
   return (
-    <section id="vantagens" className="py-20 md:py-32 bg-white">
-      <div className="container mx-auto px-4 md:px-6">
+    <section id="vantagens" className="py-20 bg-gradient-to-br from-gray-50 to-white relative overflow-hidden">
+      {/* Background decoration */}
+      <motion.div
+        className="absolute top-10 left-10 w-64 h-64 bg-emerald-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20"
+        animate={{
+          scale: [1, 1.2, 1],
+          rotate: [0, 90, 0],
+        }}
+        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+      />
+
+      <div className="max-w-7xl mx-auto px-6 relative">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          className="text-center mb-16"
+          initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-16"
         >
-          <span className="inline-block text-sm font-semibold text-emerald-600 uppercase tracking-wider mb-4">
+          <motion.span
+            className="inline-block px-4 py-2 bg-teal-100 text-teal-700 rounded-full font-semibold text-sm mb-4"
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+          >
             Por que escolher
-          </span>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#1e3a5f] mb-4">
+          </motion.span>
+          <h2 className="text-4xl lg:text-5xl font-extrabold mb-4 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
             Vantagens do Contrate-me
           </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             A forma mais inteligente de criar contratos profissionais sem
             complicação.
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {benefits.map((benefit, index) => (
             <motion.div
-              key={benefit.title}
+              key={index}
+              className="group"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="group"
+              transition={{ delay: index * 0.1, duration: 0.6 }}
             >
-              <div className="bg-white rounded-2xl p-6 lg:p-8 shadow-lg border border-gray-100 hover:shadow-xl hover:border-emerald-200 transition-all duration-300 h-full">
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-emerald-100 to-emerald-50 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
-                  <benefit.icon className="w-7 h-7 text-emerald-600" />
-                </div>
+              <motion.div
+                className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-2xl transition-all border border-gray-100 h-full relative overflow-hidden"
+                whileHover={{ y: -8 }}
+                transition={{ type: "spring", stiffness: 300 }}
+              >
+                {/* Hover effect */}
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-br from-emerald-500/0 to-teal-500/0 group-hover:from-emerald-500/5 group-hover:to-teal-500/5 transition-all duration-300"
+                />
 
-                <h3 className="text-xl font-semibold text-gray-800 mb-3">
-                  {benefit.title}
-                </h3>
-                <p className="text-gray-600 leading-relaxed">
-                  {benefit.description}
-                </p>
-              </div>
+                <div className="relative">
+                  <motion.div
+                    className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mb-6 shadow-lg"
+                    whileHover={{ rotate: 360, scale: 1.1 }}
+                    transition={{ duration: 0.6 }}
+                  >
+                    <benefit.icon className="w-8 h-8 text-white" />
+                  </motion.div>
+
+                  <h3 className="text-xl font-bold text-gray-800 mb-3 group-hover:text-emerald-600 transition-colors">
+                    {benefit.title}
+                  </h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    {benefit.description}
+                  </p>
+                </div>
+              </motion.div>
             </motion.div>
           ))}
         </div>
@@ -481,145 +648,157 @@ const PricingSection = () => {
   ];
 
   return (
-    <section id="precos" className="py-20 md:py-32 bg-gray-50">
-      <div className="container mx-auto px-4 md:px-6">
+    <section id="precos" className="py-20 bg-white relative overflow-hidden">
+      {/* Background decoration */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,_rgba(16,185,129,0.05)_0%,_transparent_50%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,_rgba(20,184,166,0.05)_0%,_transparent_50%)]" />
+
+      <div className="max-w-6xl mx-auto px-6 relative">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          className="text-center mb-16"
+          initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-16"
         >
-          <span className="inline-block text-sm font-semibold text-emerald-600 uppercase tracking-wider mb-4">
+          <motion.span
+            className="inline-block px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full font-semibold text-sm mb-4"
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+          >
             Preços Transparentes
-          </span>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#1e3a5f] mb-4">
+          </motion.span>
+          <h2 className="text-4xl lg:text-5xl font-extrabold mb-4 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
             Escolha o Melhor Plano
           </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             Sem mensalidades. Sem surpresas. Pague apenas pelo que usar.
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 gap-6 lg:gap-8 max-w-4xl mx-auto">
+        <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
           {plans.map((plan, index) => (
             <motion.div
-              key={plan.name}
+              key={index}
+              className="relative"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.15 }}
-              className={`relative ${plan.popular ? "md:-mt-4 md:mb-4" : ""}`}
+              transition={{ delay: index * 0.15, duration: 0.6 }}
             >
               {plan.popular && (
-                <div 
-                  className="absolute z-10"
-                  style={{
-                    top: '-16px',
-                    left: '50%',
-                    transform: 'translateX(-50%)'
-                  }}
+                <motion.div
+                  className="absolute -top-5 left-1/2 -translate-x-1/2 z-10"
+                  initial={{ y: -10, opacity: 0 }}
+                  whileInView={{ y: 0, opacity: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.3 }}
                 >
-                  <div 
-                    className="flex items-center justify-center gap-1.5 text-white px-5 py-2 rounded-full text-sm font-semibold shadow-lg whitespace-nowrap"
-                    style={{
-                      background: 'linear-gradient(to right, #fbbf24, #f59e0b)'
-                    }}
-                  >
-                    <Star className="w-4 h-4 fill-current" />
-                    <span>Mais Popular</span>
+                  <div className="bg-gradient-to-r from-amber-500 to-orange-500 text-white px-6 py-2 rounded-full font-bold text-sm shadow-lg flex items-center gap-2">
+                    <Star className="w-4 h-4 fill-white" />
+                    Mais Popular
                   </div>
-                </div>
+                </motion.div>
               )}
 
-              <div
-                className="bg-white rounded-2xl p-6 lg:p-8 shadow-lg transition-all duration-300 h-full"
-                style={plan.popular ? {
-                  borderWidth: '2px',
-                  borderStyle: 'solid',
-                  borderColor: '#10b981',
-                  paddingTop: '2.5rem'
-                } : {
-                  borderWidth: '2px',
-                  borderStyle: 'solid',
-                  borderColor: '#f3f4f6'
-                }}
+              <motion.div
+                className={`bg-white rounded-3xl shadow-xl hover:shadow-2xl transition-all border-2 overflow-hidden h-full ${
+                  plan.popular
+                    ? "border-emerald-500 scale-105"
+                    : "border-gray-100"
+                }`}
+                whileHover={{ y: -8 }}
+                transition={{ type: "spring", stiffness: 300 }}
               >
-                <div className="text-center mb-6 pb-6 border-b border-gray-100">
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                    {plan.name}
-                  </h3>
-                  <p className="text-sm text-gray-500 mb-4">
-                    {plan.description}
-                  </p>
-                  <div className="flex items-baseline justify-center gap-1">
-                    <span className="text-lg text-gray-500">R$</span>
-                    <span className="text-5xl font-bold text-[#1e3a5f]">
-                      {plan.price}
-                    </span>
-                  </div>
-                  {plan.originalPrice && (
-                    <div className="mt-2">
-                      <p className="text-sm text-gray-500">
-                        <span className="line-through">R$ {plan.originalPrice}</span>
-                        <span className="text-emerald-600 ml-2 font-medium">
-                          Economize R$ 9,80
-                        </span>
-                      </p>
+                {plan.popular && (
+                  <div className="h-2 bg-gradient-to-r from-emerald-500 to-teal-600" />
+                )}
+
+                <div className="p-8">
+                  <div className="mb-8">
+                    <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                      {plan.name}
+                    </h3>
+                    <p className="text-gray-600">{plan.description}</p>
+
+                    <div className="mt-6 flex items-baseline gap-2">
+                      <span className="text-gray-600 text-lg">R$</span>
+                      <span className="text-5xl font-extrabold text-gray-900">
+                        {plan.price}
+                      </span>
                     </div>
-                  )}
+
+                    {plan.originalPrice && (
+                      <motion.div
+                        className="mt-2"
+                        initial={{ opacity: 0, x: -10 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="text-gray-400 line-through text-sm">
+                            R$ {plan.originalPrice}
+                          </span>
+                          <span className="text-emerald-600 font-semibold text-sm bg-emerald-50 px-3 py-1 rounded-full">
+                            Economize R$ 9,80
+                          </span>
+                        </div>
+                      </motion.div>
+                    )}
+                  </div>
+
+                  <ul className="space-y-4 mb-8">
+                    {plan.features.map((feature, i) => (
+                      <motion.li
+                        key={i}
+                        className="flex items-start gap-3"
+                        initial={{ opacity: 0, x: -10 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.4 + i * 0.05 }}
+                      >
+                        <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <Check className="w-3 h-3 text-emerald-600" />
+                        </div>
+                        <span className="text-gray-700">{feature}</span>
+                      </motion.li>
+                    ))}
+                  </ul>
+
+                  <motion.a
+                    href="#"
+                    className={`block w-full py-4 rounded-xl font-bold text-center shadow-lg hover:shadow-xl transition-all ${
+                      plan.popular
+                        ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white"
+                        : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                    }`}
+                    whileHover={{ scale: 1.03, y: -2 }}
+                    whileTap={{ scale: 0.97 }}
+                  >
+                    {plan.cta}
+                  </motion.a>
                 </div>
-
-                <ul className="space-y-3 mb-8">
-                  {plan.features.map((feature) => (
-                    <li
-                      key={feature}
-                      className="flex items-start gap-3 text-gray-700"
-                    >
-                      <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <Check className="w-3 h-3 text-emerald-600" />
-                      </div>
-                      <span className="text-sm leading-tight">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <button
-                  className="w-full py-3.5 px-4 rounded-xl font-semibold transition-all text-sm md:text-base flex items-center justify-center"
-                  style={plan.popular ? {
-                    background: 'linear-gradient(to right, #10b981, #059669)',
-                    color: 'white',
-                    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
-                  } : {
-                    border: '2px solid #d1d5db',
-                    color: '#374151'
-                  }}
-                >
-                  {plan.popular && (
-                    <Sparkles className="w-4 h-4 mr-2" />
-                  )}
-                  {plan.cta}
-                </button>
-              </div>
+              </motion.div>
             </motion.div>
           ))}
         </div>
 
         <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
+          className="mt-12 text-center space-y-4"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ delay: 0.4 }}
-          className="text-center mt-12"
+          transition={{ delay: 0.5 }}
         >
-          <p className="text-sm text-gray-500 mb-4">
+          <p className="text-gray-600 font-medium">
             Pagamento seguro via
           </p>
-          <div className="inline-flex items-center gap-4 px-6 py-3 bg-white rounded-full shadow-lg border border-gray-100">
+          <div className="flex items-center justify-center gap-3 text-emerald-600 font-bold">
             <span className="text-2xl">💳</span>
-            <span className="font-semibold text-emerald-600">Pix</span>
+            <span>Pix</span>
             <span className="text-gray-300">|</span>
-            <span className="text-sm text-gray-500">
+            <span className="flex items-center gap-2">
               Aprovação instantânea
             </span>
           </div>
@@ -667,57 +846,80 @@ const FAQSection = () => {
   ];
 
   return (
-    <section id="faq" className="py-20 md:py-32 bg-white">
-      <div className="container mx-auto px-4 md:px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
-        >
-          <span className="inline-block text-sm font-semibold text-emerald-600 uppercase tracking-wider mb-4">
-            Dúvidas Frequentes
-          </span>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#1e3a5f] mb-4">
-            Perguntas e Respostas
-          </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Tudo que você precisa saber sobre o Contrate-me.
-          </p>
-        </motion.div>
+    <section id="faq" className="py-20 bg-gradient-to-br from-gray-50 to-white relative overflow-hidden">
+      {/* Background decoration */}
+      <motion.div
+        className="absolute bottom-10 right-10 w-96 h-96 bg-teal-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20"
+        animate={{
+          scale: [1, 1.3, 1],
+          x: [0, 30, 0],
+        }}
+        transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+      />
 
+      <div className="max-w-4xl mx-auto px-6 relative">
         <motion.div
+          className="text-center mb-16"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="max-w-3xl mx-auto space-y-4"
         >
+          <motion.span
+            className="inline-block px-4 py-2 bg-teal-100 text-teal-700 rounded-full font-semibold text-sm mb-4"
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+          >
+            Dúvidas Frequentes
+          </motion.span>
+          <h2 className="text-4xl lg:text-5xl font-extrabold mb-4 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+            Perguntas e Respostas
+          </h2>
+          <p className="text-xl text-gray-600">
+            Tudo que você precisa saber sobre o Contrate-me.
+          </p>
+        </motion.div>
+
+        <div className="space-y-4">
           {faqs.map((faq, index) => (
-            <div
+            <motion.div
               key={index}
-              className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden"
+              className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.05, duration: 0.4 }}
             >
-              <button
+              <motion.button
                 onClick={() => setOpenItem(openItem === index ? null : index)}
-                className="w-full flex items-center justify-between p-5 text-left font-semibold text-gray-800 hover:text-emerald-600 transition-colors"
+                className="w-full flex items-center justify-between p-6 text-left font-semibold text-gray-800 hover:text-emerald-600 transition-colors"
+                whileHover={{ x: 5 }}
               >
-                {faq.question}
-                <ChevronDown
-                  className={`w-5 h-5 transition-transform ${
-                    openItem === index ? "rotate-180" : ""
-                  }`}
-                />
-              </button>
-              {openItem === index && (
-                <div className="px-5 pb-5 text-gray-600 leading-relaxed">
+                <span className="pr-8">{faq.question}</span>
+                <motion.div
+                  animate={{ rotate: openItem === index ? 180 : 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <ChevronDown className="w-6 h-6 text-emerald-600 flex-shrink-0" />
+                </motion.div>
+              </motion.button>
+              <motion.div
+                initial={false}
+                animate={{
+                  height: openItem === index ? "auto" : 0,
+                  opacity: openItem === index ? 1 : 0,
+                }}
+                transition={{ duration: 0.3 }}
+                className="overflow-hidden"
+              >
+                <div className="px-6 pb-6 text-gray-600 leading-relaxed border-t border-gray-100 pt-4">
                   {faq.answer}
                 </div>
-              )}
-            </div>
+              </motion.div>
+            </motion.div>
           ))}
-        </motion.div>
+        </div>
       </div>
     </section>
   );
@@ -726,55 +928,107 @@ const FAQSection = () => {
 // ==================== CTA SECTION ====================
 const CTASection = () => {
   return (
-    <section className="py-20 md:py-32 bg-[#1e3a5f] bg-gradient-to-br from-[#1e3a5f] via-[#1a3360] to-[#0f1f33] relative overflow-hidden">
-      <div className="absolute inset-0 opacity-20">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-72 h-72 bg-amber-500 rounded-full blur-3xl" />
-      </div>
+    <section className="py-20 relative overflow-hidden">
+      {/* Background with gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-emerald-600 via-emerald-500 to-teal-600" />
+      <motion.div
+        className="absolute top-0 left-0 w-full h-full opacity-30"
+        style={{
+          backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px)",
+          backgroundSize: "50px 50px",
+        }}
+        animate={{
+          backgroundPosition: ["0px 0px", "50px 50px"],
+        }}
+        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+      />
 
-      <div className="container mx-auto px-4 md:px-6 relative z-10">
+      <div className="max-w-5xl mx-auto px-6 relative">
         <motion.div
+          className="text-center"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center max-w-3xl mx-auto"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/20 border border-emerald-500/30 mb-6">
-            <Sparkles className="w-4 h-4 text-emerald-400" />
-            <span className="text-sm font-medium text-emerald-400">
+          <motion.div
+            className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full mb-6"
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+          >
+            <Sparkles className="w-4 h-4 text-white" />
+            <span className="text-sm font-semibold text-white">
               Comece agora mesmo
             </span>
-          </div>
+          </motion.div>
 
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6 px-4">
+          <motion.h2
+            className="text-4xl lg:text-5xl font-extrabold text-white mb-6"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+          >
             Pronto para criar seu contrato profissional?
-          </h2>
+          </motion.h2>
 
-          <p className="text-lg text-white/80 mb-8 max-w-xl mx-auto px-4">
+          <motion.p
+            className="text-xl text-white/90 mb-10 max-w-2xl mx-auto leading-relaxed"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.3 }}
+          >
             Junte-se a centenas de pessoas que já simplificaram a criação de
             contratos com o Contrate-me.
-          </p>
+          </motion.p>
 
-          <div className="flex flex-wrap justify-center gap-6 mb-10 px-4">
-            <div className="flex items-center gap-2 text-white/90">
-              <Shield className="w-5 h-5 text-emerald-400" />
-              <span className="text-sm font-medium">100% Seguro</span>
+          <motion.div
+            className="flex flex-wrap items-center justify-center gap-6 mb-10"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.4 }}
+          >
+            <div className="flex items-center gap-2 text-white">
+              <CheckCircle2 className="w-5 h-5" />
+              <span className="font-semibold">100% Seguro</span>
             </div>
-            <div className="flex items-center gap-2 text-white/90">
-              <Clock className="w-5 h-5 text-emerald-400" />
-              <span className="text-sm font-medium">Pronto em 2 minutos</span>
+            <div className="flex items-center gap-2 text-white">
+              <CheckCircle2 className="w-5 h-5" />
+              <span className="font-semibold">Pronto em 2 minutos</span>
             </div>
-          </div>
+          </motion.div>
 
-          <button className="group px-6 md:px-8 py-4 bg-white text-[#1e3a5f] font-bold rounded-xl hover:bg-gray-100 transition-all shadow-xl flex items-center justify-center mx-auto text-sm md:text-base">
+          <motion.a
+            href="#precos"
+            className="inline-flex items-center gap-3 px-10 py-5 bg-white text-emerald-600 rounded-xl font-bold text-lg shadow-2xl hover:shadow-3xl transition-all group"
+            whileHover={{ scale: 1.05, y: -3 }}
+            whileTap={{ scale: 0.95 }}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.5 }}
+          >
             Criar Meu Contrato Agora
-            <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-          </button>
+            <motion.div
+              animate={{ x: [0, 5, 0] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+            >
+              <ArrowRight className="w-6 h-6" />
+            </motion.div>
+          </motion.a>
 
-          <p className="mt-6 text-sm text-white/60 px-4">
+          <motion.p
+            className="text-white/80 mt-6 text-sm"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.6 }}
+          >
             A partir de R$ 19,90 • Pagamento via Pix
-          </p>
+          </motion.p>
         </motion.div>
       </div>
     </section>
@@ -802,108 +1056,128 @@ const Footer = () => {
   };
 
   return (
-    <footer className="bg-[#1e3a5f] text-white">
-      <div className="container mx-auto px-4 md:px-6">
-        <div className="py-12 md:py-16 grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-          <div className="lg:col-span-1">
-            <a href="#" className="flex items-center gap-2 mb-4">
-              <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center">
-                <FileText className="w-5 h-5 text-white" />
+    <footer className="bg-gray-900 text-white pt-16 pb-8">
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
+                <FileText className="w-6 h-6 text-white" />
               </div>
-              <span className="text-xl font-semibold">
-                Contrate-me
-              </span>
-            </a>
-            <p className="text-white/70 text-sm leading-relaxed mb-6">
+              <span className="text-xl font-bold">Contrate-me</span>
+            </div>
+            <p className="text-gray-400 mb-6 leading-relaxed">
               Contratos profissionais gerados por IA. Rápido, seguro e
               acessível.
             </p>
             <div className="flex gap-3">
-              <a
-                href="#"
+              <motion.a
+                href="https://instagram.com"
                 className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
                 aria-label="Instagram"
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                whileTap={{ scale: 0.9 }}
               >
                 <Instagram className="w-5 h-5" />
-              </a>
-              <a
-                href="#"
+              </motion.a>
+              <motion.a
+                href="https://linkedin.com"
                 className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
                 aria-label="LinkedIn"
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                whileTap={{ scale: 0.9 }}
               >
                 <Linkedin className="w-5 h-5" />
-              </a>
-              <a
+              </motion.a>
+              <motion.a
                 href="mailto:contato@contrate-me.com.br"
                 className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
                 aria-label="Email"
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                whileTap={{ scale: 0.9 }}
               >
                 <Mail className="w-5 h-5" />
-              </a>
+              </motion.a>
             </div>
-          </div>
+          </motion.div>
 
-          <div>
-            <h4 className="font-semibold mb-4">Produto</h4>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+          >
+            <h3 className="font-bold mb-4 text-lg">Produto</h3>
             <ul className="space-y-3">
               {links.produto.map((link) => (
                 <li key={link.label}>
                   <a
                     href={link.href}
-                    className="text-sm text-white/70 hover:text-white transition-colors"
+                    className="text-gray-400 hover:text-emerald-400 transition-colors inline-block hover:translate-x-1 duration-200"
                   >
                     {link.label}
                   </a>
                 </li>
               ))}
             </ul>
-          </div>
+          </motion.div>
 
-          <div>
-            <h4 className="font-semibold mb-4">Legal</h4>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+          >
+            <h3 className="font-bold mb-4 text-lg">Legal</h3>
             <ul className="space-y-3">
               {links.legal.map((link) => (
                 <li key={link.label}>
                   <a
                     href={link.href}
-                    className="text-sm text-white/70 hover:text-white transition-colors"
+                    className="text-gray-400 hover:text-emerald-400 transition-colors inline-block hover:translate-x-1 duration-200"
                   >
                     {link.label}
                   </a>
                 </li>
               ))}
             </ul>
-          </div>
+          </motion.div>
 
-          <div>
-            <h4 className="font-semibold mb-4">Contato</h4>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.3 }}
+          >
+            <h3 className="font-bold mb-4 text-lg">Contato</h3>
             <ul className="space-y-3">
               {links.contato.map((link) => (
                 <li key={link.label}>
                   <a
                     href={link.href}
-                    className="text-sm text-white/70 hover:text-white transition-colors"
+                    className="text-gray-400 hover:text-emerald-400 transition-colors inline-block hover:translate-x-1 duration-200"
                   >
                     {link.label}
                   </a>
                 </li>
               ))}
             </ul>
-            <div className="mt-6 p-4 bg-white/5 rounded-lg border border-white/10">
-              <p className="text-xs text-white/60">
-                Pagamento seguro via <span className="text-emerald-400 font-semibold">Pix</span>
-              </p>
+            <div className="mt-6 flex items-center gap-2 text-gray-400 text-sm">
+              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+              <span>Pagamento seguro via Pix</span>
             </div>
-          </div>
+          </motion.div>
         </div>
 
-        <div className="py-6 border-t border-white/10">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-white/60">
-              © {currentYear} Contrate-me. Todos os direitos reservados.
-            </p>
-            <p className="text-sm text-white/60">
-              Feito com 💚 no Brasil
+        <div className="pt-8 border-t border-gray-800">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-400">
+            <p>© {currentYear} Contrate-me. Todos os direitos reservados.</p>
+            <p className="flex items-center gap-1">
+              Feito com <span className="text-emerald-500">💚</span> no Brasil
             </p>
           </div>
         </div>
@@ -914,7 +1188,7 @@ const Footer = () => {
 
 // ==================== MAIN APP ====================
 const App = () => (
-  <div className="min-h-screen bg-white">
+  <div className="font-sans antialiased">
     <Header />
     <main>
       <HeroSection />
