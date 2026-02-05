@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import {
   FileText,
   Menu,
@@ -24,9 +25,18 @@ import {
   ChevronDown,
 } from "lucide-react";
 
+import Chat from "./Chat";
+
 // ==================== HEADER ====================
-const Header = () => {
+const Header = ({ onCreateContract }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const navLinks = [
     { label: "Como Funciona", href: "#como-funciona" },
@@ -40,7 +50,7 @@ const Header = () => {
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6 }}
-      className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200"
+      className={`fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200 ${scrolled ? 'shadow-lg' : ''}`}
     >
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex items-center justify-between h-16 md:h-20">
@@ -66,9 +76,14 @@ const Header = () => {
           </nav>
 
           <div className="hidden md:flex items-center gap-4">
-            <button className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-xl hover:from-emerald-600 hover:to-emerald-700 transition-all shadow-lg">
+            <motion.button 
+              onClick={onCreateContract}
+              whileHover={{ scale: 1.05, y: -2 }}
+              whileTap={{ scale: 0.95 }}
+              className="px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-xl hover:from-emerald-600 hover:to-emerald-700 transition-all shadow-lg"
+            >
               Criar Contrato
-            </button>
+            </motion.button>
           </div>
 
           <button
@@ -80,37 +95,47 @@ const Header = () => {
           </button>
         </div>
 
-        {isMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="md:hidden border-t border-gray-200 py-4"
-          >
-            <nav className="flex flex-col gap-4">
-              {navLinks.map((link) => (
-                <a
-                  key={link.href}
-                  href={link.href}
-                  className="text-sm font-medium text-gray-600 hover:text-[#1e3a5f] transition-colors px-2 py-2"
-                  onClick={() => setIsMenuOpen(false)}
+        <AnimatePresence>
+          {isMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="md:hidden border-t border-gray-200 py-4"
+            >
+              <nav className="flex flex-col gap-4">
+                {navLinks.map((link) => (
+                  <a
+                    key={link.href}
+                    href={link.href}
+                    className="text-sm font-medium text-gray-600 hover:text-[#1e3a5f] transition-colors px-2 py-2"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    {link.label}
+                  </a>
+                ))}
+                <motion.button 
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    onCreateContract();
+                  }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="mt-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-xl"
                 >
-                  {link.label}
-                </a>
-              ))}
-              <button className="mt-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-xl">
-                Criar Contrato
-              </button>
-            </nav>
-          </motion.div>
-        )}
+                  Criar Contrato
+                </motion.button>
+              </nav>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </motion.header>
   );
 };
 
 // ==================== HERO SECTION ====================
-const HeroSection = () => {
+const HeroSection = ({ onCreateContract }) => {
   const benefits = [
     "Juridicamente revisado",
     "Pronto em 2 minutos",
@@ -179,7 +204,10 @@ const HeroSection = () => {
               transition={{ delay: 0.6 }}
               className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
             >
-              <button 
+              <motion.button 
+                onClick={onCreateContract}
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
                 className="group px-8 py-4 text-white font-semibold rounded-xl transition-all shadow-lg flex items-center justify-center"
                 style={{
                   background: 'linear-gradient(to right, #10b981, #059669)',
@@ -187,7 +215,7 @@ const HeroSection = () => {
               >
                 Criar Meu Contrato
                 <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-              </button>
+              </motion.button>
               <button className="px-8 py-4 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:border-[#1e3a5f] hover:text-[#1e3a5f] transition-all">
                 Ver Exemplo
               </button>
@@ -446,7 +474,7 @@ const BenefitsSection = () => {
 };
 
 // ==================== PRICING SECTION ====================
-const PricingSection = () => {
+const PricingSection = ({ onCreateContract }) => {
   const plans = [
     {
       name: "Contrato Único",
@@ -584,7 +612,10 @@ const PricingSection = () => {
                   ))}
                 </ul>
 
-                <button
+                <motion.button
+                  onClick={onCreateContract}
+                  whileHover={{ scale: 1.03, y: -2 }}
+                  whileTap={{ scale: 0.97 }}
                   className="w-full py-3.5 px-4 rounded-xl font-semibold transition-all text-sm md:text-base flex items-center justify-center"
                   style={plan.popular ? {
                     background: 'linear-gradient(to right, #10b981, #059669)',
@@ -599,7 +630,7 @@ const PricingSection = () => {
                     <Sparkles className="w-4 h-4 mr-2" />
                   )}
                   {plan.cta}
-                </button>
+                </motion.button>
               </div>
             </motion.div>
           ))}
@@ -710,11 +741,20 @@ const FAQSection = () => {
                   }`}
                 />
               </button>
-              {openItem === index && (
-                <div className="px-5 pb-5 text-gray-600 leading-relaxed">
-                  {faq.answer}
-                </div>
-              )}
+              <AnimatePresence>
+                {openItem === index && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-5 pb-5 text-gray-600 leading-relaxed">
+                      {faq.answer}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           ))}
         </motion.div>
@@ -724,7 +764,7 @@ const FAQSection = () => {
 };
 
 // ==================== CTA SECTION ====================
-const CTASection = () => {
+const CTASection = ({ onCreateContract }) => {
   return (
     <section className="py-20 md:py-32 bg-[#1e3a5f] bg-gradient-to-br from-[#1e3a5f] via-[#1a3360] to-[#0f1f33] relative overflow-hidden">
       <div className="absolute inset-0 opacity-20">
@@ -767,10 +807,15 @@ const CTASection = () => {
             </div>
           </div>
 
-          <button className="group px-6 md:px-8 py-4 bg-white text-[#1e3a5f] font-bold rounded-xl hover:bg-gray-100 transition-all shadow-xl flex items-center justify-center mx-auto text-sm md:text-base">
+          <motion.button 
+            onClick={onCreateContract}
+            whileHover={{ scale: 1.05, y: -2 }}
+            whileTap={{ scale: 0.95 }}
+            className="group px-6 md:px-8 py-4 bg-white text-[#1e3a5f] font-bold rounded-xl hover:bg-gray-100 transition-all shadow-xl flex items-center justify-center mx-auto text-sm md:text-base"
+          >
             Criar Meu Contrato Agora
             <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-          </button>
+          </motion.button>
 
           <p className="mt-6 text-sm text-white/60 px-4">
             A partir de R$ 19,90 • Pagamento via Pix
@@ -913,19 +958,33 @@ const Footer = () => {
 };
 
 // ==================== MAIN APP ====================
+const LandingPage = () => {
+  const navigate = useNavigate();
+  const handleCreateContract = () => navigate("/chat");
+
+  return (
+    <div className="min-h-screen bg-white">
+      <Header onCreateContract={handleCreateContract} />
+      <main>
+        <HeroSection onCreateContract={handleCreateContract} />
+        <HowItWorksSection />
+        <BenefitsSection />
+        <PricingSection onCreateContract={handleCreateContract} />
+        <FAQSection />
+        <CTASection onCreateContract={handleCreateContract} />
+      </main>
+      <Footer />
+    </div>
+  );
+};
+
 const App = () => (
-  <div className="min-h-screen bg-white">
-    <Header />
-    <main>
-      <HeroSection />
-      <HowItWorksSection />
-      <BenefitsSection />
-      <PricingSection />
-      <FAQSection />
-      <CTASection />
-    </main>
-    <Footer />
-  </div>
+  <BrowserRouter>
+    <Routes>
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/chat" element={<Chat />} />
+    </Routes>
+  </BrowserRouter>
 );
 
 export default App;
