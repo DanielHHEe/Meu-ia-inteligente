@@ -69,26 +69,70 @@ const contractTypes = [
 // ==================== CHAT HEADER ====================
 const ChatHeader = () => {
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 h-14 sm:h-16">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
-        <div className="flex items-center justify-between h-full">
-          <Link
-            to="/"
-            className="flex items-center gap-2 text-gray-600 hover:text-emerald-600 transition-colors"
+    <header
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 50,
+        backgroundColor: "rgba(255,255,255,0.95)",
+        backdropFilter: "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
+        borderBottom: "1px solid #f3f4f6",
+        height: 56,
+        paddingTop: "env(safe-area-inset-top, 0px)",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: 1024,
+          margin: "0 auto",
+          padding: "0 16px",
+          height: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <Link
+          to="/"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            color: "#6b7280",
+            textDecoration: "none",
+          }}
+        >
+          <ArrowLeft style={{ width: 20, height: 20 }} />
+        </Link>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: 8,
+              background: "linear-gradient(135deg, #10b981, #0d9488)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
           >
-            <ArrowLeft className="w-5 h-5" />
-            <span className="font-medium hidden sm:inline">Voltar</span>
-          </Link>
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
-              <FileText className="w-4 h-4 text-white" />
-            </div>
-            <span className="font-bold text-gray-900">Contrate-me</span>
+            <FileText style={{ width: 16, height: 16, color: "#fff" }} />
           </div>
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="hidden sm:inline">IA Online</span>
-          </div>
+          <span style={{ fontWeight: 700, color: "#111827" }}>Contrate-me</span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, color: "#6b7280" }}>
+          <div
+            style={{
+              width: 8,
+              height: 8,
+              borderRadius: "50%",
+              backgroundColor: "#10b981",
+              animation: "pulse 2s infinite",
+            }}
+          />
         </div>
       </div>
     </header>
@@ -100,21 +144,40 @@ const ContractTypeSelector = ({ onSelect }) => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="w-full max-w-4xl mx-auto"
+      style={{ width: "100%", maxWidth: 896, margin: "0 auto" }}
     >
-      <div className="text-center mb-6 sm:mb-8">
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 text-emerald-700 text-sm font-medium mb-4">
-          <Sparkles className="w-4 h-4" />
+      <div style={{ textAlign: "center", marginBottom: 24 }}>
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+            padding: "8px 16px",
+            borderRadius: 9999,
+            backgroundColor: "#ecfdf5",
+            color: "#047857",
+            fontSize: 14,
+            fontWeight: 500,
+            marginBottom: 16,
+          }}
+        >
+          <Sparkles style={{ width: 16, height: 16 }} />
           Passo 1 de 3
         </div>
-        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+        <h2 style={{ fontSize: 24, fontWeight: 700, color: "#111827", marginBottom: 8 }}>
           Qual tipo de contrato você precisa?
         </h2>
-        <p className="text-gray-600">
+        <p style={{ color: "#6b7280" }}>
           Selecione o modelo que melhor se adapta à sua necessidade
         </p>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr",
+          gap: 12,
+        }}
+      >
         {contractTypes.map((type, index) => (
           <motion.button
             key={type.id}
@@ -122,25 +185,70 @@ const ContractTypeSelector = ({ onSelect }) => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
             onClick={() => onSelect(type)}
-            className="group relative p-4 sm:p-5 rounded-2xl border-2 border-gray-100 bg-white hover:border-emerald-500 hover:shadow-lg hover:shadow-emerald-500/10 transition-all duration-300 text-left min-h-[80px] overflow-visible"
+            style={{
+              position: "relative",
+              padding: 16,
+              borderRadius: 16,
+              border: "2px solid #f3f4f6",
+              backgroundColor: "#fff",
+              textAlign: "left",
+              minHeight: 80,
+              cursor: "pointer",
+              overflow: "visible",
+            }}
           >
             {type.popular && (
-              <div className="absolute -top-2.5 right-4 px-3 py-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold rounded-full">
+              <div
+                style={{
+                  position: "absolute",
+                  top: -10,
+                  right: 16,
+                  padding: "4px 12px",
+                  background: "linear-gradient(90deg, #f59e0b, #f97316)",
+                  color: "#fff",
+                  fontSize: 12,
+                  fontWeight: 700,
+                  borderRadius: 9999,
+                }}
+              >
                 Popular
               </div>
             )}
-            <div className="flex items-start gap-3 pr-6">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center flex-shrink-0 group-hover:from-emerald-100 group-hover:to-teal-100 transition-colors">
-                <type.icon className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600" />
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 12, paddingRight: 24 }}>
+              <div
+                style={{
+                  width: 40,
+                  height: 40,
+                  minWidth: 40,
+                  borderRadius: 12,
+                  background: "linear-gradient(135deg, #ecfdf5, #f0fdfa)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}
+              >
+                <type.icon style={{ width: 20, height: 20, color: "#059669" }} />
               </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-emerald-600 transition-colors break-words">
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <h3 style={{ fontWeight: 600, color: "#111827", marginBottom: 4, wordBreak: "break-word" }}>
                   {type.name}
                 </h3>
-                <p className="text-sm text-gray-500 break-words">{type.description}</p>
+                <p style={{ fontSize: 14, color: "#6b7280", wordBreak: "break-word" }}>{type.description}</p>
               </div>
             </div>
-            <ChevronRight className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300 group-hover:text-emerald-500 group-hover:translate-x-1 transition-all flex-shrink-0" />
+            <ChevronRight
+              style={{
+                position: "absolute",
+                right: 12,
+                top: "50%",
+                transform: "translateY(-50%)",
+                width: 20,
+                height: 20,
+                color: "#d1d5db",
+                flexShrink: 0,
+              }}
+            />
           </motion.button>
         ))}
       </div>
@@ -153,27 +261,73 @@ const MessageBubble = ({ message, isBot }) => {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`flex gap-2 sm:gap-3 ${isBot ? "justify-start" : "justify-end"}`}
+      style={{
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "flex-start",
+        gap: 8,
+        justifyContent: isBot ? "flex-start" : "flex-end",
+        width: "100%",
+      }}
     >
       {isBot && (
-        <div className="flex-shrink-0 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
-          <Bot className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+        <div
+          style={{
+            width: 32,
+            height: 32,
+            minWidth: 32,
+            minHeight: 32,
+            borderRadius: "50%",
+            background: "linear-gradient(135deg, #10b981, #0d9488)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
+        >
+          <Bot style={{ width: 16, height: 16, color: "#fff" }} />
         </div>
       )}
       <div
-        className={`max-w-[75%] sm:max-w-[80%] px-3 sm:px-4 py-2.5 sm:py-3 rounded-2xl ${
-          isBot
-            ? "bg-gray-100 text-gray-800 rounded-tl-md"
-            : "bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-tr-md"
-        }`}
+        style={{
+          maxWidth: "75%",
+          padding: "10px 14px",
+          borderRadius: 16,
+          borderTopLeftRadius: isBot ? 4 : 16,
+          borderTopRightRadius: isBot ? 16 : 4,
+          backgroundColor: isBot ? "#f3f4f6" : undefined,
+          background: isBot ? "#f3f4f6" : "linear-gradient(90deg, #059669, #0d9488)",
+          color: isBot ? "#1f2937" : "#fff",
+        }}
       >
-        <p className="text-sm sm:text-base leading-relaxed whitespace-pre-wrap break-words">
+        <p
+          style={{
+            fontSize: 14,
+            lineHeight: 1.6,
+            whiteSpace: "pre-wrap",
+            wordBreak: "break-word",
+            margin: 0,
+          }}
+        >
           {message}
         </p>
       </div>
       {!isBot && (
-        <div className="flex-shrink-0 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center">
-          <User className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+        <div
+          style={{
+            width: 32,
+            height: 32,
+            minWidth: 32,
+            minHeight: 32,
+            borderRadius: "50%",
+            background: "linear-gradient(135deg, #334155, #0f172a)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
+        >
+          <User style={{ width: 16, height: 16, color: "#fff" }} />
         </div>
       )}
     </motion.div>
@@ -185,25 +339,51 @@ const TypingIndicator = () => {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="flex gap-2 sm:gap-3 justify-start"
+      style={{
+        display: "flex",
+        alignItems: "flex-start",
+        gap: 8,
+        justifyContent: "flex-start",
+        width: "100%",
+      }}
     >
-      <div className="flex-shrink-0 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
-        <Bot className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+      <div
+        style={{
+          width: 32,
+          height: 32,
+          minWidth: 32,
+          minHeight: 32,
+          borderRadius: "50%",
+          background: "linear-gradient(135deg, #10b981, #0d9488)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+      >
+        <Bot style={{ width: 16, height: 16, color: "#fff" }} />
       </div>
-      <div className="bg-gray-100 px-3 sm:px-4 py-2.5 sm:py-3 rounded-2xl rounded-tl-md">
-        <div className="flex gap-1.5">
+      <div
+        style={{
+          backgroundColor: "#f3f4f6",
+          padding: "10px 14px",
+          borderRadius: 16,
+          borderTopLeftRadius: 4,
+        }}
+      >
+        <div style={{ display: "flex", gap: 6 }}>
           <motion.div
-            className="w-2 h-2 rounded-full bg-gray-400"
+            style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: "#9ca3af" }}
             animate={{ scale: [1, 1.2, 1] }}
             transition={{ repeat: Infinity, duration: 1, delay: 0 }}
           />
           <motion.div
-            className="w-2 h-2 rounded-full bg-gray-400"
+            style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: "#9ca3af" }}
             animate={{ scale: [1, 1.2, 1] }}
             transition={{ repeat: Infinity, duration: 1, delay: 0.2 }}
           />
           <motion.div
-            className="w-2 h-2 rounded-full bg-gray-400"
+            style={{ width: 8, height: 8, borderRadius: "50%", backgroundColor: "#9ca3af" }}
             animate={{ scale: [1, 1.2, 1] }}
             transition={{ repeat: Infinity, duration: 1, delay: 0.4 }}
           />
@@ -228,9 +408,29 @@ const ChatInput = ({ value, onChange, onSend, disabled }) => {
     }
   }, [value]);
   return (
-    <div className="border-t border-gray-100 bg-white p-3 sm:p-4 flex-shrink-0" style={{ paddingBottom: "calc(12px + env(safe-area-inset-bottom, 0px))" }}>
-      <div className="max-w-3xl mx-auto">
-        <div className="flex items-end gap-2 bg-gray-50 rounded-2xl p-2 border border-gray-200 focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500/20 transition-all">
+    <div
+      style={{
+        borderTop: "1px solid #f3f4f6",
+        backgroundColor: "#fff",
+        padding: 12,
+        paddingBottom: "calc(12px + env(safe-area-inset-bottom, 0px))",
+        flexShrink: 0,
+        position: "relative",
+        zIndex: 10,
+      }}
+    >
+      <div style={{ maxWidth: 768, margin: "0 auto" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-end",
+            gap: 8,
+            backgroundColor: "#f9fafb",
+            borderRadius: 16,
+            padding: 8,
+            border: "1px solid #e5e7eb",
+          }}
+        >
           <textarea
             ref={textareaRef}
             value={value}
@@ -239,24 +439,51 @@ const ChatInput = ({ value, onChange, onSend, disabled }) => {
             placeholder="Digite sua resposta..."
             disabled={disabled}
             rows={1}
-            style={{ fontSize: "16px" }}
-            className="flex-1 bg-transparent px-2 sm:px-3 py-2 text-gray-800 placeholder-gray-400 resize-none focus:outline-none min-h-[40px] max-h-32 overflow-y-auto"
+            style={{
+              flex: 1,
+              backgroundColor: "transparent",
+              padding: "8px 12px",
+              color: "#1f2937",
+              resize: "none",
+              border: "none",
+              outline: "none",
+              minHeight: 40,
+              maxHeight: 128,
+              overflowY: "auto",
+              fontSize: 16,
+              lineHeight: 1.5,
+              WebkitAppearance: "none",
+            }}
           />
           <button
             onClick={onSend}
             disabled={disabled || !value.trim()}
-            className="flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white flex items-center justify-center hover:from-emerald-700 hover:to-teal-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105 active:scale-95"
+            style={{
+              flexShrink: 0,
+              width: 40,
+              height: 40,
+              minWidth: 40,
+              minHeight: 40,
+              borderRadius: 12,
+              background: "linear-gradient(90deg, #059669, #0d9488)",
+              color: "#fff",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              border: "none",
+              cursor: disabled || !value.trim() ? "not-allowed" : "pointer",
+              opacity: disabled || !value.trim() ? 0.5 : 1,
+              WebkitAppearance: "none",
+              appearance: "none",
+            }}
           >
             {disabled ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
+              <Loader2 style={{ width: 20, height: 20, animation: "spin 1s linear infinite" }} />
             ) : (
-              <Send className="w-5 h-5" />
+              <Send style={{ width: 20, height: 20 }} />
             )}
           </button>
         </div>
-        <p className="text-xs text-gray-400 text-center mt-2 hidden sm:block">
-          Pressione Enter para enviar • Shift + Enter para nova linha
-        </p>
       </div>
     </div>
   );
@@ -269,66 +496,123 @@ const ProgressSidebar = ({ currentStep, contractType }) => {
     { id: 3, name: "Pagamento", icon: CreditCard },
   ];
   return (
-    <div className="hidden lg:flex lg:flex-col w-72 bg-gradient-to-b from-slate-900 to-slate-800 text-white p-6 fixed left-0 top-16 bottom-0">
-      <div className="mb-8">
-        <h3 className="text-lg font-semibold mb-2">Seu Contrato</h3>
-        {contractType ? (
-          <div className="flex items-center gap-3 p-3 rounded-xl bg-white/10">
-            <contractType.icon className="w-5 h-5 text-emerald-400" />
-            <span className="text-sm">{contractType.name}</span>
-          </div>
-        ) : (
-          <p className="text-sm text-gray-400">Selecione um tipo</p>
-        )}
-      </div>
-      <div className="space-y-4 flex-1">
-        <h4 className="text-sm font-medium text-gray-400 uppercase tracking-wider">
-          Progresso
-        </h4>
-        {steps.map((step) => (
-          <div key={step.id} className="flex items-center gap-3">
+    <div
+      style={{
+        display: "none",
+      }}
+      className="lg:!flex lg:flex-col"
+    >
+      <div
+        style={{
+          width: 288,
+          background: "linear-gradient(180deg, #0f172a, #1e293b)",
+          color: "#fff",
+          padding: 24,
+          position: "fixed",
+          left: 0,
+          top: 56,
+          bottom: 0,
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <div style={{ marginBottom: 32 }}>
+          <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>Seu Contrato</h3>
+          {contractType ? (
             <div
-              className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
-                currentStep > step.id
-                  ? "bg-emerald-500"
-                  : currentStep === step.id
-                  ? "bg-emerald-500/20 ring-2 ring-emerald-500"
-                  : "bg-white/10"
-              }`}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                padding: 12,
+                borderRadius: 12,
+                backgroundColor: "rgba(255,255,255,0.1)",
+              }}
             >
-              {currentStep > step.id ? (
-                <CheckCircle2 className="w-5 h-5 text-white" />
-              ) : (
-                <step.icon
-                  className={`w-5 h-5 ${
-                    currentStep === step.id ? "text-emerald-400" : "text-gray-400"
-                  }`}
-                />
-              )}
+              <contractType.icon style={{ width: 20, height: 20, color: "#34d399" }} />
+              <span style={{ fontSize: 14 }}>{contractType.name}</span>
             </div>
-            <div>
-              <p
-                className={`text-sm font-medium ${
-                  currentStep >= step.id ? "text-white" : "text-gray-400"
-                }`}
-              >
-                {step.name}
-              </p>
-              {currentStep === step.id && (
-                <p className="text-xs text-emerald-400">Em andamento</p>
-              )}
-            </div>
+          ) : (
+            <p style={{ fontSize: 14, color: "#9ca3af" }}>Selecione um tipo</p>
+          )}
+        </div>
+        <div style={{ flex: 1 }}>
+          <h4
+            style={{
+              fontSize: 12,
+              fontWeight: 500,
+              color: "#9ca3af",
+              textTransform: "uppercase",
+              letterSpacing: 1,
+              marginBottom: 16,
+            }}
+          >
+            Progresso
+          </h4>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            {steps.map((step) => (
+              <div key={step.id} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <div
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: "50%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor:
+                      currentStep > step.id
+                        ? "#10b981"
+                        : currentStep === step.id
+                        ? "rgba(16,185,129,0.2)"
+                        : "rgba(255,255,255,0.1)",
+                    outline: currentStep === step.id ? "2px solid #10b981" : "none",
+                  }}
+                >
+                  {currentStep > step.id ? (
+                    <CheckCircle2 style={{ width: 20, height: 20, color: "#fff" }} />
+                  ) : (
+                    <step.icon
+                      style={{
+                        width: 20,
+                        height: 20,
+                        color: currentStep === step.id ? "#34d399" : "#9ca3af",
+                      }}
+                    />
+                  )}
+                </div>
+                <div>
+                  <p
+                    style={{
+                      fontSize: 14,
+                      fontWeight: 500,
+                      color: currentStep >= step.id ? "#fff" : "#9ca3af",
+                    }}
+                  >
+                    {step.name}
+                  </p>
+                  {currentStep === step.id && (
+                    <p style={{ fontSize: 12, color: "#34d399" }}>Em andamento</p>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
-      <div className="mt-auto">
-        <div className="p-4 rounded-xl bg-white/5 border border-white/10">
-          <div className="flex items-center gap-2 text-emerald-400 mb-2">
-            <Clock className="w-4 h-4" />
-            <span className="text-sm font-medium">Tempo estimado</span>
+        </div>
+        <div
+          style={{
+            padding: 16,
+            borderRadius: 12,
+            backgroundColor: "rgba(255,255,255,0.05)",
+            border: "1px solid rgba(255,255,255,0.1)",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#34d399", marginBottom: 8 }}>
+            <Clock style={{ width: 16, height: 16 }} />
+            <span style={{ fontSize: 14, fontWeight: 500 }}>Tempo estimado</span>
           </div>
-          <p className="text-2xl font-bold">~2 min</p>
-          <p className="text-xs text-gray-400 mt-1">
+          <p style={{ fontSize: 28, fontWeight: 700 }}>~2 min</p>
+          <p style={{ fontSize: 12, color: "#9ca3af", marginTop: 4 }}>
             Para completar seu contrato
           </p>
         </div>
@@ -344,32 +628,60 @@ const ChatInterface = ({ contractType, messages, isTyping, inputValue, setInputV
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
   return (
-    <div className="flex flex-col h-full">
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", minHeight: 0 }}>
       {/* Chat Header Info */}
-      <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border-b border-emerald-100 p-3 sm:p-4 flex-shrink-0">
-        <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
-              <contractType.icon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+      <div
+        style={{
+          background: "linear-gradient(90deg, #ecfdf5, #f0fdfa)",
+          borderBottom: "1px solid #d1fae5",
+          padding: 12,
+          flexShrink: 0,
+        }}
+      >
+        <div
+          style={{
+            maxWidth: 768,
+            margin: "0 auto",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div
+              style={{
+                width: 36,
+                height: 36,
+                minWidth: 36,
+                borderRadius: 12,
+                background: "linear-gradient(135deg, #10b981, #0d9488)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              <contractType.icon style={{ width: 18, height: 18, color: "#fff" }} />
             </div>
             <div>
-              <h3 className="font-semibold text-sm sm:text-base text-gray-900">{contractType.name}</h3>
-              <p className="text-xs sm:text-sm text-gray-500">Passo 2 de 3 • Coletando informações</p>
+              <h3 style={{ fontWeight: 600, fontSize: 14, color: "#111827", margin: 0 }}>{contractType.name}</h3>
+              <p style={{ fontSize: 12, color: "#6b7280", margin: 0 }}>Passo 2 de 3 • Coletando informações</p>
             </div>
-          </div>
-          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-100 text-emerald-700 text-sm">
-            <Sparkles className="w-4 h-4" />
-            IA Ativa
           </div>
         </div>
       </div>
       {/* Messages Area */}
       <div
         ref={messagesContainerRef}
-        className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6 min-h-0"
-        style={{ WebkitOverflowScrolling: "touch" }}
+        style={{
+          flex: 1,
+          overflowY: "auto",
+          padding: 12,
+          minHeight: 0,
+          WebkitOverflowScrolling: "touch",
+        }}
       >
-        <div className="max-w-3xl mx-auto space-y-3 sm:space-y-4 pt-2 pb-4">
+        <div style={{ maxWidth: 768, margin: "0 auto", display: "flex", flexDirection: "column", gap: 12, paddingTop: 8, paddingBottom: 16 }}>
           <AnimatePresence>
             {messages.map((msg, index) => (
               <MessageBubble key={index} message={msg.text} isBot={msg.isBot} />
@@ -419,6 +731,24 @@ const Chat = () => {
   };
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState([]);
+  // Fix for mobile viewport height with virtual keyboard
+  useEffect(() => {
+    const handleResize = () => {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty("--vh", vh + "px");
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", handleResize);
+    }
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener("resize", handleResize);
+      }
+    };
+  }, []);
   const handleSelectContract = (type) => {
     setSelectedContract(type);
     setCurrentStep(2);
@@ -472,12 +802,39 @@ const Chat = () => {
     }, 1500);
   };
   return (
-    <div className="h-[100dvh] flex flex-col overflow-hidden bg-gray-50">
+    <div
+      style={{
+        height: "calc(var(--vh, 1vh) * 100)",
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+        backgroundColor: "#f9fafb",
+      }}
+    >
       <ChatHeader />
       <ProgressSidebar currentStep={currentStep} contractType={selectedContract} />
-      <main className="flex-1 pt-14 sm:pt-16 lg:pl-72 flex flex-col min-h-0 overflow-hidden">
+      <main
+        style={{
+          flex: 1,
+          paddingTop: 56,
+          display: "flex",
+          flexDirection: "column",
+          minHeight: 0,
+          overflow: "hidden",
+        }}
+        className="lg:pl-72"
+      >
         {currentStep === 1 ? (
-          <div className="flex-1 flex items-start sm:items-center justify-center p-4 sm:p-6 lg:p-8 overflow-y-auto">
+          <div
+            style={{
+              flex: 1,
+              display: "flex",
+              alignItems: "flex-start",
+              justifyContent: "center",
+              padding: 16,
+              overflowY: "auto",
+            }}
+          >
             <ContractTypeSelector onSelect={handleSelectContract} />
           </div>
         ) : (
