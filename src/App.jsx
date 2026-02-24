@@ -173,9 +173,9 @@ const HeroSection = ({ onCreateContract }) => {
               </span>
             </motion.div>
 
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[#1e3a5f] leading-tight mb-6">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[#1e3a5f] leading-tight mb-6 break-words">
               Seu contrato profissional em{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-emerald-600">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-emerald-600 whitespace-nowrap">
                 2 minutos
               </span>
             </h1>
