@@ -175,7 +175,16 @@ const HeroSection = ({ onCreateContract }) => {
 
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-[#1e3a5f] leading-tight mb-6">
               Seu contrato profissional em{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-emerald-600 block sm:inline">
+              <span 
+                style={{
+                  color: 'transparent',
+                  background: 'linear-gradient(to right, #10b981, #059669)',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  whiteSpace: 'nowrap',
+                  display: 'inline-block'
+                }}
+              >
                 2 minutos
               </span>
             </h1>
