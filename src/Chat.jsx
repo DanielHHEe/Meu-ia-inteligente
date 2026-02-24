@@ -21,6 +21,7 @@ import {
   Clock,
   CreditCard,
 } from "lucide-react";
+
 // ==================== CONTRACT TYPES ====================
 const contractTypes = [
   {
@@ -66,6 +67,7 @@ const contractTypes = [
     popular: false,
   },
 ];
+
 // ==================== CHAT HEADER ====================
 const ChatHeader = () => {
   return (
@@ -138,6 +140,7 @@ const ChatHeader = () => {
     </header>
   );
 };
+
 // ==================== CONTRACT TYPE SELECTOR ====================
 const ContractTypeSelector = ({ onSelect }) => {
   return (
@@ -172,11 +175,7 @@ const ContractTypeSelector = ({ onSelect }) => {
         </p>
       </div>
       <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr",
-          gap: 12,
-        }}
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"
       >
         {contractTypes.map((type, index) => (
           <motion.button
@@ -255,6 +254,7 @@ const ContractTypeSelector = ({ onSelect }) => {
     </motion.div>
   );
 };
+
 // ==================== MESSAGE BUBBLE ====================
 const MessageBubble = ({ message, isBot }) => {
   return (
@@ -333,6 +333,7 @@ const MessageBubble = ({ message, isBot }) => {
     </motion.div>
   );
 };
+
 // ==================== TYPING INDICATOR ====================
 const TypingIndicator = () => {
   return (
@@ -392,21 +393,25 @@ const TypingIndicator = () => {
     </motion.div>
   );
 };
+
 // ==================== CHAT INPUT ====================
 const ChatInput = ({ value, onChange, onSend, disabled }) => {
   const textareaRef = useRef(null);
+
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       onSend();
     }
   };
+
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
       textareaRef.current.style.height = textareaRef.current.scrollHeight + "px";
     }
   }, [value]);
+
   return (
     <div
       style={{
@@ -488,6 +493,7 @@ const ChatInput = ({ value, onChange, onSend, disabled }) => {
     </div>
   );
 };
+
 // ==================== PROGRESS SIDEBAR ====================
 const ProgressSidebar = ({ currentStep, contractType }) => {
   const steps = [
@@ -495,6 +501,7 @@ const ProgressSidebar = ({ currentStep, contractType }) => {
     { id: 2, name: "Informações", icon: Users },
     { id: 3, name: "Pagamento", icon: CreditCard },
   ];
+
   return (
     <div
       style={{
@@ -536,6 +543,7 @@ const ProgressSidebar = ({ currentStep, contractType }) => {
             <p style={{ fontSize: 14, color: "#9ca3af" }}>Selecione um tipo</p>
           )}
         </div>
+
         <div style={{ flex: 1 }}>
           <h4
             style={{
@@ -599,6 +607,7 @@ const ProgressSidebar = ({ currentStep, contractType }) => {
             ))}
           </div>
         </div>
+
         <div
           style={{
             padding: 16,
@@ -620,13 +629,16 @@ const ProgressSidebar = ({ currentStep, contractType }) => {
     </div>
   );
 };
+
 // ==================== CHAT INTERFACE ====================
 const ChatInterface = ({ contractType, messages, isTyping, inputValue, setInputValue, onSendMessage }) => {
   const messagesEndRef = useRef(null);
   const messagesContainerRef = useRef(null);
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
+
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", minHeight: 0 }}>
       {/* Chat Header Info */}
@@ -670,6 +682,7 @@ const ChatInterface = ({ contractType, messages, isTyping, inputValue, setInputV
           </div>
         </div>
       </div>
+
       {/* Messages Area */}
       <div
         ref={messagesContainerRef}
@@ -691,6 +704,7 @@ const ChatInterface = ({ contractType, messages, isTyping, inputValue, setInputV
           <div ref={messagesEndRef} />
         </div>
       </div>
+
       {/* Input Area */}
       <ChatInput
         value={inputValue}
@@ -701,6 +715,7 @@ const ChatInterface = ({ contractType, messages, isTyping, inputValue, setInputV
     </div>
   );
 };
+
 // ==================== MAIN CHAT PAGE ====================
 const Chat = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -708,6 +723,7 @@ const Chat = () => {
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+
   const contractQuestions = {
     "prestacao-servicos": [
       "Qual é o nome completo ou razão social do CONTRATANTE (quem vai pagar pelo serviço)?",
@@ -729,26 +745,26 @@ const Chat = () => {
       "Qual será o prazo de vigência?",
     ],
   };
+
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState([]);
-  // Fix for mobile viewport height with virtual keyboard
+
+  // Fix for mobile viewport height - only set once on load, not on keyboard open
   useEffect(() => {
-    const handleResize = () => {
+    const setVh = () => {
       const vh = window.innerHeight * 0.01;
       document.documentElement.style.setProperty("--vh", vh + "px");
     };
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener("resize", handleResize);
-    }
+    setVh();
+    // Only update on orientation change, NOT on resize (keyboard)
+    window.addEventListener("orientationchange", () => {
+      setTimeout(setVh, 100);
+    });
     return () => {
-      window.removeEventListener("resize", handleResize);
-      if (window.visualViewport) {
-        window.visualViewport.removeEventListener("resize", handleResize);
-      }
+      window.removeEventListener("orientationchange", setVh);
     };
   }, []);
+
   const handleSelectContract = (type) => {
     setSelectedContract(type);
     setCurrentStep(2);
@@ -770,6 +786,7 @@ const Chat = () => {
       }, 1500);
     }, 500);
   };
+
   const handleSendMessage = () => {
     if (!inputValue.trim() || isTyping) return;
     const userMessage = inputValue.trim();
@@ -801,10 +818,11 @@ const Chat = () => {
       }
     }, 1500);
   };
+
   return (
     <div
       style={{
-        height: "calc(var(--vh, 1vh) * 100)",
+        height: "100dvh",
         display: "flex",
         flexDirection: "column",
         overflow: "hidden",
@@ -813,6 +831,7 @@ const Chat = () => {
     >
       <ChatHeader />
       <ProgressSidebar currentStep={currentStep} contractType={selectedContract} />
+
       <main
         style={{
           flex: 1,
@@ -851,4 +870,5 @@ const Chat = () => {
     </div>
   );
 };
+
 export default Chat;
