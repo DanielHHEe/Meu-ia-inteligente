@@ -21,7 +21,6 @@ import {
   Clock,
   CreditCard,
 } from "lucide-react";
-
 // ==================== CONTRACT TYPES ====================
 const contractTypes = [
   {
@@ -67,11 +66,10 @@ const contractTypes = [
     popular: false,
   },
 ];
-
 // ==================== CHAT HEADER ====================
 const ChatHeader = () => {
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 h-16">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-100 h-14 sm:h-16">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
         <div className="flex items-center justify-between h-full">
           <Link
@@ -81,14 +79,12 @@ const ChatHeader = () => {
             <ArrowLeft className="w-5 h-5" />
             <span className="font-medium hidden sm:inline">Voltar</span>
           </Link>
-
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
               <FileText className="w-4 h-4 text-white" />
             </div>
             <span className="font-bold text-gray-900">Contrate-me</span>
           </div>
-
           <div className="flex items-center gap-2 text-sm text-gray-500">
             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <span className="hidden sm:inline">IA Online</span>
@@ -98,7 +94,6 @@ const ChatHeader = () => {
     </header>
   );
 };
-
 // ==================== CONTRACT TYPE SELECTOR ====================
 const ContractTypeSelector = ({ onSelect }) => {
   return (
@@ -107,7 +102,7 @@ const ContractTypeSelector = ({ onSelect }) => {
       animate={{ opacity: 1, y: 0 }}
       className="w-full max-w-4xl mx-auto"
     >
-      <div className="text-center mb-8">
+      <div className="text-center mb-6 sm:mb-8">
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 text-emerald-700 text-sm font-medium mb-4">
           <Sparkles className="w-4 h-4" />
           Passo 1 de 3
@@ -119,8 +114,7 @@ const ContractTypeSelector = ({ onSelect }) => {
           Selecione o modelo que melhor se adapta à sua necessidade
         </p>
       </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         {contractTypes.map((type, index) => (
           <motion.button
             key={type.id}
@@ -128,49 +122,44 @@ const ContractTypeSelector = ({ onSelect }) => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
             onClick={() => onSelect(type)}
-            className="group relative p-5 rounded-2xl border-2 border-gray-100 bg-white hover:border-emerald-500 hover:shadow-lg hover:shadow-emerald-500/10 transition-all duration-300 text-left"
+            className="group relative p-4 sm:p-5 rounded-2xl border-2 border-gray-100 bg-white hover:border-emerald-500 hover:shadow-lg hover:shadow-emerald-500/10 transition-all duration-300 text-left min-h-[80px] overflow-visible"
           >
             {type.popular && (
               <div className="absolute -top-2.5 right-4 px-3 py-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold rounded-full">
                 Popular
               </div>
             )}
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center mb-4 group-hover:from-emerald-100 group-hover:to-teal-100 transition-colors">
-              <type.icon className="w-6 h-6 text-emerald-600" />
+            <div className="flex items-start gap-3 pr-6">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-emerald-50 to-teal-50 flex items-center justify-center flex-shrink-0 group-hover:from-emerald-100 group-hover:to-teal-100 transition-colors">
+                <type.icon className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-emerald-600 transition-colors break-words">
+                  {type.name}
+                </h3>
+                <p className="text-sm text-gray-500 break-words">{type.description}</p>
+              </div>
             </div>
-            <h3 className="font-semibold text-gray-900 mb-1 group-hover:text-emerald-600 transition-colors">
-              {type.name}
-            </h3>
-            <p className="text-sm text-gray-500">{type.description}</p>
-            <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300 group-hover:text-emerald-500 group-hover:translate-x-1 transition-all" />
+            <ChevronRight className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300 group-hover:text-emerald-500 group-hover:translate-x-1 transition-all flex-shrink-0" />
           </motion.button>
         ))}
       </div>
     </motion.div>
   );
 };
-
 // ==================== MESSAGE BUBBLE ====================
 const MessageBubble = ({ message, isBot }) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`flex gap-2 sm:gap-3 ${isBot ? "" : "flex-row-reverse"}`}
+      className={`flex gap-2 sm:gap-3 ${isBot ? "justify-start" : "justify-end"}`}
     >
-      <div
-        className={`flex-shrink-0 w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center ${
-          isBot
-            ? "bg-gradient-to-br from-emerald-500 to-teal-600"
-            : "bg-gradient-to-br from-slate-700 to-slate-900"
-        }`}
-      >
-        {isBot ? (
+      {isBot && (
+        <div className="flex-shrink-0 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
           <Bot className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-        ) : (
-          <User className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-        )}
-      </div>
+        </div>
+      )}
       <div
         className={`max-w-[75%] sm:max-w-[80%] px-3 sm:px-4 py-2.5 sm:py-3 rounded-2xl ${
           isBot
@@ -182,17 +171,21 @@ const MessageBubble = ({ message, isBot }) => {
           {message}
         </p>
       </div>
+      {!isBot && (
+        <div className="flex-shrink-0 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center">
+          <User className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+        </div>
+      )}
     </motion.div>
   );
 };
-
 // ==================== TYPING INDICATOR ====================
 const TypingIndicator = () => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="flex gap-2 sm:gap-3"
+      className="flex gap-2 sm:gap-3 justify-start"
     >
       <div className="flex-shrink-0 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
         <Bot className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
@@ -219,27 +212,23 @@ const TypingIndicator = () => {
     </motion.div>
   );
 };
-
 // ==================== CHAT INPUT ====================
 const ChatInput = ({ value, onChange, onSend, disabled }) => {
   const textareaRef = useRef(null);
-
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       onSend();
     }
   };
-
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
       textareaRef.current.style.height = textareaRef.current.scrollHeight + "px";
     }
   }, [value]);
-
   return (
-    <div className="border-t border-gray-100 bg-white p-3 sm:p-4 flex-shrink-0 safe-area-bottom">
+    <div className="border-t border-gray-100 bg-white p-3 sm:p-4 flex-shrink-0" style={{ paddingBottom: "calc(12px + env(safe-area-inset-bottom, 0px))" }}>
       <div className="max-w-3xl mx-auto">
         <div className="flex items-end gap-2 bg-gray-50 rounded-2xl p-2 border border-gray-200 focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500/20 transition-all">
           <textarea
@@ -250,12 +239,13 @@ const ChatInput = ({ value, onChange, onSend, disabled }) => {
             placeholder="Digite sua resposta..."
             disabled={disabled}
             rows={1}
-            className="flex-1 bg-transparent px-2 sm:px-3 py-2 text-sm sm:text-base text-gray-800 placeholder-gray-400 resize-none focus:outline-none min-h-[40px] max-h-32 overflow-y-auto"
+            style={{ fontSize: "16px" }}
+            className="flex-1 bg-transparent px-2 sm:px-3 py-2 text-gray-800 placeholder-gray-400 resize-none focus:outline-none min-h-[40px] max-h-32 overflow-y-auto"
           />
           <button
             onClick={onSend}
             disabled={disabled || !value.trim()}
-            className="flex-shrink-0 w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white flex items-center justify-center hover:from-emerald-700 hover:to-teal-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105 active:scale-95"
+            className="flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white flex items-center justify-center hover:from-emerald-700 hover:to-teal-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105 active:scale-95"
           >
             {disabled ? (
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -271,7 +261,6 @@ const ChatInput = ({ value, onChange, onSend, disabled }) => {
     </div>
   );
 };
-
 // ==================== PROGRESS SIDEBAR ====================
 const ProgressSidebar = ({ currentStep, contractType }) => {
   const steps = [
@@ -279,7 +268,6 @@ const ProgressSidebar = ({ currentStep, contractType }) => {
     { id: 2, name: "Informações", icon: Users },
     { id: 3, name: "Pagamento", icon: CreditCard },
   ];
-
   return (
     <div className="hidden lg:flex lg:flex-col w-72 bg-gradient-to-b from-slate-900 to-slate-800 text-white p-6 fixed left-0 top-16 bottom-0">
       <div className="mb-8">
@@ -293,7 +281,6 @@ const ProgressSidebar = ({ currentStep, contractType }) => {
           <p className="text-sm text-gray-400">Selecione um tipo</p>
         )}
       </div>
-
       <div className="space-y-4 flex-1">
         <h4 className="text-sm font-medium text-gray-400 uppercase tracking-wider">
           Progresso
@@ -334,7 +321,6 @@ const ProgressSidebar = ({ currentStep, contractType }) => {
           </div>
         ))}
       </div>
-
       <div className="mt-auto">
         <div className="p-4 rounded-xl bg-white/5 border border-white/10">
           <div className="flex items-center gap-2 text-emerald-400 mb-2">
@@ -350,16 +336,13 @@ const ProgressSidebar = ({ currentStep, contractType }) => {
     </div>
   );
 };
-
 // ==================== CHAT INTERFACE ====================
 const ChatInterface = ({ contractType, messages, isTyping, inputValue, setInputValue, onSendMessage }) => {
   const messagesEndRef = useRef(null);
   const messagesContainerRef = useRef(null);
-
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
-
   return (
     <div className="flex flex-col h-full">
       {/* Chat Header Info */}
@@ -380,14 +363,13 @@ const ChatInterface = ({ contractType, messages, isTyping, inputValue, setInputV
           </div>
         </div>
       </div>
-
       {/* Messages Area */}
-      <div 
+      <div
         ref={messagesContainerRef}
         className="flex-1 overflow-y-auto p-3 sm:p-4 lg:p-6 min-h-0"
-        style={{ WebkitOverflowScrolling: 'touch' }}
+        style={{ WebkitOverflowScrolling: "touch" }}
       >
-        <div className="max-w-3xl mx-auto space-y-3 sm:space-y-4 pb-4">
+        <div className="max-w-3xl mx-auto space-y-3 sm:space-y-4 pt-2 pb-4">
           <AnimatePresence>
             {messages.map((msg, index) => (
               <MessageBubble key={index} message={msg.text} isBot={msg.isBot} />
@@ -397,7 +379,6 @@ const ChatInterface = ({ contractType, messages, isTyping, inputValue, setInputV
           <div ref={messagesEndRef} />
         </div>
       </div>
-
       {/* Input Area */}
       <ChatInput
         value={inputValue}
@@ -408,7 +389,6 @@ const ChatInterface = ({ contractType, messages, isTyping, inputValue, setInputV
     </div>
   );
 };
-
 // ==================== MAIN CHAT PAGE ====================
 const Chat = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -416,8 +396,6 @@ const Chat = () => {
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-
-  // Questions for contract generation (example for Prestação de Serviços)
   const contractQuestions = {
     "prestacao-servicos": [
       "Qual é o nome completo ou razão social do CONTRATANTE (quem vai pagar pelo serviço)?",
@@ -439,15 +417,11 @@ const Chat = () => {
       "Qual será o prazo de vigência?",
     ],
   };
-
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState([]);
-
   const handleSelectContract = (type) => {
     setSelectedContract(type);
     setCurrentStep(2);
-
-    // Start chat with welcome message
     const questions = contractQuestions[type.id] || contractQuestions.default;
     setTimeout(() => {
       setMessages([
@@ -466,23 +440,19 @@ const Chat = () => {
       }, 1500);
     }, 500);
   };
-
   const handleSendMessage = () => {
     if (!inputValue.trim() || isTyping) return;
-
     const userMessage = inputValue.trim();
-    setMessages((prev) => [...prev, { text: userMessage, isBot: false }]);
+    const newMessages = [...messages, { text: userMessage, isBot: false }];
+    setMessages(newMessages);
     setAnswers((prev) => [...prev, userMessage]);
     setInputValue("");
     setIsTyping(true);
-
     const questions =
       contractQuestions[selectedContract?.id] || contractQuestions.default;
     const nextIndex = currentQuestionIndex + 1;
-
     setTimeout(() => {
       setIsTyping(false);
-
       if (nextIndex < questions.length) {
         setMessages((prev) => [
           ...prev,
@@ -490,7 +460,6 @@ const Chat = () => {
         ]);
         setCurrentQuestionIndex(nextIndex);
       } else {
-        // All questions answered
         setMessages((prev) => [
           ...prev,
           {
@@ -502,15 +471,13 @@ const Chat = () => {
       }
     }, 1500);
   };
-
   return (
-    <div className="h-screen flex flex-col overflow-hidden bg-gray-50">
+    <div className="h-[100dvh] flex flex-col overflow-hidden bg-gray-50">
       <ChatHeader />
       <ProgressSidebar currentStep={currentStep} contractType={selectedContract} />
-
-      <main className="flex-1 pt-16 lg:pl-72 flex flex-col min-h-0 overflow-hidden">
+      <main className="flex-1 pt-14 sm:pt-16 lg:pl-72 flex flex-col min-h-0 overflow-hidden">
         {currentStep === 1 ? (
-          <div className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8 overflow-y-auto">
+          <div className="flex-1 flex items-start sm:items-center justify-center p-4 sm:p-6 lg:p-8 overflow-y-auto">
             <ContractTypeSelector onSelect={handleSelectContract} />
           </div>
         ) : (
@@ -527,5 +494,4 @@ const Chat = () => {
     </div>
   );
 };
-
 export default Chat;
