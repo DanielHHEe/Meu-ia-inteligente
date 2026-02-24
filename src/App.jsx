@@ -55,8 +55,12 @@ const Header = ({ onCreateContract }) => {
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex items-center justify-between h-16 md:h-20">
           <a href="#" className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-lg bg-[#1e3a5f] flex items-center justify-center">
-              <FileText className="w-5 h-5 text-white" />
+            <div className="w-10 h-10 rounded-lg bg-[#1e3a5f] flex items-center justify-center overflow-hidden">
+              <img 
+                src="/robozinho.png" 
+                alt="Robozinho" 
+                className="w-full h-full object-cover"
+              />
             </div>
             <span className="text-xl font-semibold text-[#1e3a5f]">
               Contrate-me
@@ -852,10 +856,14 @@ const Footer = () => {
         <div className="py-12 md:py-16 grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           <div className="lg:col-span-1">
             <a href="#" className="flex items-center gap-2 mb-4">
-              <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center">
-                <FileText className="w-5 h-5 text-white" />
+              <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center overflow-hidden">
+                <img 
+                  src="/robozinho.png" 
+                  alt="Robozinho" 
+                  className="w-full h-full object-cover"
+                />
               </div>
-              <span className="text-xl font-semibold">
+              <span className="text-xl font-semibold text-white">
                 Contrate-me
               </span>
             </a>
