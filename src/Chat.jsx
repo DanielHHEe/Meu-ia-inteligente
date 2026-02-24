@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -149,6 +148,7 @@ const ChatHeader = ({ onBack }) => {
         <button
           onClick={onBack}
           className="flex items-center gap-2 text-gray-600 hover:text-emerald-600 transition-colors"
+          aria-label="Voltar"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
@@ -223,24 +223,24 @@ const MessageBubble = ({ message, isBot }) => {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`flex items-start gap-2 ${isBot ? 'justify-start' : 'justify-end'}`}
+      className={`flex items-start gap-2 px-2 ${isBot ? 'justify-start' : 'justify-end'}`}
     >
       {isBot && (
-        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center flex-shrink-0">
+        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center flex-shrink-0 shadow-md">
           <Bot className="w-4 h-4 text-white" />
         </div>
       )}
       <div
-        className={`max-w-[75%] p-3 rounded-2xl ${
+        className={`max-w-[75%] p-3 rounded-2xl shadow-sm ${
           isBot
-            ? 'bg-gray-100 text-gray-800 rounded-tl-none'
+            ? 'bg-white text-gray-800 rounded-tl-none border border-gray-100'
             : 'bg-gradient-to-r from-emerald-600 to-emerald-500 text-white rounded-tr-none'
         }`}
       >
-        <p className="text-sm whitespace-pre-wrap break-words">{message}</p>
+        <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">{message}</p>
       </div>
       {!isBot && (
-        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center flex-shrink-0">
+        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center flex-shrink-0 shadow-md">
           <User className="w-4 h-4 text-white" />
         </div>
       )}
@@ -254,16 +254,16 @@ const TypingIndicator = () => {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="flex items-start gap-2"
+      className="flex items-start gap-2 px-2"
     >
-      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center flex-shrink-0">
+      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center flex-shrink-0 shadow-md">
         <Bot className="w-4 h-4 text-white" />
       </div>
-      <div className="bg-gray-100 p-3 rounded-2xl rounded-tl-none">
+      <div className="bg-white p-4 rounded-2xl rounded-tl-none border border-gray-100 shadow-sm">
         <div className="flex gap-1.5">
-          <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce [animation-delay:-0.3s]" />
-          <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce [animation-delay:-0.15s]" />
-          <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" />
+          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
+          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
+          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
         </div>
       </div>
     </motion.div>
@@ -289,9 +289,9 @@ const ChatInput = ({ value, onChange, onSend, disabled, placeholder }) => {
   }, [value]);
 
   return (
-    <div className="border-t border-gray-200 bg-white p-3 pb-safe-bottom">
+    <div className="border-t border-gray-200 bg-white p-3 pb-safe-bottom shadow-lg">
       <div className="max-w-2xl mx-auto">
-        <div className="flex items-end gap-2 bg-gray-50 rounded-xl p-2 border border-gray-200">
+        <div className="flex items-end gap-2 bg-gray-50 rounded-xl p-2 border border-gray-200 focus-within:border-emerald-300 focus-within:ring-2 focus-within:ring-emerald-100 transition-all">
           <textarea
             ref={textareaRef}
             value={value}
@@ -300,12 +300,13 @@ const ChatInput = ({ value, onChange, onSend, disabled, placeholder }) => {
             placeholder={placeholder || "Digite sua resposta..."}
             disabled={disabled}
             rows={1}
-            className="flex-1 bg-transparent px-3 py-2 text-gray-900 resize-none outline-none min-h-[40px] max-h-[120px] text-base disabled:opacity-50"
+            className="flex-1 bg-transparent px-3 py-2 text-gray-900 resize-none outline-none min-h-[40px] max-h-[120px] text-base disabled:opacity-50 placeholder-gray-400"
           />
           <button
             onClick={onSend}
             disabled={disabled || !value.trim()}
-            className="flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 text-white flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-lg"
+            className="flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 text-white flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-lg hover:scale-105 active:scale-95"
+            aria-label="Enviar mensagem"
           >
             {disabled ? (
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -399,11 +400,11 @@ const ChatInterface = ({ contractType, messages, isTyping, inputValue, setInputV
   const currentQuestion = contractType.questions[messages.filter(m => !m.isBot).length];
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-gray-50">
       {/* Chat Header Info */}
-      <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border-b border-emerald-100 p-3 flex-shrink-0">
+      <div className="bg-white border-b border-gray-200 p-3 flex-shrink-0 shadow-sm">
         <div className="max-w-2xl mx-auto flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center flex-shrink-0">
+          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center flex-shrink-0 shadow-md">
             <contractType.icon className="w-5 h-5 text-white" />
           </div>
           <div className="min-w-0 flex-1">
@@ -415,12 +416,16 @@ const ChatInterface = ({ contractType, messages, isTyping, inputValue, setInputV
         </div>
       </div>
 
-      {/* Messages Area */}
+      {/* Messages Area - CORRIGIDO PARA MOBILE */}
       <div
         ref={messagesContainerRef}
-        className="flex-1 overflow-y-auto p-3 pb-20"
+        className="flex-1 overflow-y-auto overscroll-contain"
+        style={{ 
+          WebkitOverflowScrolling: 'touch',
+          paddingBottom: '80px'
+        }}
       >
-        <div className="max-w-2xl mx-auto space-y-3">
+        <div className="max-w-2xl mx-auto py-4 space-y-4">
           <AnimatePresence>
             {messages.map((msg, index) => (
               <MessageBubble key={index} message={msg.text} isBot={msg.isBot} />
@@ -431,14 +436,16 @@ const ChatInterface = ({ contractType, messages, isTyping, inputValue, setInputV
         </div>
       </div>
 
-      {/* Input Area */}
-      <ChatInput
-        value={inputValue}
-        onChange={setInputValue}
-        onSend={onSendMessage}
-        disabled={isTyping}
-        placeholder={currentQuestion?.question}
-      />
+      {/* Input Area - FIXADO NO FINAL */}
+      <div className="flex-shrink-0 sticky bottom-0 bg-white border-t border-gray-200 shadow-lg">
+        <ChatInput
+          value={inputValue}
+          onChange={setInputValue}
+          onSend={onSendMessage}
+          disabled={isTyping}
+          placeholder={currentQuestion?.question}
+        />
+      </div>
     </div>
   );
 };
@@ -446,7 +453,7 @@ const ChatInterface = ({ contractType, messages, isTyping, inputValue, setInputV
 // ==================== LOADING SCREEN ====================
 const LoadingScreen = () => {
   return (
-    <div className="flex items-center justify-center h-full">
+    <div className="flex items-center justify-center h-full bg-gray-50">
       <div className="text-center">
         <div className="relative">
           <div className="w-16 h-16 border-4 border-emerald-100 border-t-emerald-600 rounded-full animate-spin mx-auto mb-4" />
@@ -461,6 +468,22 @@ const LoadingScreen = () => {
   );
 };
 
+// ==================== CONTRACT VIEWER WRAPPER ====================
+const ContractViewerWrapper = ({ contract, contractType, onBack, onDownload }) => {
+  return (
+    <div className="h-full overflow-y-auto bg-gray-50">
+      <div className="max-w-4xl mx-auto py-6 px-4">
+        <ContractViewer
+          contract={contract}
+          contractType={contractType}
+          onBack={onBack}
+          onDownload={onDownload}
+        />
+      </div>
+    </div>
+  );
+};
+
 // ==================== MAIN CHAT PAGE ====================
 const Chat = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -468,21 +491,26 @@ const Chat = () => {
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState([]);
   const [generatedContract, setGeneratedContract] = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationError, setGenerationError] = useState(null);
 
-  // Fix for mobile viewport
+  // Fix para mobile viewport
   useEffect(() => {
     const setVh = () => {
       const vh = window.innerHeight * 0.01;
       document.documentElement.style.setProperty('--vh', `${vh}px`);
     };
+    
     setVh();
     window.addEventListener('resize', setVh);
-    return () => window.removeEventListener('resize', setVh);
+    window.addEventListener('orientationchange', setVh);
+    
+    return () => {
+      window.removeEventListener('resize', setVh);
+      window.removeEventListener('orientationchange', setVh);
+    };
   }, []);
 
   const handleGenerateContract = async () => {
@@ -520,6 +548,9 @@ const Chat = () => {
   const handleSelectContract = (type) => {
     setSelectedContract(type);
     setCurrentStep(2);
+    setMessages([]);
+    setAnswers([]);
+    
     setTimeout(() => {
       setMessages([
         {
@@ -578,39 +609,40 @@ const Chat = () => {
       setSelectedContract(null);
       setMessages([]);
       setAnswers([]);
-      setCurrentQuestionIndex(0);
       setGeneratedContract(null);
       setGenerationError(null);
     }
   };
 
   return (
-    <div className="h-[100dvh] flex flex-col overflow-hidden bg-gray-50">
+    <div className="h-screen h-[100dvh] flex flex-col overflow-hidden bg-gray-50">
       <ChatHeader onBack={handleBack} />
       <ProgressSidebar currentStep={currentStep} contractType={selectedContract} />
 
       <main className="flex-1 pt-14 lg:pl-72 flex flex-col min-h-0 overflow-hidden">
         {currentStep === 1 && (
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto overscroll-contain">
             <ContractTypeSelector onSelect={handleSelectContract} />
           </div>
         )}
 
         {currentStep === 2 && selectedContract && (
-          <ChatInterface
-            contractType={selectedContract}
-            messages={messages}
-            isTyping={isTyping}
-            inputValue={inputValue}
-            setInputValue={setInputValue}
-            onSendMessage={handleSendMessage}
-          />
+          <div className="flex-1 flex flex-col min-h-0">
+            <ChatInterface
+              contractType={selectedContract}
+              messages={messages}
+              isTyping={isTyping}
+              inputValue={inputValue}
+              setInputValue={setInputValue}
+              onSendMessage={handleSendMessage}
+            />
+          </div>
         )}
 
         {currentStep === 3 && <LoadingScreen />}
 
         {currentStep === 4 && generatedContract && (
-          <ContractViewer
+          <ContractViewerWrapper
             contract={generatedContract}
             contractType={selectedContract}
             onBack={handleBack}
