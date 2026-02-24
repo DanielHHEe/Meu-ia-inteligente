@@ -1,154 +1,304 @@
-// src/ContractViewer.jsx
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Download, FileText, CheckCircle, Copy, ArrowLeft, Loader2 } from 'lucide-react';
-
+import { Download, FileText, CheckCircle, ArrowLeft, Loader2, Sparkles } from 'lucide-react';
+import html2pdf from 'html2pdf.js';
 const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
-  const [copied, setCopied] = useState(false);
   const [downloading, setDownloading] = useState(false);
-
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(contract);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const handleDownload = async (format) => {
+  const [downloaded, setDownloaded] = useState(false);
+  const contractRef = useRef(null);
+  const handleDownload = async () => {
+    if (downloading) return;
     setDownloading(true);
-    await onDownload?.(format);
-    setDownloading(false);
+    try {
+      if (onDownload) {
+        await onDownload('pdf');
+      } else if (contractRef.current) {
+        const opt = {
+          margin: [15, 15, 15, 15],
+          filename: `${contractType?.name || 'contrato'}.pdf`,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        };
+        await html2pdf().set(opt).from(contractRef.current).save();
+      }
+      setDownloaded(true);
+      setTimeout(() => setDownloaded(false), 3000);
+    } finally {
+      setDownloading(false);
+    }
   };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-6 px-4 sm:px-6 lg:px-8">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="max-w-5xl mx-auto"
-      >
-        {/* Header Card */}
-        <div className="bg-white rounded-t-2xl shadow-lg border-b border-gray-200 p-4 sm:p-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-3 w-full sm:w-auto">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-lg flex-shrink-0">
-                <FileText className="w-6 h-6 text-white" />
+    <div className="contract-viewer" style={{ minHeight: '100vh', background: '#f8faf9' }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+        .contract-viewer * { font-family: 'DM Sans', sans-serif; box-sizing: border-box; }
+        .contract-title { font-family: 'Playfair Display', Georgia, serif; }
+        .contract-body {
+          font-family: 'Georgia', 'Times New Roman', serif;
+          line-height: 1.85;
+          color: #1a1a1a;
+          white-space: pre-wrap;
+          word-wrap: break-word;
+          overflow-wrap: break-word;
+        }
+        .download-btn {
+          position: relative; overflow: hidden;
+          background: linear-gradient(135deg, #059669 0%, #047857 50%, #065f46 100%);
+          transition: all 0.3s ease;
+          border: none; color: #fff; cursor: pointer;
+          border-radius: 12px; font-weight: 600;
+          display: inline-flex; align-items: center; gap: 8px;
+          padding: 12px 28px; font-size: 15px;
+        }
+        .download-btn:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 8px 24px rgba(5,150,105,0.35);
+        }
+        .download-btn:active { transform: translateY(0); }
+        .download-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+        .cv-container {
+          max-width: 900px; margin: 0 auto;
+          padding: 16px;
+        }
+        @media (min-width: 640px) { .cv-container { padding: 24px; } }
+        @media (min-width: 768px) { .cv-container { padding: 32px; } }
+        .cv-header {
+          background: #fff;
+          border-radius: 16px;
+          padding: 20px;
+          margin-bottom: 16px;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
+        }
+        @media (min-width: 640px) { .cv-header { padding: 24px; margin-bottom: 20px; } }
+        .cv-header-top {
+          display: flex; align-items: flex-start; justify-content: space-between;
+          gap: 12px; flex-wrap: wrap;
+        }
+        .cv-header-info { display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0; }
+        .cv-icon-box {
+          width: 48px; height: 48px; min-width: 48px;
+          background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+          border-radius: 12px;
+          display: flex; align-items: center; justify-content: center;
+        }
+        .cv-header-text { min-width: 0; }
+        .cv-header-title {
+          font-size: 18px; font-weight: 700; color: #111;
+          margin: 0 0 4px 0;
+          overflow: hidden; text-overflow: ellipsis;
+        }
+        @media (min-width: 640px) { .cv-header-title { font-size: 22px; } }
+        .cv-header-subtitle {
+          display: flex; align-items: center; gap: 6px;
+          font-size: 13px; color: #059669; font-weight: 500;
+          margin: 0;
+        }
+        .cv-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+        .cv-success {
+          display: flex; align-items: flex-start; gap: 10px;
+          background: #ecfdf5; border: 1px solid #a7f3d0;
+          border-radius: 10px; padding: 12px 16px;
+          margin-top: 16px;
+        }
+        .cv-success-text { font-size: 13px; color: #065f46; line-height: 1.5; margin: 0; }
+        .cv-success-text strong { display: block; margin-bottom: 2px; }
+        .cv-paper {
+          background: #fff;
+          border-radius: 16px;
+          overflow: hidden;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 6px 20px rgba(0,0,0,0.05);
+          margin-bottom: 20px;
+        }
+        .cv-paper-strip {
+          height: 4px;
+          background: linear-gradient(90deg, #059669, #10b981, #34d399);
+        }
+        .cv-paper-body {
+          padding: 24px 20px;
+          max-height: 60vh;
+          overflow-y: auto;
+        }
+        @media (min-width: 640px) { .cv-paper-body { padding: 40px 48px; } }
+        @media (min-width: 768px) { .cv-paper-body { padding: 48px 64px; max-height: 65vh; } }
+        .cv-paper-body::-webkit-scrollbar { width: 5px; }
+        .cv-paper-body::-webkit-scrollbar-track { background: #f1f5f4; border-radius: 10px; }
+        .cv-paper-body::-webkit-scrollbar-thumb { background: #a7f3d0; border-radius: 10px; }
+        .cv-paper-body::-webkit-scrollbar-thumb:hover { background: #6ee7b7; }
+        .cv-signatures {
+          padding: 24px 20px 32px;
+          border-top: 1px solid #e5e7eb;
+        }
+        @media (min-width: 640px) { .cv-signatures { padding: 32px 48px 40px; } }
+        @media (min-width: 768px) { .cv-signatures { padding: 40px 64px 48px; } }
+        .cv-date {
+          text-align: center; font-size: 14px; color: #6b7280;
+          font-style: italic; margin-bottom: 32px;
+        }
+        .cv-sig-grid {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 32px;
+          margin-bottom: 32px;
+        }
+        @media (min-width: 640px) { .cv-sig-grid { grid-template-columns: 1fr 1fr; gap: 48px; } }
+        .cv-sig-block { text-align: center; }
+        .cv-sig-label { font-weight: 700; font-size: 13px; letter-spacing: 0.05em; color: #374151; margin-bottom: 12px; }
+        .cv-sig-line {
+          height: 1px;
+          background: linear-gradient(to right, #d1fae5, #6ee7b7, #d1fae5);
+          margin-bottom: 6px;
+        }
+        .cv-sig-sublabel { font-size: 12px; color: #9ca3af; }
+        .cv-witnesses { border-top: 1px dashed #e5e7eb; padding-top: 24px; }
+        .cv-witnesses-title { font-weight: 700; font-size: 13px; letter-spacing: 0.05em; color: #374151; margin-bottom: 16px; }
+        .cv-witness-grid {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 20px;
+        }
+        @media (min-width: 640px) { .cv-witness-grid { grid-template-columns: 1fr 1fr; gap: 32px; } }
+        .cv-witness-item { display: flex; align-items: flex-start; gap: 12px; }
+        .cv-witness-num {
+          width: 28px; height: 28px; min-width: 28px;
+          border-radius: 50%; background: #ecfdf5;
+          display: flex; align-items: center; justify-content: center;
+          font-size: 12px; font-weight: 600; color: #059669;
+        }
+        .cv-witness-fields { font-size: 13px; color: #4b5563; line-height: 1.8; }
+        .cv-back {
+          text-align: center; padding-bottom: 32px;
+        }
+        .cv-back-btn {
+          display: inline-flex; align-items: center; gap: 8px;
+          background: none; border: 1px solid #d1d5db;
+          border-radius: 10px; padding: 10px 24px;
+          font-size: 14px; font-weight: 500; color: #374151;
+          cursor: pointer; transition: all 0.2s;
+        }
+        .cv-back-btn:hover { background: #fff; border-color: #059669; color: #059669; }
+      `}</style>
+      <div className="cv-container">
+        {/* Header */}
+        <motion.div
+          className="cv-header"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+        >
+          <div className="cv-header-top">
+            <div className="cv-header-info">
+              <div className="cv-icon-box">
+                <FileText size={24} color="#059669" />
               </div>
-              <div className="min-w-0 flex-1">
-                <h2 className="text-lg sm:text-xl font-bold text-gray-800 truncate">
-                  {contractType?.name || 'Contrato'} • Documento Gerado
+              <div className="cv-header-text">
+                <h2 className="cv-header-title contract-title">
+                  {contractType?.name || 'Contrato'} — Documento Gerado
                 </h2>
-                <p className="text-xs sm:text-sm text-emerald-600 font-medium">
-                  ✓ Gerado por IA • Pronto para assinatura
+                <p className="cv-header-subtitle">
+                  <Sparkles size={14} />
+                  Gerado por IA · Pronto para assinatura
                 </p>
               </div>
             </div>
-            
-            <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+            <div className="cv-actions">
               <button
-                onClick={copyToClipboard}
-                className="px-3 sm:px-4 py-2 bg-white text-gray-700 rounded-xl hover:bg-gray-50 transition-colors border border-gray-200 flex items-center gap-2 shadow-sm text-sm sm:text-base flex-1 sm:flex-initial justify-center"
-              >
-                <Copy className="w-4 h-4" />
-                <span className="sm:inline">{copied ? 'Copiado!' : 'Copiar'}</span>
-              </button>
-              <button
-                onClick={() => handleDownload('pdf')}
+                className="download-btn"
+                onClick={handleDownload}
                 disabled={downloading}
-                className="px-3 sm:px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors flex items-center gap-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base flex-1 sm:flex-initial justify-center"
               >
                 {downloading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <>
+                    <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} />
+                    <span>Gerando...</span>
+                  </>
+                ) : downloaded ? (
+                  <>
+                    <CheckCircle size={18} />
+                    <span>Baixado!</span>
+                  </>
                 ) : (
-                  <Download className="w-4 h-4" />
+                  <>
+                    <Download size={18} />
+                    <span>Baixar PDF</span>
+                  </>
                 )}
-                <span>PDF</span>
               </button>
             </div>
           </div>
-
-          {/* Success message */}
-          <div className="mt-4 p-3 sm:p-4 bg-emerald-50 rounded-xl border border-emerald-200">
-            <div className="flex items-start gap-3">
-              <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <p className="text-xs sm:text-sm font-medium text-emerald-800">
-                  Contrato gerado com sucesso!
-                </p>
-                <p className="text-xs sm:text-sm text-emerald-600">
-                  Revise o documento abaixo. Você pode copiar o texto ou fazer download em PDF.
-                </p>
-              </div>
+          <div className="cv-success">
+            <CheckCircle size={18} color="#059669" style={{ marginTop: 1, flexShrink: 0 }} />
+            <p className="cv-success-text">
+              <strong>Contrato gerado com sucesso!</strong>
+              Revise o documento abaixo e faça o download em PDF quando estiver pronto.
+            </p>
+          </div>
+        </motion.div>
+        {/* Contract Paper */}
+        <motion.div
+          className="cv-paper"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+        >
+          <div className="cv-paper-strip" />
+          <div className="cv-paper-body">
+            <div ref={contractRef} className="contract-body">
+              {contract}
             </div>
           </div>
-        </div>
-
-        {/* Contract Content Card */}
-        <div className="bg-white rounded-b-2xl shadow-lg overflow-hidden">
-          <div className="max-h-[50vh] sm:max-h-[60vh] overflow-y-auto p-4 sm:p-8 bg-gray-50">
-            <div className="bg-white rounded-xl p-4 sm:p-8 shadow-inner border border-gray-200">
-              <div className="prose prose-sm sm:prose-base max-w-none">
-                <div className="font-serif text-gray-800 leading-relaxed whitespace-pre-wrap break-words">
-                  {contract}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Signature area */}
-          <div className="p-4 sm:p-6 bg-white border-t border-gray-200">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8">
-              <div>
-                <p className="font-semibold text-gray-700 mb-3 text-sm sm:text-base">CONTRATANTE:</p>
-                <div className="border-b-2 border-gray-300 pb-8 sm:pb-12 mb-2"></div>
-                <p className="text-xs sm:text-sm text-gray-500">Assinatura</p>
-              </div>
-              <div>
-                <p className="font-semibold text-gray-700 mb-3 text-sm sm:text-base">CONTRATADO:</p>
-                <div className="border-b-2 border-gray-300 pb-8 sm:pb-12 mb-2"></div>
-                <p className="text-xs sm:text-sm text-gray-500">Assinatura</p>
-              </div>
-            </div>
-            
-            {/* Testemunhas */}
-            <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-gray-200">
-              <p className="font-semibold text-gray-700 mb-4 text-sm sm:text-base">TESTEMUNHAS:</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div>
-                  <div className="border-b border-gray-300 pb-6 mb-2"></div>
-                  <p className="text-xs sm:text-sm text-gray-500">Nome: _________________________</p>
-                  <p className="text-xs sm:text-sm text-gray-500">CPF: _________________________</p>
-                </div>
-                <div>
-                  <div className="border-b border-gray-300 pb-6 mb-2"></div>
-                  <p className="text-xs sm:text-sm text-gray-500">Nome: _________________________</p>
-                  <p className="text-xs sm:text-sm text-gray-500">CPF: _________________________</p>
-                </div>
-              </div>
-            </div>
-            
-            <p className="text-center text-xs sm:text-sm text-gray-500 mt-6 sm:mt-8">
+          {/* Signatures */}
+          <div className="cv-signatures">
+            <div className="cv-date">
               {new Date().toLocaleDateString('pt-BR', {
                 day: 'numeric',
                 month: 'long',
-                year: 'numeric'
+                year: 'numeric',
               })}
-            </p>
+            </div>
+            <div className="cv-sig-grid">
+              {[
+                { label: 'CONTRATANTE', sublabel: 'Assinatura e Carimbo' },
+                { label: 'CONTRATADO', sublabel: 'Assinatura e Carimbo' },
+              ].map(({ label, sublabel }) => (
+                <div key={label} className="cv-sig-block">
+                  <div className="cv-sig-label">{label}</div>
+                  <div className="cv-sig-line" />
+                  <div className="cv-sig-sublabel">{sublabel}</div>
+                </div>
+              ))}
+            </div>
+            <div className="cv-witnesses">
+              <div className="cv-witnesses-title">TESTEMUNHAS</div>
+              <div className="cv-witness-grid">
+                {[1, 2].map((n) => (
+                  <div key={n} className="cv-witness-item">
+                    <div className="cv-witness-num">{n}</div>
+                    <div className="cv-witness-fields">
+                      <div>Nome: ___________________________</div>
+                      <div>CPF: ____________________________</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
-
-        {/* Back button */}
-        <div className="mt-4 sm:mt-6 text-center">
-          <button
-            onClick={onBack}
-            className="inline-flex items-center gap-2 text-gray-600 hover:text-emerald-600 transition-colors bg-white px-4 sm:px-6 py-2 sm:py-3 rounded-xl shadow-sm border border-gray-200 text-sm sm:text-base"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Criar novo contrato</span>
+        </motion.div>
+        {/* Back Button */}
+        <div className="cv-back">
+          <button className="cv-back-btn" onClick={onBack}>
+            <ArrowLeft size={16} />
+            Criar novo contrato
           </button>
         </div>
-      </motion.div>
+      </div>
+      <style>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 };
-
 export default ContractViewer;

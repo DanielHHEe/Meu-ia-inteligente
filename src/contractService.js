@@ -1,19 +1,12 @@
+// src/contractService.js
 import { API_CONFIG, getContractPrompt } from './config/api';
 
-/**
- * Gera um contrato utilizando a API da OpenAI e realiza o pós-processamento 
- * para garantir que nenhum placeholder (como {nome} ou xqwxqwx) permaneça no texto.
- */
 export const generateContract = async (contractType, answers) => {
-  // 1. Validação da Chave (IMPORTANTE: Configure no Vercel ou no seu .env)
-  if (!API_CONFIG.openaiApiKey || API_CONFIG.openaiApiKey.includes('sk-proj-')) {
-    // Nota: A validação acima assume que se a chave está hardcoded, ela deve ser movida para variáveis de ambiente
-    if (!process.env.VITE_OPENAI_API_KEY && !API_CONFIG.openaiApiKey) {
-      return {
-        success: false,
-        error: 'Chave da API não configurada. Verifique as variáveis de ambiente (Vercel/Local).'
-      };
-    }
+  if (!API_CONFIG.openaiApiKey) {
+    return {
+      success: false,
+      error: 'Chave da API não configurada. Verifique o arquivo .env'
+    };
   }
 
   try {
@@ -26,68 +19,49 @@ export const generateContract = async (contractType, answers) => {
         'Authorization': `Bearer ${API_CONFIG.openaiApiKey}`,
       },
       body: JSON.stringify({
-        model: API_CONFIG.model || "gpt-3.5-turbo",
+        model: API_CONFIG.model,
         messages: [
           {
             role: 'system',
-            content: `Você é um advogado especialista em direito civil brasileiro. 
-            Gere contratos profissionais e juridicamente válidos. 
-            USE OS DADOS FORNECIDOS: ${JSON.stringify(answers)}.
-            NUNCA use placeholders como 'xqwxqwx' ou '[preencher]'. Se uma informação não foi dada, deixe uma linha sólida (________).`
+            content: 'Você é um advogado especialista em contratos brasileiros. Gere contratos profissionais, completos e juridicamente válidos. SEMPRE substitua todas as variáveis pelos valores fornecidos.'
           },
           {
             role: 'user',
             content: prompt
           }
         ],
-        temperature: 0.5, // Menor temperatura = menos "criatividade" e mais precisão nos dados
-        max_tokens: 3000,
+        temperature: 0.7,
+        max_tokens: 3500,
       }),
     });
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.error?.message || 'Erro na comunicação com a OpenAI');
+      throw new Error(errorData.error?.message || 'Erro ao gerar contrato');
     }
 
     const data = await response.json();
+    
+    // Pós-processamento para garantir que todas as variáveis foram substituídas
     let contract = data.choices[0].message.content;
     
-    // --- PÓS-PROCESSAMENTO ROBUSTO ---
-    
-    // 1. Substitui variáveis mapeadas (ex: {nome}, [estado], etc)
-    Object.entries(answers).forEach(([key, value]) => {
-      // Cria regex para pegar variações como {nome}, [nome], {{nome}}
-      const placeholderPattern = new RegExp(`[\\{\\[]{1,2}${key}[\\}\\]]{1,2}`, 'gi');
-      contract = contract.replace(placeholderPattern, value || '__________');
-    });
-
-    // 2. Limpa resíduos comuns que a IA costuma "alucinar" quando esquece campos
-    // Isso remove padrões como xqwxqwx, [NOME], {ESTADO} que não foram mapeados
-    const genericPlaceholders = [
-      /xqwxqwx/gi,
-      /\{.*?\}/g, 
-      /\[.*?\]/g,
-      /_{3,}/g // Mantém linhas longas, mas padroniza
-    ];
-
-    genericPlaceholders.forEach(pattern => {
-      // Se ainda houver campos não preenchidos, garantimos que fiquem como linhas para preenchimento manual
-      if (pattern.source !== "_{3,}") {
-         contract = contract.replace(pattern, "__________");
-      }
+    // Substituir qualquer variável restante
+    Object.keys(answers).forEach(key => {
+      const placeholderPattern = new RegExp(`{${key}}`, 'gi');
+      const placeholderPattern2 = new RegExp(`{${key.replace('_', '')}}`, 'gi');
+      contract = contract.replace(placeholderPattern, answers[key] || '[INFORMADO]');
+      contract = contract.replace(placeholderPattern2, answers[key] || '[INFORMADO]');
     });
     
     return {
       success: true,
-      contract: contract.trim(),
+      contract: contract,
     };
-
   } catch (error) {
-    console.error('Erro crítico na geração:', error);
+    console.error('Erro na geração do contrato:', error);
     return {
       success: false,
-      error: `Falha ao gerar documento: ${error.message}`,
+      error: error.message || 'Erro ao gerar contrato. Tente novamente.',
     };
   }
 };
