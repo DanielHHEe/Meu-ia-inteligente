@@ -24,7 +24,7 @@ import {
 import { generateContract } from './contractService';
 import ContractViewer from './ContractViewer';
 
-// ==================== CONTRACT TYPES de todos ====================
+// ==================== CONTRACT TYPES ====================
 const contractTypes = [
   {
     id: "prestacao-servicos",
@@ -140,25 +140,93 @@ const contractTypes = [
   },
 ];
 
+// ==================== GLOBAL STYLES ====================
+const GlobalStyle = () => {
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+      }
+      @keyframes bounce {
+        0%, 60%, 100% { transform: translateY(0); }
+        30% { transform: translateY(-4px); }
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      }
+    `;
+    document.head.appendChild(style);
+    return () => style.remove();
+  }, []);
+  
+  return null;
+};
+
 // ==================== CHAT HEADER ====================
 const ChatHeader = ({ onBack }) => {
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200 h-14 safe-top">
-      <div className="max-w-7xl mx-auto px-4 h-full flex items-center justify-between">
+    <header style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      zIndex: 50,
+      backgroundColor: 'rgba(255,255,255,0.95)',
+      backdropFilter: 'blur(8px)',
+      borderBottom: '1px solid #e5e7eb',
+      height: '56px'
+    }}>
+      <div style={{
+        maxWidth: '1280px',
+        margin: '0 auto',
+        padding: '0 16px',
+        height: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between'
+      }}>
         <button
           onClick={onBack}
-          className="flex items-center gap-2 text-gray-600 hover:text-emerald-600 transition-colors"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            color: '#4b5563',
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            padding: '8px'
+          }}
           aria-label="Voltar"
         >
-          <ArrowLeft className="w-5 h-5" />
+          <ArrowLeft size={20} />
         </button>
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center">
-            <FileText className="w-4 h-4 text-white" />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{
+            width: '32px',
+            height: '32px',
+            borderRadius: '8px',
+            background: 'linear-gradient(135deg, #10b981, #059669)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <FileText size={16} color="white" />
           </div>
-          <span className="font-bold text-gray-900">Contrate-me</span>
+          <span style={{ fontWeight: 'bold', color: '#111827' }}>Contrate-me</span>
         </div>
-        <div className="w-5" />
+        <div style={{ width: '20px' }} />
       </div>
     </header>
   );
@@ -170,22 +238,47 @@ const ContractTypeSelector = ({ onSelect }) => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="w-full max-w-4xl mx-auto p-4"
+      style={{
+        width: '100%',
+        maxWidth: '1024px',
+        margin: '0 auto',
+        padding: '16px'
+      }}
     >
-      <div className="text-center mb-6">
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 text-emerald-700 text-sm font-medium mb-4">
-          <Sparkles className="w-4 h-4" />
+      <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+        <div style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '8px',
+          padding: '8px 16px',
+          borderRadius: '9999px',
+          backgroundColor: '#ecfdf5',
+          color: '#047857',
+          fontSize: '14px',
+          fontWeight: '500',
+          marginBottom: '16px'
+        }}>
+          <Sparkles size={16} />
           Passo 1 de 3
         </div>
-        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+        <h2 style={{
+          fontSize: 'clamp(24px, 5vw, 36px)',
+          fontWeight: 'bold',
+          color: '#111827',
+          marginBottom: '8px'
+        }}>
           Qual contrato você precisa?
         </h2>
-        <p className="text-gray-600">
+        <p style={{ color: '#4b5563' }}>
           Selecione o modelo ideal para sua necessidade
         </p>
       </div>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+        gap: '12px'
+      }}>
         {contractTypes.map((type, index) => (
           <motion.button
             key={type.id}
@@ -193,23 +286,80 @@ const ContractTypeSelector = ({ onSelect }) => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
             onClick={() => onSelect(type)}
-            className="relative p-4 rounded-xl border-2 border-gray-100 bg-white hover:border-emerald-200 hover:shadow-lg transition-all text-left group"
+            style={{
+              position: 'relative',
+              padding: '16px',
+              borderRadius: '12px',
+              border: '2px solid #f3f4f6',
+              backgroundColor: 'white',
+              textAlign: 'left',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = '#a7f3d0';
+              e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0,0,0,0.1)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = '#f3f4f6';
+              e.currentTarget.style.boxShadow = 'none';
+            }}
           >
             {type.popular && (
-              <div className="absolute -top-3 right-4 px-3 py-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold rounded-full">
+              <div style={{
+                position: 'absolute',
+                top: '-12px',
+                right: '16px',
+                padding: '4px 12px',
+                background: 'linear-gradient(135deg, #f59e0b, #f97316)',
+                color: 'white',
+                fontSize: '12px',
+                fontWeight: 'bold',
+                borderRadius: '9999px',
+                zIndex: 10
+              }}>
                 Popular
               </div>
             )}
-            <div className="flex items-start gap-3 pr-8">
-              <div className="w-10 h-10 rounded-lg bg-emerald-50 group-hover:bg-emerald-100 transition-colors flex items-center justify-center flex-shrink-0">
-                <type.icon className="w-5 h-5 text-emerald-600" />
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+              <div style={{
+                width: '40px',
+                height: '40px',
+                borderRadius: '8px',
+                backgroundColor: '#ecfdf5',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0
+              }}>
+                <type.icon size={20} color="#059669" />
               </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-gray-900 mb-1 truncate">{type.name}</h3>
-                <p className="text-xs text-gray-500 line-clamp-2">{type.description}</p>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <h3 style={{
+                  fontWeight: '600',
+                  color: '#111827',
+                  marginBottom: '4px',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap'
+                }}>{type.name}</h3>
+                <p style={{
+                  fontSize: '12px',
+                  color: '#6b7280',
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden'
+                }}>{type.description}</p>
               </div>
             </div>
-            <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-hover:text-emerald-500 transition-colors" />
+            <ChevronRight size={20} style={{
+              position: 'absolute',
+              right: '16px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: '#9ca3af'
+            }} />
           </motion.button>
         ))}
       </div>
@@ -223,25 +373,62 @@ const MessageBubble = ({ message, isBot }) => {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`flex items-start gap-2 px-2 ${isBot ? 'justify-start' : 'justify-end'}`}
+      style={{
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: '8px',
+        padding: '0 8px',
+        justifyContent: isBot ? 'flex-start' : 'flex-end',
+        width: '100%'
+      }}
     >
       {isBot && (
-        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center flex-shrink-0 shadow-md">
-          <Bot className="w-4 h-4 text-white" />
+        <div style={{
+          width: '36px',
+          height: '36px',
+          borderRadius: '50%',
+          background: 'linear-gradient(135deg, #10b981, #059669)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
+          boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)'
+        }}>
+          <Bot size={18} color="white" />
         </div>
       )}
-      <div
-        className={`max-w-[75%] p-3 rounded-2xl shadow-sm ${
-          isBot
-            ? 'bg-white text-gray-800 rounded-tl-none border border-gray-100'
-            : 'bg-gradient-to-r from-emerald-600 to-emerald-500 text-white rounded-tr-none'
-        }`}
-      >
-        <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">{message}</p>
+      <div style={{
+        maxWidth: '75%',
+        padding: '12px 16px',
+        borderRadius: '18px',
+        backgroundColor: isBot ? '#ffffff' : '#10b981',
+        color: isBot ? '#1f2937' : '#ffffff',
+        borderBottomLeftRadius: isBot ? '4px' : '18px',
+        borderBottomRightRadius: isBot ? '18px' : '4px',
+        boxShadow: '0 2px 5px rgba(0,0,0,0.05)',
+        border: isBot ? '1px solid #e5e7eb' : 'none',
+        wordBreak: 'break-word'
+      }}>
+        <p style={{
+          fontSize: '15px',
+          lineHeight: '1.5',
+          margin: 0,
+          whiteSpace: 'pre-wrap'
+        }}>{message}</p>
       </div>
       {!isBot && (
-        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center flex-shrink-0 shadow-md">
-          <User className="w-4 h-4 text-white" />
+        <div style={{
+          width: '36px',
+          height: '36px',
+          borderRadius: '50%',
+          background: 'linear-gradient(135deg, #374151, #111827)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
+          boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)'
+        }}>
+          <User size={18} color="white" />
         </div>
       )}
     </motion.div>
@@ -254,16 +441,58 @@ const TypingIndicator = () => {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="flex items-start gap-2 px-2"
+      style={{
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: '8px',
+        padding: '0 8px'
+      }}
     >
-      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center flex-shrink-0 shadow-md">
-        <Bot className="w-4 h-4 text-white" />
+      <div style={{
+        width: '36px',
+        height: '36px',
+        borderRadius: '50%',
+        background: 'linear-gradient(135deg, #10b981, #059669)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexShrink: 0,
+        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)'
+      }}>
+        <Bot size={18} color="white" />
       </div>
-      <div className="bg-white p-4 rounded-2xl rounded-tl-none border border-gray-100 shadow-sm">
-        <div className="flex gap-1.5">
-          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
-          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
-          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
+      <div style={{
+        backgroundColor: '#ffffff',
+        padding: '12px 16px',
+        borderRadius: '18px',
+        borderBottomLeftRadius: '4px',
+        border: '1px solid #e5e7eb',
+        boxShadow: '0 2px 5px rgba(0,0,0,0.05)'
+      }}>
+        <div style={{ display: 'flex', gap: '4px' }}>
+          <div style={{
+            width: '8px',
+            height: '8px',
+            backgroundColor: '#9ca3af',
+            borderRadius: '50%',
+            animation: 'bounce 1s infinite'
+          }} />
+          <div style={{
+            width: '8px',
+            height: '8px',
+            backgroundColor: '#9ca3af',
+            borderRadius: '50%',
+            animation: 'bounce 1s infinite',
+            animationDelay: '0.15s'
+          }} />
+          <div style={{
+            width: '8px',
+            height: '8px',
+            backgroundColor: '#9ca3af',
+            borderRadius: '50%',
+            animation: 'bounce 1s infinite',
+            animationDelay: '0.3s'
+          }} />
         </div>
       </div>
     </motion.div>
@@ -289,9 +518,22 @@ const ChatInput = ({ value, onChange, onSend, disabled, placeholder }) => {
   }, [value]);
 
   return (
-    <div className="border-t border-gray-200 bg-white p-3 pb-safe-bottom shadow-lg">
-      <div className="max-w-2xl mx-auto">
-        <div className="flex items-end gap-2 bg-gray-50 rounded-xl p-2 border border-gray-200 focus-within:border-emerald-300 focus-within:ring-2 focus-within:ring-emerald-100 transition-all">
+    <div style={{
+      borderTop: '1px solid #e5e7eb',
+      backgroundColor: 'white',
+      padding: '12px',
+      boxShadow: '0 -4px 6px -1px rgba(0,0,0,0.05)'
+    }}>
+      <div style={{ maxWidth: '672px', margin: '0 auto' }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'flex-end',
+          gap: '8px',
+          backgroundColor: '#f9fafb',
+          borderRadius: '20px',
+          padding: '8px',
+          border: '1px solid #e5e7eb'
+        }}>
           <textarea
             ref={textareaRef}
             value={value}
@@ -300,18 +542,44 @@ const ChatInput = ({ value, onChange, onSend, disabled, placeholder }) => {
             placeholder={placeholder || "Digite sua resposta..."}
             disabled={disabled}
             rows={1}
-            className="flex-1 bg-transparent px-3 py-2 text-gray-900 resize-none outline-none min-h-[40px] max-h-[120px] text-base disabled:opacity-50 placeholder-gray-400"
+            style={{
+              flex: 1,
+              backgroundColor: 'transparent',
+              padding: '10px 12px',
+              color: '#111827',
+              resize: 'none',
+              outline: 'none',
+              minHeight: '44px',
+              maxHeight: '120px',
+              fontSize: '16px',
+              border: 'none',
+              fontFamily: 'inherit'
+            }}
           />
           <button
             onClick={onSend}
             disabled={disabled || !value.trim()}
-            className="flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 text-white flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-lg hover:scale-105 active:scale-95"
+            style={{
+              flexShrink: 0,
+              width: '44px',
+              height: '44px',
+              borderRadius: '22px',
+              background: 'linear-gradient(135deg, #059669, #10b981)',
+              color: 'white',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              border: 'none',
+              cursor: disabled || !value.trim() ? 'not-allowed' : 'pointer',
+              opacity: disabled || !value.trim() ? 0.5 : 1,
+              transition: 'all 0.2s ease'
+            }}
             aria-label="Enviar mensagem"
           >
             {disabled ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
+              <Loader2 size={20} style={{ animation: 'spin 1s linear infinite' }} />
             ) : (
-              <Send className="w-5 h-5" />
+              <Send size={20} />
             )}
           </button>
         </div>
@@ -331,45 +599,77 @@ const ProgressSidebar = ({ currentStep, contractType }) => {
   if (currentStep === 4) return null;
 
   return (
-    <div className="hidden lg:block w-72 fixed left-0 top-14 bottom-0 bg-gradient-to-b from-gray-900 to-gray-800 text-white p-6">
-      <div className="mb-8">
-        <h3 className="text-lg font-semibold mb-3">Seu Contrato</h3>
+    <div className="hidden lg:block" style={{
+      width: '288px',
+      position: 'fixed',
+      left: 0,
+      top: '56px',
+      bottom: 0,
+      background: 'linear-gradient(135deg, #111827, #1f2937)',
+      color: 'white',
+      padding: '24px',
+      overflowY: 'auto'
+    }}>
+      <div style={{ marginBottom: '32px' }}>
+        <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '12px' }}>Seu Contrato</h3>
         {contractType ? (
-          <div className="flex items-center gap-3 p-3 rounded-xl bg-white/10">
-            <contractType.icon className="w-5 h-5 text-emerald-400" />
-            <span className="text-sm truncate">{contractType.name}</span>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            padding: '12px',
+            borderRadius: '12px',
+            backgroundColor: 'rgba(255,255,255,0.1)'
+          }}>
+            <contractType.icon size={20} color="#34d399" />
+            <span style={{ fontSize: '14px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {contractType.name}
+            </span>
           </div>
         ) : (
-          <p className="text-sm text-gray-400">Selecione um tipo</p>
+          <p style={{ fontSize: '14px', color: '#9ca3af' }}>Selecione um tipo</p>
         )}
       </div>
 
       <div>
-        <h4 className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-4">Progresso</h4>
-        <div className="space-y-4">
+        <h4 style={{
+          fontSize: '12px',
+          fontWeight: '500',
+          color: '#9ca3af',
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
+          marginBottom: '16px'
+        }}>Progresso</h4>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {steps.map((step) => (
-            <div key={step.id} className="flex items-center gap-3">
-              <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                  currentStep > step.id
-                    ? 'bg-emerald-500'
-                    : currentStep === step.id
-                    ? 'bg-emerald-500/20 ring-2 ring-emerald-500'
-                    : 'bg-white/10'
-                }`}
-              >
+            <div key={step.id} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{
+                width: '40px',
+                height: '40px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: currentStep > step.id ? '#10b981' : 
+                                 currentStep === step.id ? 'rgba(16,185,129,0.2)' : 'rgba(255,255,255,0.1)',
+                border: currentStep === step.id ? '2px solid #10b981' : 'none'
+              }}>
                 {currentStep > step.id ? (
-                  <CheckCircle2 className="w-5 h-5 text-white" />
+                  <CheckCircle2 size={20} color="white" />
                 ) : (
-                  <step.icon className={`w-5 h-5 ${currentStep === step.id ? 'text-emerald-400' : 'text-gray-400'}`} />
+                  <step.icon size={20} color={currentStep === step.id ? '#34d399' : '#9ca3af'} />
                 )}
               </div>
               <div>
-                <p className={`text-sm font-medium ${currentStep >= step.id ? 'text-white' : 'text-gray-400'}`}>
+                <p style={{
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: currentStep >= step.id ? 'white' : '#9ca3af'
+                }}>
                   {step.name}
                 </p>
                 {currentStep === step.id && (
-                  <p className="text-xs text-emerald-400">Em andamento</p>
+                  <p style={{ fontSize: '12px', color: '#34d399' }}>Em andamento</p>
                 )}
               </div>
             </div>
@@ -377,12 +677,21 @@ const ProgressSidebar = ({ currentStep, contractType }) => {
         </div>
       </div>
 
-      <div className="absolute bottom-6 left-6 right-6 p-4 rounded-xl bg-white/5 border border-white/10">
-        <div className="flex items-center gap-2 text-emerald-400 mb-2">
-          <Clock className="w-4 h-4" />
-          <span className="text-sm font-medium">Tempo estimado</span>
+      <div style={{
+        position: 'absolute',
+        bottom: '24px',
+        left: '24px',
+        right: '24px',
+        padding: '16px',
+        borderRadius: '12px',
+        backgroundColor: 'rgba(255,255,255,0.05)',
+        border: '1px solid rgba(255,255,255,0.1)'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#34d399', marginBottom: '8px' }}>
+          <Clock size={16} />
+          <span style={{ fontSize: '14px', fontWeight: '500' }}>Tempo estimado</span>
         </div>
-        <p className="text-2xl font-bold">~2 min</p>
+        <p style={{ fontSize: '24px', fontWeight: 'bold' }}>~2 min</p>
       </div>
     </div>
   );
@@ -394,38 +703,77 @@ const ChatInterface = ({ contractType, messages, isTyping, inputValue, setInputV
   const messagesContainerRef = useRef(null);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
   }, [messages, isTyping]);
 
   const currentQuestion = contractType.questions[messages.filter(m => !m.isBot).length];
 
   return (
-    <div className="flex flex-col h-full bg-gray-50">
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      height: '100%',
+      backgroundColor: '#f3f4f6',
+      position: 'relative'
+    }}>
       {/* Chat Header Info */}
-      <div className="bg-white border-b border-gray-200 p-3 flex-shrink-0 shadow-sm">
-        <div className="max-w-2xl mx-auto flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center flex-shrink-0 shadow-md">
-            <contractType.icon className="w-5 h-5 text-white" />
+      <div style={{
+        backgroundColor: 'white',
+        borderBottom: '1px solid #e5e7eb',
+        padding: '12px',
+        flexShrink: 0,
+        boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+        zIndex: 5
+      }}>
+        <div style={{ maxWidth: '672px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{
+            width: '36px',
+            height: '36px',
+            borderRadius: '10px',
+            background: 'linear-gradient(135deg, #10b981, #059669)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+            boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)'
+          }}>
+            <contractType.icon size={18} color="white" />
           </div>
-          <div className="min-w-0 flex-1">
-            <h3 className="font-semibold text-gray-900 text-sm truncate">{contractType.name}</h3>
-            <p className="text-xs text-gray-500">
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <h3 style={{
+              fontWeight: '600',
+              color: '#111827',
+              fontSize: '15px',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap'
+            }}>{contractType.name}</h3>
+            <p style={{ fontSize: '12px', color: '#6b7280' }}>
               Pergunta {messages.filter(m => !m.isBot).length + 1} de {contractType.questions.length}
             </p>
           </div>
         </div>
       </div>
 
-      {/* Messages Area - CORRIGIDO PARA MOBILE */}
+      {/* Messages Area */}
       <div
         ref={messagesContainerRef}
-        className="flex-1 overflow-y-auto overscroll-contain"
-        style={{ 
+        style={{
+          flex: 1,
+          overflowY: 'auto',
           WebkitOverflowScrolling: 'touch',
-          paddingBottom: '80px'
+          padding: '16px 8px 20px 8px'
         }}
       >
-        <div className="max-w-2xl mx-auto py-4 space-y-4">
+        <div style={{
+          maxWidth: '672px',
+          margin: '0 auto',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '12px'
+        }}>
           <AnimatePresence>
             {messages.map((msg, index) => (
               <MessageBubble key={index} message={msg.text} isBot={msg.isBot} />
@@ -436,8 +784,15 @@ const ChatInterface = ({ contractType, messages, isTyping, inputValue, setInputV
         </div>
       </div>
 
-      {/* Input Area - FIXADO NO FINAL */}
-      <div className="flex-shrink-0 sticky bottom-0 bg-white border-t border-gray-200 shadow-lg">
+      {/* Input Area */}
+      <div style={{
+        flexShrink: 0,
+        position: 'sticky',
+        bottom: 0,
+        backgroundColor: 'white',
+        borderTop: '1px solid #e5e7eb',
+        zIndex: 10
+      }}>
         <ChatInput
           value={inputValue}
           onChange={setInputValue}
@@ -453,16 +808,41 @@ const ChatInterface = ({ contractType, messages, isTyping, inputValue, setInputV
 // ==================== LOADING SCREEN ====================
 const LoadingScreen = () => {
   return (
-    <div className="flex items-center justify-center h-full bg-gray-50">
-      <div className="text-center">
-        <div className="relative">
-          <div className="w-16 h-16 border-4 border-emerald-100 border-t-emerald-600 rounded-full animate-spin mx-auto mb-4" />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <FileText className="w-6 h-6 text-emerald-600 animate-pulse" />
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      height: '100%',
+      backgroundColor: '#f9fafb'
+    }}>
+      <div style={{ textAlign: 'center' }}>
+        <div style={{ position: 'relative', width: '64px', height: '64px', margin: '0 auto 16px' }}>
+          <div style={{
+            width: '64px',
+            height: '64px',
+            border: '4px solid #d1fae5',
+            borderTopColor: '#059669',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            position: 'absolute',
+            top: 0,
+            left: 0
+          }} />
+          <div style={{
+            position: 'absolute',
+            top: '20px',
+            left: '20px',
+            width: '24px',
+            height: '24px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <FileText size={24} color="#059669" style={{ animation: 'pulse 2s infinite' }} />
           </div>
         </div>
-        <p className="text-gray-600 font-medium">Gerando seu contrato</p>
-        <p className="text-sm text-gray-400 mt-1">Aguarde um momento...</p>
+        <p style={{ color: '#4b5563', fontWeight: '500' }}>Gerando seu contrato</p>
+        <p style={{ fontSize: '14px', color: '#9ca3af', marginTop: '4px' }}>Aguarde um momento...</p>
       </div>
     </div>
   );
@@ -471,8 +851,17 @@ const LoadingScreen = () => {
 // ==================== CONTRACT VIEWER WRAPPER ====================
 const ContractViewerWrapper = ({ contract, contractType, onBack, onDownload }) => {
   return (
-    <div className="h-full overflow-y-auto bg-gray-50">
-      <div className="max-w-4xl mx-auto py-6 px-4">
+    <div style={{
+      height: '100%',
+      overflowY: 'auto',
+      backgroundColor: '#f9fafb',
+      WebkitOverflowScrolling: 'touch'
+    }}>
+      <div style={{
+        maxWidth: '1024px',
+        margin: '0 auto',
+        padding: '24px 16px'
+      }}>
         <ContractViewer
           contract={contract}
           contractType={contractType}
@@ -493,8 +882,38 @@ const Chat = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [answers, setAnswers] = useState([]);
   const [generatedContract, setGeneratedContract] = useState(null);
-  const [isGenerating, setIsGenerating] = useState(false);
   const [generationError, setGenerationError] = useState(null);
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
+
+  // Adicionar estilos globais
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+      }
+      @keyframes bounce {
+        0%, 60%, 100% { transform: translateY(0); }
+        30% { transform: translateY(-4px); }
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        overflow: hidden;
+      }
+    `;
+    document.head.appendChild(style);
+    return () => style.remove();
+  }, []);
 
   // Fix para mobile viewport
   useEffect(() => {
@@ -513,8 +932,17 @@ const Chat = () => {
     };
   }, []);
 
+  // Monitorar largura da janela para sidebar
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const handleGenerateContract = async () => {
-    setIsGenerating(true);
     setGenerationError(null);
     setCurrentStep(3);
     
@@ -542,7 +970,6 @@ const Chat = () => {
         },
       ]);
     }
-    setIsGenerating(false);
   };
 
   const handleSelectContract = (type) => {
@@ -614,20 +1041,52 @@ const Chat = () => {
     }
   };
 
-  return (
-    <div className="h-screen h-[100dvh] flex flex-col overflow-hidden bg-gray-50">
-      <ChatHeader onBack={handleBack} />
-      <ProgressSidebar currentStep={currentStep} contractType={selectedContract} />
+  const isDesktop = windowWidth >= 1024;
 
-      <main className="flex-1 pt-14 lg:pl-72 flex flex-col min-h-0 overflow-hidden">
+  return (
+    <div style={{
+      height: 'calc(var(--vh, 1vh) * 100)',
+      display: 'flex',
+      flexDirection: 'column',
+      overflow: 'hidden',
+      backgroundColor: '#f9fafb',
+      position: 'relative'
+    }}>
+      <ChatHeader onBack={handleBack} />
+      
+      {isDesktop && currentStep !== 4 && (
+        <ProgressSidebar currentStep={currentStep} contractType={selectedContract} />
+      )}
+
+      <main style={{
+        flex: 1,
+        paddingTop: '56px',
+        marginLeft: isDesktop && currentStep !== 4 ? '288px' : 0,
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: 0,
+        overflow: 'hidden',
+        position: 'relative'
+      }}>
         {currentStep === 1 && (
-          <div className="flex-1 overflow-y-auto overscroll-contain">
+          <div style={{ 
+            flex: 1, 
+            overflowY: 'auto', 
+            WebkitOverflowScrolling: 'touch',
+            height: '100%'
+          }}>
             <ContractTypeSelector onSelect={handleSelectContract} />
           </div>
         )}
 
         {currentStep === 2 && selectedContract && (
-          <div className="flex-1 flex flex-col min-h-0">
+          <div style={{ 
+            flex: 1, 
+            display: 'flex', 
+            flexDirection: 'column', 
+            minHeight: 0,
+            height: '100%'
+          }}>
             <ChatInterface
               contractType={selectedContract}
               messages={messages}
@@ -639,27 +1098,65 @@ const Chat = () => {
           </div>
         )}
 
-        {currentStep === 3 && <LoadingScreen />}
+        {currentStep === 3 && (
+          <div style={{ 
+            flex: 1, 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            height: '100%'
+          }}>
+            <LoadingScreen />
+          </div>
+        )}
 
         {currentStep === 4 && generatedContract && (
-          <ContractViewerWrapper
-            contract={generatedContract}
-            contractType={selectedContract}
-            onBack={handleBack}
-            onDownload={(format) => {
-              console.log(`Download ${format}:`, generatedContract);
-              alert(`Download em ${format} será implementado em breve!`);
-            }}
-          />
+          <div style={{ 
+            flex: 1, 
+            overflow: 'hidden',
+            height: '100%'
+          }}>
+            <ContractViewerWrapper
+              contract={generatedContract}
+              contractType={selectedContract}
+              onBack={handleBack}
+              onDownload={(format) => {
+                console.log(`Download ${format}:`, generatedContract);
+                alert(`Download em ${format} será implementado em breve!`);
+              }}
+            />
+          </div>
         )}
 
         {generationError && currentStep === 2 && (
-          <div className="fixed bottom-20 left-4 right-4 lg:left-80 lg:right-4 z-50">
-            <div className="bg-red-50 border border-red-200 rounded-xl p-4 max-w-md mx-auto shadow-lg">
-              <p className="text-sm text-red-800">{generationError}</p>
+          <div style={{
+            position: 'fixed',
+            bottom: '80px',
+            left: isDesktop ? 'calc(288px + 16px)' : '16px',
+            right: '16px',
+            zIndex: 50,
+            maxWidth: '448px',
+            margin: '0 auto'
+          }}>
+            <div style={{
+              backgroundColor: '#fef2f2',
+              border: '1px solid #fee2e2',
+              borderRadius: '12px',
+              padding: '16px',
+              boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)'
+            }}>
+              <p style={{ fontSize: '14px', color: '#991b1b' }}>{generationError}</p>
               <button
                 onClick={() => setGenerationError(null)}
-                className="mt-2 text-sm text-red-600 underline"
+                style={{
+                  marginTop: '8px',
+                  fontSize: '14px',
+                  color: '#991b1b',
+                  textDecoration: 'underline',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer'
+                }}
               >
                 Fechar
               </button>
