@@ -180,39 +180,8 @@ const contractTypes = [
   },
 ];
 
-// ==================== CHAT HEADER ====================
-const ChatHeader = ({ onBack }) => (
-  <header style={{
-    position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50,
-    backgroundColor: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(8px)',
-    borderBottom: '1px solid #e5e7eb', height: '56px'
-  }}>
-    <div style={{
-      maxWidth: '1280px', margin: '0 auto', padding: '0 16px', height: '100%',
-      display: 'flex', alignItems: 'center', justifyContent: 'space-between'
-    }}>
-      <button onClick={onBack} style={{
-        display: 'flex', alignItems: 'center', gap: '8px',
-        color: '#4b5563', background: 'none', border: 'none', cursor: 'pointer', padding: '8px'
-      }}>
-        <ArrowLeft size={20} />
-      </button>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <div style={{
-          width: '32px', height: '32px', borderRadius: '8px',
-          background: 'linear-gradient(135deg, #10b981, #059669)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center'
-        }}>
-          <FileText size={16} color="white" />
-        </div>
-        <span style={{ fontWeight: 'bold', color: '#111827' }}>Contrate-me</span>
-      </div>
-      <div style={{ width: '20px' }} />
-    </div>
-  </header>
-);
-
 // ==================== CONTRACT TYPE SELECTOR ====================
+// FIX 2: Header "Contrate-me" removido. Selector é a tela inicial diretamente.
 const ContractTypeSelector = ({ onSelect }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
@@ -226,12 +195,12 @@ const ContractTypeSelector = ({ onSelect }) => (
       }}>
         <Sparkles size={16} /> Passo 1 de 3
       </div>
-      <h2 style={{ fontSize: 'clamp(24px, 5vw, 36px)', fontWeight: 'bold', color: '#111827', marginBottom: '8px' }}>
+      <h2 style={{ fontSize: 'clamp(20px, 5vw, 32px)', fontWeight: 'bold', color: '#111827', marginBottom: '8px' }}>
         Qual contrato você precisa?
       </h2>
-      <p style={{ color: '#4b5563' }}>Selecione o modelo ideal para sua necessidade</p>
+      <p style={{ color: '#4b5563', fontSize: '14px' }}>Selecione o modelo ideal para sua necessidade</p>
     </div>
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '12px' }}>
       {contractTypes.map((type, index) => (
         <motion.button
           key={type.id}
@@ -310,10 +279,10 @@ const GeneratingBubble = () => (
 );
 
 // ==================== PDF CARD ====================
-// ✅ Lê o texto do contrato { success, contract } e gera PDF via jsPDF com download direto
+// FIX 3: Download mobile real — no iOS abre em nova aba com botão de compartilhamento nativo
+// No Android força download via data URL que funciona sem restrições de blob
 const PdfCard = ({ contractType, generatedContract }) => {
 
-  // Extrai o texto puro independente do formato retornado
   const getContractText = () => {
     if (!generatedContract) return '';
     if (typeof generatedContract === 'string') return generatedContract;
@@ -322,7 +291,6 @@ const PdfCard = ({ contractType, generatedContract }) => {
     return String(generatedContract);
   };
 
-  // Usa jsPDF já carregado ou injeta via CDN e depois gera
   const handlePdfClick = () => {
     const contractText = getContractText();
     if (!contractText.trim()) {
@@ -356,16 +324,53 @@ const PdfCard = ({ contractType, generatedContract }) => {
         }
       }
 
-      doc.save(fileName);
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      const isAndroid = /Android/.test(navigator.userAgent);
+
+      if (isIOS) {
+        // iOS Safari: abre via data URI em nova aba — permite salvar pelo botão "Compartilhar"
+        // blob URLs são bloqueados pelo Safari em contexto cross-origin
+        const dataUri = doc.output('datauristring');
+        const newTab = window.open();
+        if (newTab) {
+          newTab.document.write(
+            `<html><head><title>${fileName}</title></head>` +
+            `<body style="margin:0;background:#000;">` +
+            `<embed width="100%" height="100%" src="${dataUri}" type="application/pdf"/>` +
+            `</body></html>`
+          );
+        } else {
+          // Popup bloqueado — fallback: link direto
+          const a = document.createElement('a');
+          a.href = doc.output('datauristring');
+          a.download = fileName;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        }
+      } else if (isAndroid) {
+        // Android: blob URL funciona bem e inicia download direto
+        const blob = doc.output('blob');
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 10000);
+      } else {
+        // Desktop: doc.save() — comportamento padrão jsPDF
+        doc.save(fileName);
+      }
     };
 
-    // Se jsPDF já está disponível no window, usa direto
     if (window.jspdf && window.jspdf.jsPDF) {
       gerar(window.jspdf.jsPDF);
       return;
     }
 
-    // Caso contrário, carrega via CDN e gera em seguida
     const script = document.createElement('script');
     script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
     script.onload = () => {
@@ -374,7 +379,7 @@ const PdfCard = ({ contractType, generatedContract }) => {
       }
     };
     script.onerror = () => {
-      // Fallback: baixa como .txt se o CDN falhar
+      // Fallback último recurso: .txt
       const blob = new Blob([contractText], { type: 'text/plain;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -546,6 +551,8 @@ const TypingIndicator = () => (
 );
 
 // ==================== CHAT INPUT ====================
+// FIX 1: font-size 16px no textarea para impedir zoom automático no iOS/Android
+// O navegador só dá zoom se o font-size for < 16px
 const ChatInput = ({ value, onChange, onSend, disabled }) => {
   const textareaRef = useRef(null);
   const [focused, setFocused] = useState(false);
@@ -584,7 +591,12 @@ const ChatInput = ({ value, onChange, onSend, disabled }) => {
               flex: 1, backgroundColor: 'transparent', padding: '6px 0',
               color: '#111827', resize: 'none', outline: 'none',
               minHeight: '40px', maxHeight: '120px',
-              fontSize: '15px', border: 'none', fontFamily: 'inherit', lineHeight: '1.5',
+              // ✅ FIX 1: 16px impede zoom automático em iOS e Android
+              fontSize: '16px',
+              border: 'none', fontFamily: 'inherit', lineHeight: '1.5',
+              // ✅ FIX 1: evita que o iOS arredonde o input
+              WebkitAppearance: 'none',
+              borderRadius: 0,
             }}
           />
           <button
@@ -671,6 +683,7 @@ const ProgressSidebar = ({ currentStep, contractType }) => {
 };
 
 // ==================== CHAT INTERFACE ====================
+// FIX 2: Removida a sub-barra com nome do contrato (era o "header superior" visível no mobile)
 const ChatInterface = ({ contractType, messages, isTyping, isGenerating, inputValue, setInputValue, onSendMessage, onViewContract, generatedContract }) => {
   const messagesEndRef = useRef(null);
 
@@ -680,20 +693,7 @@ const ChatInterface = ({ contractType, messages, isTyping, isGenerating, inputVa
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', backgroundColor: '#f3f4f6' }}>
-      <div style={{ backgroundColor: 'white', borderBottom: '1px solid #e5e7eb', padding: '12px', flexShrink: 0, zIndex: 5 }}>
-        <div style={{ maxWidth: '672px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{
-            width: '36px', height: '36px', borderRadius: '10px',
-            background: 'linear-gradient(135deg, #10b981, #059669)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
-          }}>
-            <contractType.icon size={18} color="white" />
-          </div>
-          <h3 style={{ fontWeight: '600', color: '#111827', fontSize: '15px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {contractType.name}
-          </h3>
-        </div>
-      </div>
+      {/* ✅ FIX 2: sub-barra com nome do contrato removida — era o "Prestação de Serviços" no topo */}
 
       <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '16px 8px 20px' }}>
         <div style={{ maxWidth: '672px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -723,22 +723,6 @@ const ChatInterface = ({ contractType, messages, isTyping, isGenerating, inputVa
   );
 };
 
-// ==================== LOADING SCREEN ====================
-const LoadingScreen = () => (
-  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', backgroundColor: '#f9fafb' }}>
-    <div style={{ textAlign: 'center' }}>
-      <div style={{ position: 'relative', width: '64px', height: '64px', margin: '0 auto 16px' }}>
-        <div style={{ width: '64px', height: '64px', border: '4px solid #d1fae5', borderTopColor: '#059669', borderRadius: '50%', animation: 'spin 1s linear infinite', position: 'absolute' }} />
-        <div style={{ position: 'absolute', top: '20px', left: '20px', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <FileText size={24} color="#059669" style={{ animation: 'pulse 2s infinite' }} />
-        </div>
-      </div>
-      <p style={{ color: '#4b5563', fontWeight: '500' }}>Gerando seu contrato</p>
-      <p style={{ fontSize: '14px', color: '#9ca3af', marginTop: '4px' }}>Aguarde um momento...</p>
-    </div>
-  </div>
-);
-
 // ==================== MAIN ====================
 const Chat = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -767,11 +751,19 @@ const Chat = () => {
   }, []);
 
   useEffect(() => {
-    const setVh = () => document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
+    // ✅ FIX 1: usa dvh (dynamic viewport height) quando disponível, fallback para innerHeight
+    // dvh desconta automaticamente a barra do navegador mobile
+    const setVh = () => {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    };
     setVh();
     window.addEventListener('resize', setVh);
     window.addEventListener('orientationchange', setVh);
-    return () => { window.removeEventListener('resize', setVh); window.removeEventListener('orientationchange', setVh); };
+    return () => {
+      window.removeEventListener('resize', setVh);
+      window.removeEventListener('orientationchange', setVh);
+    };
   }, []);
 
   useEffect(() => {
@@ -858,17 +850,22 @@ const Chat = () => {
   const isDesktop = windowWidth >= 1024;
 
   return (
+    // ✅ FIX 1: usa --vh calculado dinamicamente para evitar layout quebrado com teclado aberto
     <div style={{ height: 'calc(var(--vh, 1vh) * 100)', display: 'flex', flexDirection: 'column', overflow: 'hidden', backgroundColor: '#f9fafb' }}>
-      <ChatHeader onBack={handleBack} />
+
+      {/* ✅ FIX 2: ChatHeader removido completamente — era o "Contrate-me" no topo */}
+
       {isDesktop && currentStep <= 2 && <ProgressSidebar currentStep={currentStep} contractType={selectedContract} />}
 
       <main style={{
-        flex: 1, paddingTop: '56px',
+        flex: 1,
+        // ✅ FIX 2: paddingTop zerado pois o header foi removido
+        paddingTop: 0,
         marginLeft: isDesktop && currentStep <= 2 ? '288px' : 0,
         display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden'
       }}>
         {currentStep === 1 && (
-          <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
+          <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', paddingTop: '16px' }}>
             <ContractTypeSelector onSelect={handleSelectContract} />
           </div>
         )}
