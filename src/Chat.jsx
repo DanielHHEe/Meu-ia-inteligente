@@ -37,7 +37,7 @@ const TypingText = ({ text, onComplete, speed = 15 }) => {
           transition={{ repeat: Infinity, duration: 0.8 }}
           style={{
             display: 'inline-block', width: '2px', height: '1.2em',
-            backgroundColor: 'currentColor', marginLeft: '2px', verticalAlign: 'middle'
+            backgroundColor: '#10b981', marginLeft: '2px', verticalAlign: 'middle'
           }}
         />
       )}
@@ -181,64 +181,110 @@ const contractTypes = [
 ];
 
 // ==================== CONTRACT TYPE SELECTOR ====================
-// FIX 2: Header "Contrate-me" removido. Selector é a tela inicial diretamente.
 const ContractTypeSelector = ({ onSelect }) => (
   <motion.div
-    initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-    style={{ width: '100%', maxWidth: '1024px', margin: '0 auto', padding: '16px' }}
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    style={{ width: '100%', maxWidth: '900px', margin: '0 auto', padding: '24px 16px 32px' }}
   >
-    <div style={{ textAlign: 'center', marginBottom: '24px' }}>
+    {/* Header */}
+    <div style={{ textAlign: 'center', marginBottom: '32px' }}>
       <div style={{
         display: 'inline-flex', alignItems: 'center', gap: '8px',
-        padding: '8px 16px', borderRadius: '9999px', backgroundColor: '#ecfdf5',
-        color: '#047857', fontSize: '14px', fontWeight: '500', marginBottom: '16px'
+        padding: '6px 14px', borderRadius: '9999px',
+        backgroundColor: 'rgba(16,185,129,0.1)',
+        border: '1px solid rgba(16,185,129,0.2)',
+        color: '#10b981', fontSize: '12px', fontWeight: '600',
+        letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '16px'
       }}>
-        <Sparkles size={16} /> Passo 1 de 3
+        <Sparkles size={13} />
+        Passo 1 de 3
       </div>
-      <h2 style={{ fontSize: 'clamp(20px, 5vw, 32px)', fontWeight: 'bold', color: '#111827', marginBottom: '8px' }}>
+      <h2 style={{
+        fontSize: 'clamp(22px, 5vw, 36px)', fontWeight: '800',
+        color: 'white', marginBottom: '8px', lineHeight: 1.15,
+        letterSpacing: '-0.02em'
+      }}>
         Qual contrato você precisa?
       </h2>
-      <p style={{ color: '#4b5563', fontSize: '14px' }}>Selecione o modelo ideal para sua necessidade</p>
+      <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '14px' }}>
+        Selecione o modelo ideal para sua necessidade
+      </p>
     </div>
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '12px' }}>
+
+    {/* Grid */}
+    <div style={{
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+      gap: '10px'
+    }}>
       {contractTypes.map((type, index) => (
         <motion.button
           key={type.id}
-          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: index * 0.1 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: index * 0.07 }}
           onClick={() => onSelect(type)}
           style={{
-            position: 'relative', padding: '16px', borderRadius: '12px',
-            border: '2px solid #f3f4f6', backgroundColor: 'white',
-            textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s ease'
+            position: 'relative', padding: '18px 16px', borderRadius: '16px',
+            border: '1px solid rgba(255,255,255,0.07)',
+            backgroundColor: 'rgba(255,255,255,0.03)',
+            textAlign: 'left', cursor: 'pointer',
+            transition: 'all 0.2s ease',
           }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = '#a7f3d0'; e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0,0,0,0.1)'; }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = '#f3f4f6'; e.currentTarget.style.boxShadow = 'none'; }}
+          onMouseEnter={e => {
+            e.currentTarget.style.borderColor = 'rgba(16,185,129,0.35)';
+            e.currentTarget.style.backgroundColor = 'rgba(16,185,129,0.06)';
+            e.currentTarget.style.transform = 'translateY(-2px)';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)';
+            e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.03)';
+            e.currentTarget.style.transform = 'translateY(0)';
+          }}
         >
           {type.popular && (
             <div style={{
-              position: 'absolute', top: '-12px', right: '16px', padding: '4px 12px',
+              position: 'absolute', top: '-10px', right: '14px',
+              padding: '3px 10px',
               background: 'linear-gradient(135deg, #f59e0b, #f97316)',
-              color: 'white', fontSize: '12px', fontWeight: 'bold', borderRadius: '9999px'
-            }}>Popular</div>
-          )}
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-            <div style={{
-              width: '40px', height: '40px', borderRadius: '8px', backgroundColor: '#ecfdf5',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+              color: 'white', fontSize: '10px', fontWeight: '700',
+              borderRadius: '9999px', letterSpacing: '0.05em', textTransform: 'uppercase'
             }}>
-              <type.icon size={20} color="#059669" />
+              Popular
+            </div>
+          )}
+
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', paddingRight: '20px' }}>
+            <div style={{
+              width: '38px', height: '38px', borderRadius: '10px', flexShrink: 0,
+              background: 'rgba(16,185,129,0.12)',
+              border: '1px solid rgba(16,185,129,0.2)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <type.icon size={18} color="#10b981" />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <h3 style={{ fontWeight: '600', color: '#111827', marginBottom: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <h3 style={{
+                fontWeight: '700', color: 'white', marginBottom: '4px', fontSize: '14px',
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
+              }}>
                 {type.name}
               </h3>
-              <p style={{ fontSize: '12px', color: '#6b7280', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+              <p style={{
+                fontSize: '12px', color: 'rgba(255,255,255,0.35)',
+                overflow: 'hidden', display: '-webkit-box',
+                WebkitLineClamp: 2, WebkitBoxOrient: 'vertical'
+              }}>
                 {type.description}
               </p>
             </div>
           </div>
-          <ChevronRight size={20} style={{ position: 'absolute', right: '16px', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} />
+
+          <ChevronRight size={15} style={{
+            position: 'absolute', right: '14px', top: '50%',
+            transform: 'translateY(-50%)', color: 'rgba(255,255,255,0.2)'
+          }} />
         </motion.button>
       ))}
     </div>
@@ -248,41 +294,40 @@ const ContractTypeSelector = ({ onSelect }) => (
 // ==================== GENERATING BUBBLE ====================
 const GeneratingBubble = () => (
   <motion.div
-    initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-    style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', padding: '0 8px' }}
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '0 8px' }}
   >
     <div style={{
-      width: '36px', height: '36px', borderRadius: '50%',
+      width: '34px', height: '34px', borderRadius: '50%',
       background: 'linear-gradient(135deg, #10b981, #059669)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      flexShrink: 0, boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)'
+      flexShrink: 0, boxShadow: '0 0 16px rgba(16,185,129,0.3)'
     }}>
-      <Bot size={18} color="white" />
+      <Bot size={16} color="white" />
     </div>
     <div style={{
-      padding: '12px 18px', borderRadius: '18px', borderBottomLeftRadius: '4px',
-      backgroundColor: '#ffffff', border: '1px solid #e5e7eb',
-      boxShadow: '0 2px 5px rgba(0,0,0,0.05)',
+      padding: '12px 16px', borderRadius: '18px', borderBottomLeftRadius: '4px',
+      backgroundColor: 'rgba(255,255,255,0.06)',
+      border: '1px solid rgba(255,255,255,0.1)',
       display: 'flex', alignItems: 'center', gap: '10px',
     }}>
       <div style={{
-        width: '18px', height: '18px', border: '2.5px solid #d1fae5',
-        borderTopColor: '#059669', borderRadius: '50%',
+        width: '16px', height: '16px',
+        border: '2px solid rgba(16,185,129,0.2)',
+        borderTopColor: '#10b981', borderRadius: '50%',
         animation: 'spin 0.8s linear infinite', flexShrink: 0,
       }} />
-      <span style={{ fontSize: '14px', color: '#374151', fontWeight: '500' }}>
+      <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.7)', fontWeight: '500' }}>
         Gerando contrato...
       </span>
-      <span style={{ fontSize: '12px', color: '#9ca3af' }}>aguarde</span>
+      <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.25)' }}>aguarde</span>
     </div>
   </motion.div>
 );
 
 // ==================== PDF CARD ====================
-// FIX 3: Download mobile real — no iOS abre em nova aba com botão de compartilhamento nativo
-// No Android força download via data URL que funciona sem restrições de blob
 const PdfCard = ({ contractType, generatedContract }) => {
-
   const getContractText = () => {
     if (!generatedContract) return '';
     if (typeof generatedContract === 'string') return generatedContract;
@@ -293,101 +338,55 @@ const PdfCard = ({ contractType, generatedContract }) => {
 
   const handlePdfClick = () => {
     const contractText = getContractText();
-    if (!contractText.trim()) {
-      alert('Contrato ainda não disponível.');
-      return;
-    }
-
+    if (!contractText.trim()) { alert('Contrato ainda não disponível.'); return; }
     const fileName = `${contractType?.name || 'Contrato'}.pdf`;
 
     const gerar = (JsPDF) => {
       const doc = new JsPDF({ unit: 'mm', format: 'a4' });
       const pageWidth  = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
-      const margin     = 20;
-      const maxWidth   = pageWidth - margin * 2;
-      const lineHeight = 6;
+      const margin = 20, maxWidth = pageWidth - margin * 2, lineHeight = 6;
       let y = margin;
-
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(10);
-
       for (const rawLine of contractText.split('\n')) {
         const wrapped = doc.splitTextToSize(rawLine || ' ', maxWidth);
         for (const segment of wrapped) {
-          if (y + lineHeight > pageHeight - margin) {
-            doc.addPage();
-            y = margin;
-          }
+          if (y + lineHeight > pageHeight - margin) { doc.addPage(); y = margin; }
           doc.text(segment, margin, y);
           y += lineHeight;
         }
       }
-
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-      const isAndroid = /Android/.test(navigator.userAgent);
-
-      if (isIOS) {
-        // iOS Safari: abre via data URI em nova aba — permite salvar pelo botão "Compartilhar"
-        // blob URLs são bloqueados pelo Safari em contexto cross-origin
-        const dataUri = doc.output('datauristring');
-        const newTab = window.open();
-        if (newTab) {
-          newTab.document.write(
-            `<html><head><title>${fileName}</title></head>` +
-            `<body style="margin:0;background:#000;">` +
-            `<embed width="100%" height="100%" src="${dataUri}" type="application/pdf"/>` +
-            `</body></html>`
-          );
-        } else {
-          // Popup bloqueado — fallback: link direto
-          const a = document.createElement('a');
-          a.href = doc.output('datauristring');
-          a.download = fileName;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-        }
-      } else if (isAndroid) {
-        // Android: blob URL funciona bem e inicia download direto
-        const blob = doc.output('blob');
+      const isMobile = isIOS || /Android/.test(navigator.userAgent);
+      const pdfBlob = doc.output('blob');
+      const downloadViaBlob = (blob, name) => {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = url;
-        a.download = fileName;
-        a.style.display = 'none';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+        a.href = url; a.download = name; a.style.display = 'none';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
         setTimeout(() => URL.revokeObjectURL(url), 10000);
-      } else {
-        // Desktop: doc.save() — comportamento padrão jsPDF
-        doc.save(fileName);
+      };
+      if (isMobile && navigator.share && navigator.canShare) {
+        const file = new File([pdfBlob], fileName, { type: 'application/pdf' });
+        if (navigator.canShare({ files: [file] })) {
+          navigator.share({ files: [file], title: fileName }).catch(() => downloadViaBlob(pdfBlob, fileName));
+          return;
+        }
       }
+      downloadViaBlob(pdfBlob, fileName);
     };
 
-    if (window.jspdf && window.jspdf.jsPDF) {
-      gerar(window.jspdf.jsPDF);
-      return;
-    }
-
+    if (window.jspdf && window.jspdf.jsPDF) { gerar(window.jspdf.jsPDF); return; }
     const script = document.createElement('script');
     script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
-    script.onload = () => {
-      if (window.jspdf && window.jspdf.jsPDF) {
-        gerar(window.jspdf.jsPDF);
-      }
-    };
+    script.onload = () => { if (window.jspdf?.jsPDF) gerar(window.jspdf.jsPDF); };
     script.onerror = () => {
-      // Fallback último recurso: .txt
-      const blob = new Blob([contractText], { type: 'text/plain;charset=utf-8' });
+      const blob = new Blob([getContractText()], { type: 'text/plain;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url;
-      a.download = fileName.replace('.pdf', '.txt');
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      a.href = url; a.download = fileName.replace('.pdf', '.txt');
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
       setTimeout(() => URL.revokeObjectURL(url), 5000);
     };
     document.head.appendChild(script);
@@ -395,26 +394,32 @@ const PdfCard = ({ contractType, generatedContract }) => {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-      style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', padding: '0 8px' }}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '0 8px' }}
     >
       <div style={{
-        width: '36px', height: '36px', borderRadius: '50%',
+        width: '34px', height: '34px', borderRadius: '50%',
         background: 'linear-gradient(135deg, #10b981, #059669)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        flexShrink: 0, boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)'
+        flexShrink: 0, boxShadow: '0 0 16px rgba(16,185,129,0.3)'
       }}>
-        <Bot size={18} color="white" />
+        <Bot size={16} color="white" />
       </div>
+
       <div style={{ maxWidth: '340px' }}>
+        {/* Success message */}
         <div style={{
-          padding: '12px 16px', borderRadius: '18px', borderBottomLeftRadius: '4px',
-          backgroundColor: '#ffffff', border: '1px solid #e5e7eb',
-          boxShadow: '0 2px 5px rgba(0,0,0,0.05)',
-          fontSize: '14px', color: '#1f2937', marginBottom: '8px', lineHeight: '1.5',
+          padding: '11px 16px', borderRadius: '18px', borderBottomLeftRadius: '4px',
+          backgroundColor: 'rgba(16,185,129,0.1)',
+          border: '1px solid rgba(16,185,129,0.2)',
+          fontSize: '14px', color: 'rgba(255,255,255,0.85)',
+          marginBottom: '8px', lineHeight: '1.5',
         }}>
           ✅ Seu contrato foi gerado com sucesso! Clique abaixo para baixar o PDF.
         </div>
+
+        {/* Download card */}
         <button
           onClick={handlePdfClick}
           style={{ width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'left' }}
@@ -422,43 +427,46 @@ const PdfCard = ({ contractType, generatedContract }) => {
           <div
             style={{
               display: 'flex', alignItems: 'center', gap: '12px',
-              padding: '12px 16px', borderRadius: '14px',
-              backgroundColor: '#ffffff', border: '1.5px solid #e5e7eb',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
-              transition: 'border-color 0.2s, box-shadow 0.2s',
+              padding: '12px 14px', borderRadius: '14px',
+              backgroundColor: 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              transition: 'border-color 0.2s, background-color 0.2s',
             }}
             onMouseEnter={e => {
-              e.currentTarget.style.borderColor = '#10b981';
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(16,185,129,0.15)';
+              e.currentTarget.style.borderColor = 'rgba(16,185,129,0.4)';
+              e.currentTarget.style.backgroundColor = 'rgba(16,185,129,0.07)';
             }}
             onMouseLeave={e => {
-              e.currentTarget.style.borderColor = '#e5e7eb';
-              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)';
+              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
+              e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.04)';
             }}
           >
             <div style={{
-              width: '44px', height: '44px', borderRadius: '10px',
+              width: '42px', height: '42px', borderRadius: '10px',
               background: 'linear-gradient(135deg, #ef4444, #dc2626)',
               display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+              boxShadow: '0 4px 12px rgba(239,68,68,0.3)'
             }}>
-              <FileText size={22} color="white" />
+              <FileText size={20} color="white" />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <p style={{
-                fontSize: '13px', fontWeight: '600', color: '#111827',
+                fontSize: '13px', fontWeight: '600', color: 'white',
                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0,
               }}>
                 {contractType?.name || 'Contrato'}.pdf
               </p>
-              <p style={{ fontSize: '11px', color: '#6b7280', margin: '2px 0 0' }}>
+              <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.35)', margin: '2px 0 0' }}>
                 PDF · Clique para baixar
               </p>
             </div>
             <div style={{
-              width: '28px', height: '28px', borderRadius: '8px',
-              backgroundColor: '#f0fdf4', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+              width: '26px', height: '26px', borderRadius: '8px',
+              backgroundColor: 'rgba(16,185,129,0.15)',
+              border: '1px solid rgba(16,185,129,0.25)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
             }}>
-              <ChevronRight size={16} color="#059669" />
+              <ChevronRight size={14} color="#10b981" />
             </div>
           </div>
         </button>
@@ -474,45 +482,52 @@ const MessageBubble = ({ message, isBot, isGenerating, isPdfCard, contractType, 
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
       style={{
-        display: 'flex', alignItems: 'flex-start', gap: '8px',
-        padding: '0 8px', justifyContent: isBot ? 'flex-start' : 'flex-end', width: '100%'
+        display: 'flex', alignItems: 'flex-start', gap: '10px',
+        padding: '0 8px',
+        justifyContent: isBot ? 'flex-start' : 'flex-end',
+        width: '100%'
       }}
     >
       {isBot && (
         <div style={{
-          width: '36px', height: '36px', borderRadius: '50%',
+          width: '34px', height: '34px', borderRadius: '50%',
           background: 'linear-gradient(135deg, #10b981, #059669)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          flexShrink: 0, boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)'
+          flexShrink: 0, boxShadow: '0 0 16px rgba(16,185,129,0.3)'
         }}>
-          <Bot size={18} color="white" />
+          <Bot size={16} color="white" />
         </div>
       )}
+
       <div style={{
         maxWidth: '75%', padding: '12px 16px', borderRadius: '18px',
-        backgroundColor: isBot ? '#ffffff' : '#10b981',
-        color: isBot ? '#1f2937' : '#ffffff',
+        backgroundColor: isBot ? 'rgba(255,255,255,0.06)' : '#10b981',
+        color: isBot ? 'rgba(255,255,255,0.85)' : 'white',
         borderBottomLeftRadius: isBot ? '4px' : '18px',
         borderBottomRightRadius: isBot ? '18px' : '4px',
-        boxShadow: '0 2px 5px rgba(0,0,0,0.05)',
-        border: isBot ? '1px solid #e5e7eb' : 'none', wordBreak: 'break-word'
+        border: isBot ? '1px solid rgba(255,255,255,0.1)' : 'none',
+        boxShadow: isBot ? 'none' : '0 4px 16px rgba(16,185,129,0.25)',
+        wordBreak: 'break-word', fontSize: '14px', lineHeight: '1.55'
       }}>
         {isBot ? (
           <TypingText text={message} onComplete={onTypingComplete} speed={12} />
         ) : (
-          <p style={{ fontSize: '15px', lineHeight: '1.5', margin: 0, whiteSpace: 'pre-wrap' }}>{message}</p>
+          <p style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{message}</p>
         )}
       </div>
+
       {!isBot && (
         <div style={{
-          width: '36px', height: '36px', borderRadius: '50%',
-          background: 'linear-gradient(135deg, #374151, #111827)',
+          width: '34px', height: '34px', borderRadius: '50%',
+          background: 'rgba(255,255,255,0.1)',
+          border: '1px solid rgba(255,255,255,0.15)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          flexShrink: 0, boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)'
+          flexShrink: 0,
         }}>
-          <User size={18} color="white" />
+          <User size={16} color="rgba(255,255,255,0.7)" />
         </div>
       )}
     </motion.div>
@@ -522,27 +537,31 @@ const MessageBubble = ({ message, isBot, isGenerating, isPdfCard, contractType, 
 // ==================== TYPING INDICATOR ====================
 const TypingIndicator = () => (
   <motion.div
-    initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-    style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', padding: '0 8px' }}
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '0 8px' }}
   >
     <div style={{
-      width: '36px', height: '36px', borderRadius: '50%',
+      width: '34px', height: '34px', borderRadius: '50%',
       background: 'linear-gradient(135deg, #10b981, #059669)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      flexShrink: 0, boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)'
+      flexShrink: 0, boxShadow: '0 0 16px rgba(16,185,129,0.3)'
     }}>
-      <Bot size={18} color="white" />
+      <Bot size={16} color="white" />
     </div>
     <div style={{
-      backgroundColor: '#ffffff', padding: '12px 16px', borderRadius: '18px',
-      borderBottomLeftRadius: '4px', border: '1px solid #e5e7eb',
-      boxShadow: '0 2px 5px rgba(0,0,0,0.05)'
+      padding: '14px 16px', borderRadius: '18px', borderBottomLeftRadius: '4px',
+      backgroundColor: 'rgba(255,255,255,0.06)',
+      border: '1px solid rgba(255,255,255,0.1)',
     }}>
-      <div style={{ display: 'flex', gap: '4px' }}>
+      <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
         {[0, 0.15, 0.3].map((delay, i) => (
           <div key={i} style={{
-            width: '8px', height: '8px', backgroundColor: '#9ca3af', borderRadius: '50%',
-            animation: 'bounce 1s infinite', animationDelay: `${delay}s`
+            width: '7px', height: '7px',
+            backgroundColor: 'rgba(16,185,129,0.7)',
+            borderRadius: '50%',
+            animation: 'bounce 1s infinite',
+            animationDelay: `${delay}s`
           }} />
         ))}
       </div>
@@ -551,8 +570,6 @@ const TypingIndicator = () => (
 );
 
 // ==================== CHAT INPUT ====================
-// FIX 1: font-size 16px no textarea para impedir zoom automático no iOS/Android
-// O navegador só dá zoom se o font-size for < 16px
 const ChatInput = ({ value, onChange, onSend, disabled }) => {
   const textareaRef = useRef(null);
   const [focused, setFocused] = useState(false);
@@ -565,16 +582,23 @@ const ChatInput = ({ value, onChange, onSend, disabled }) => {
   }, [value]);
 
   return (
-    <div style={{ padding: '10px 16px 12px 16px', background: 'transparent' }}>
+    <div style={{
+      padding: '10px 16px 14px',
+      background: 'linear-gradient(to top, rgba(8,13,20,1) 60%, rgba(8,13,20,0))',
+    }}>
       <div style={{ maxWidth: '672px', margin: '0 auto' }}>
         <div style={{
           display: 'flex', alignItems: 'flex-end', gap: '10px',
-          backgroundColor: '#ffffff', borderRadius: '16px',
+          backgroundColor: 'rgba(255,255,255,0.05)',
+          borderRadius: '18px',
           padding: '8px 8px 8px 16px',
-          border: focused ? '1.5px solid #10b981' : '1.5px solid #e5e7eb',
+          border: focused
+            ? '1.5px solid rgba(16,185,129,0.5)'
+            : '1.5px solid rgba(255,255,255,0.08)',
           boxShadow: focused
-            ? '0 0 0 3px rgba(16,185,129,0.1), 0 2px 8px rgba(0,0,0,0.06)'
-            : '0 1px 4px rgba(0,0,0,0.08)',
+            ? '0 0 0 3px rgba(16,185,129,0.08)'
+            : 'none',
+          backdropFilter: 'blur(12px)',
           transition: 'border-color 0.2s, box-shadow 0.2s',
         }}>
           <textarea
@@ -589,36 +613,37 @@ const ChatInput = ({ value, onChange, onSend, disabled }) => {
             rows={1}
             style={{
               flex: 1, backgroundColor: 'transparent', padding: '6px 0',
-              color: '#111827', resize: 'none', outline: 'none',
+              color: 'white', resize: 'none', outline: 'none',
               minHeight: '40px', maxHeight: '120px',
-              // ✅ FIX 1: 16px impede zoom automático em iOS e Android
               fontSize: '16px',
               border: 'none', fontFamily: 'inherit', lineHeight: '1.5',
-              // ✅ FIX 1: evita que o iOS arredonde o input
-              WebkitAppearance: 'none',
-              borderRadius: 0,
+              WebkitAppearance: 'none', borderRadius: 0,
             }}
           />
           <button
             onClick={onSend}
             disabled={disabled || !value.trim()}
             style={{
-              flexShrink: 0, width: '36px', height: '36px', borderRadius: '10px',
+              flexShrink: 0, width: '36px', height: '36px', borderRadius: '12px',
               background: !disabled && value.trim()
                 ? 'linear-gradient(135deg, #059669, #10b981)'
-                : '#e5e7eb',
-              color: !disabled && value.trim() ? 'white' : '#9ca3af',
+                : 'rgba(255,255,255,0.07)',
+              color: !disabled && value.trim() ? 'white' : 'rgba(255,255,255,0.25)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               border: 'none', cursor: disabled || !value.trim() ? 'not-allowed' : 'pointer',
               transition: 'all 0.2s ease',
+              boxShadow: !disabled && value.trim() ? '0 4px 12px rgba(16,185,129,0.3)' : 'none',
             }}
           >
             {disabled
-              ? <Loader2 size={17} style={{ animation: 'spin 1s linear infinite' }} />
-              : <Send size={15} />}
+              ? <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
+              : <Send size={14} />}
           </button>
         </div>
-        <p style={{ fontSize: '11px', color: '#b0b8c4', textAlign: 'center', marginTop: '5px', letterSpacing: '0.01em' }}>
+        <p style={{
+          fontSize: '11px', color: 'rgba(255,255,255,0.2)',
+          textAlign: 'center', marginTop: '6px', letterSpacing: '0.01em'
+        }}>
           Enter para enviar · Shift+Enter para nova linha
         </p>
       </div>
@@ -629,61 +654,111 @@ const ChatInput = ({ value, onChange, onSend, disabled }) => {
 // ==================== PROGRESS SIDEBAR ====================
 const ProgressSidebar = ({ currentStep, contractType }) => {
   const steps = [
-    { id: 1, name: 'Tipo', icon: FileCheck },
+    { id: 1, name: 'Tipo de Contrato', icon: FileCheck },
     { id: 2, name: 'Dados', icon: Users },
-    { id: 3, name: 'Contrato', icon: FileText },
+    { id: 3, name: 'Contrato Pronto', icon: FileText },
   ];
   if (currentStep === 4) return null;
+
   return (
-    <div className="hidden lg:block" style={{
-      width: '288px', position: 'fixed', left: 0, top: '56px', bottom: 0,
-      background: 'linear-gradient(135deg, #111827, #1f2937)', color: 'white', padding: '24px', overflowY: 'auto'
+    <div className="hidden lg:flex" style={{
+      width: '260px', position: 'fixed', left: 0, top: 0, bottom: 0,
+      backgroundColor: '#060b11',
+      borderRight: '1px solid rgba(255,255,255,0.06)',
+      flexDirection: 'column',
+      padding: '28px 20px',
     }}>
+      {/* Logo */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '40px' }}>
+        <div style={{
+          width: '32px', height: '32px', borderRadius: '10px',
+          background: 'linear-gradient(135deg, #10b981, #059669)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          overflow: 'hidden', boxShadow: '0 0 16px rgba(16,185,129,0.3)'
+        }}>
+          <img src="/robozinho.png" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        </div>
+        <span style={{ fontSize: '15px', fontWeight: '700', color: 'white' }}>
+          Contrate<span style={{ color: '#10b981' }}>-me</span>
+        </span>
+      </div>
+
+      {/* Contract type */}
       <div style={{ marginBottom: '32px' }}>
-        <h3 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '12px' }}>Seu Contrato</h3>
+        <p style={{ fontSize: '11px', fontWeight: '700', color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '10px' }}>
+          Contrato
+        </p>
         {contractType ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', borderRadius: '12px', backgroundColor: 'rgba(255,255,255,0.1)' }}>
-            <contractType.icon size={20} color="#34d399" />
-            <span style={{ fontSize: '14px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{contractType.name}</span>
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: '10px',
+            padding: '10px 12px', borderRadius: '12px',
+            backgroundColor: 'rgba(16,185,129,0.08)',
+            border: '1px solid rgba(16,185,129,0.15)'
+          }}>
+            <contractType.icon size={16} color="#10b981" />
+            <span style={{ fontSize: '13px', color: 'white', fontWeight: '600', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {contractType.name}
+            </span>
           </div>
-        ) : <p style={{ fontSize: '14px', color: '#9ca3af' }}>Selecione um tipo</p>}
+        ) : (
+          <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.2)' }}>Nenhum selecionado</p>
+        )}
       </div>
-      <div>
-        <h4 style={{ fontSize: '12px', fontWeight: '500', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '16px' }}>Progresso</h4>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {steps.map(step => (
-            <div key={step.id} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{
-                width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                backgroundColor: currentStep > step.id ? '#10b981' : currentStep === step.id ? 'rgba(16,185,129,0.2)' : 'rgba(255,255,255,0.1)',
-                border: currentStep === step.id ? '2px solid #10b981' : 'none'
-              }}>
-                {currentStep > step.id ? <CheckCircle2 size={20} color="white" /> : <step.icon size={20} color={currentStep === step.id ? '#34d399' : '#9ca3af'} />}
+
+      {/* Steps */}
+      <div style={{ flex: 1 }}>
+        <p style={{ fontSize: '11px', fontWeight: '700', color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '16px' }}>
+          Progresso
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          {steps.map((step, i) => {
+            const isActive = currentStep === step.id;
+            const isDone = currentStep > step.id;
+            return (
+              <div key={step.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px', borderRadius: '12px', backgroundColor: isActive ? 'rgba(16,185,129,0.07)' : 'transparent' }}>
+                <div style={{
+                  width: '28px', height: '28px', borderRadius: '50%', flexShrink: 0,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  backgroundColor: isDone ? '#10b981' : isActive ? 'rgba(16,185,129,0.15)' : 'rgba(255,255,255,0.05)',
+                  border: isActive ? '1.5px solid rgba(16,185,129,0.4)' : 'none',
+                }}>
+                  {isDone
+                    ? <CheckCircle2 size={16} color="white" />
+                    : <step.icon size={14} color={isActive ? '#10b981' : 'rgba(255,255,255,0.25)'} />}
+                </div>
+                <div>
+                  <p style={{ fontSize: '13px', fontWeight: '600', color: isDone || isActive ? 'white' : 'rgba(255,255,255,0.25)', lineHeight: 1.2 }}>
+                    {step.name}
+                  </p>
+                  {isActive && (
+                    <p style={{ fontSize: '11px', color: '#10b981', marginTop: '2px' }}>Em andamento</p>
+                  )}
+                </div>
               </div>
-              <div>
-                <p style={{ fontSize: '14px', fontWeight: '500', color: currentStep >= step.id ? 'white' : '#9ca3af' }}>{step.name}</p>
-                {currentStep === step.id && <p style={{ fontSize: '12px', color: '#34d399' }}>Em andamento</p>}
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
+
+      {/* Time estimate */}
       <div style={{
-        position: 'absolute', bottom: '24px', left: '24px', right: '24px', padding: '16px',
-        borderRadius: '12px', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)'
+        padding: '14px 16px', borderRadius: '14px',
+        backgroundColor: 'rgba(255,255,255,0.03)',
+        border: '1px solid rgba(255,255,255,0.07)'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#34d399', marginBottom: '8px' }}>
-          <Clock size={16} />
-          <span style={{ fontSize: '14px', fontWeight: '500' }}>Tempo estimado</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+          <Clock size={14} color="#10b981" />
+          <span style={{ fontSize: '12px', fontWeight: '600', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+            Tempo estimado
+          </span>
         </div>
-        <p style={{ fontSize: '24px', fontWeight: 'bold' }}>~3 min</p>
+        <p style={{ fontSize: '26px', fontWeight: '800', color: 'white', letterSpacing: '-0.02em' }}>~3 min</p>
       </div>
     </div>
   );
 };
 
 // ==================== CHAT INTERFACE ====================
-// FIX 2: Removida a sub-barra com nome do contrato (era o "header superior" visível no mobile)
 const ChatInterface = ({ contractType, messages, isTyping, isGenerating, inputValue, setInputValue, onSendMessage, onViewContract, generatedContract }) => {
   const messagesEndRef = useRef(null);
 
@@ -692,10 +767,37 @@ const ChatInterface = ({ contractType, messages, isTyping, isGenerating, inputVa
   }, [messages, isTyping, isGenerating]);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', backgroundColor: '#f3f4f6' }}>
-      {/* ✅ FIX 2: sub-barra com nome do contrato removida — era o "Prestação de Serviços" no topo */}
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', backgroundColor: '#0a1018' }}>
+      {/* Top bar */}
+      <div style={{
+        backgroundColor: 'rgba(8,13,20,0.9)',
+        borderBottom: '1px solid rgba(255,255,255,0.06)',
+        padding: '10px 16px',
+        flexShrink: 0,
+        display: 'flex',
+        alignItems: 'center',
+        gap: '10px',
+        backdropFilter: 'blur(12px)',
+      }}>
+        <div style={{
+          width: '28px', height: '28px', borderRadius: '8px',
+          background: 'linear-gradient(135deg, #10b981, #059669)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+          boxShadow: '0 0 10px rgba(16,185,129,0.3)'
+        }}>
+          <contractType.icon size={14} color="white" />
+        </div>
+        <span style={{ fontWeight: '600', color: 'white', fontSize: '14px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {contractType.name}
+        </span>
+        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10b981', boxShadow: '0 0 6px rgba(16,185,129,0.6)' }} />
+          <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.3)', fontWeight: '500' }}>IA ativa</span>
+        </div>
+      </div>
 
-      <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '16px 8px 20px' }}>
+      {/* Messages */}
+      <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '20px 8px 8px' }}>
         <div style={{ maxWidth: '672px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <AnimatePresence>
             {messages.map((msg, i) => (
@@ -716,6 +818,7 @@ const ChatInterface = ({ contractType, messages, isTyping, isGenerating, inputVa
         </div>
       </div>
 
+      {/* Input */}
       <div style={{ flexShrink: 0, position: 'sticky', bottom: 0, zIndex: 10 }}>
         <ChatInput value={inputValue} onChange={setInputValue} onSend={onSendMessage} disabled={isTyping || isGenerating} />
       </div>
@@ -742,17 +845,19 @@ const Chat = () => {
     style.textContent = `
       @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
       @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-      @keyframes bounce { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-4px); } }
+      @keyframes bounce { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-5px); } }
       * { box-sizing: border-box; margin: 0; padding: 0; }
-      body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; overflow: hidden; }
+      body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; overflow: hidden; background: #080d14; }
+      ::-webkit-scrollbar { width: 4px; }
+      ::-webkit-scrollbar-track { background: transparent; }
+      ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+      ::placeholder { color: rgba(255,255,255,0.25) !important; }
     `;
     document.head.appendChild(style);
     return () => style.remove();
   }, []);
 
   useEffect(() => {
-    // ✅ FIX 1: usa dvh (dynamic viewport height) quando disponível, fallback para innerHeight
-    // dvh desconta automaticamente a barra do navegador mobile
     const setVh = () => {
       const vh = window.innerHeight * 0.01;
       document.documentElement.style.setProperty('--vh', `${vh}px`);
@@ -760,10 +865,7 @@ const Chat = () => {
     setVh();
     window.addEventListener('resize', setVh);
     window.addEventListener('orientationchange', setVh);
-    return () => {
-      window.removeEventListener('resize', setVh);
-      window.removeEventListener('orientationchange', setVh);
-    };
+    return () => { window.removeEventListener('resize', setVh); window.removeEventListener('orientationchange', setVh); };
   }, []);
 
   useEffect(() => {
@@ -806,19 +908,9 @@ const Chat = () => {
             const contract = await chatService.generateContract();
             setGeneratedContract(contract);
             setContractReady(true);
-            setMessages(prev =>
-              prev.map(m => m.isGenerating
-                ? { text: '__PDF_READY__', isBot: true, isPdfCard: true }
-                : m
-              )
-            );
+            setMessages(prev => prev.map(m => m.isGenerating ? { text: '__PDF_READY__', isBot: true, isPdfCard: true } : m));
           } catch (e) {
-            setMessages(prev =>
-              prev.map(m => m.isGenerating
-                ? { text: `❌ Erro ao gerar o contrato: ${e.message}`, isBot: true }
-                : m
-              )
-            );
+            setMessages(prev => prev.map(m => m.isGenerating ? { text: `❌ Erro ao gerar o contrato: ${e.message}`, isBot: true } : m));
           } finally {
             setIsGenerating(false);
           }
@@ -843,29 +935,34 @@ const Chat = () => {
     setContractReady(false);
   };
 
-  const handleViewContract = () => {
-    setCurrentStep(4);
-  };
-
+  const handleViewContract = () => setCurrentStep(4);
   const isDesktop = windowWidth >= 1024;
 
   return (
-    // ✅ FIX 1: usa --vh calculado dinamicamente para evitar layout quebrado com teclado aberto
-    <div style={{ height: 'calc(var(--vh, 1vh) * 100)', display: 'flex', flexDirection: 'column', overflow: 'hidden', backgroundColor: '#f9fafb' }}>
-
-      {/* ✅ FIX 2: ChatHeader removido completamente — era o "Contrate-me" no topo */}
-
-      {isDesktop && currentStep <= 2 && <ProgressSidebar currentStep={currentStep} contractType={selectedContract} />}
+    <div style={{
+      height: 'calc(var(--vh, 1vh) * 100)',
+      display: 'flex', flexDirection: 'column',
+      overflow: 'hidden', backgroundColor: '#080d14'
+    }}>
+      {isDesktop && currentStep <= 2 && (
+        <ProgressSidebar currentStep={currentStep} contractType={selectedContract} />
+      )}
 
       <main style={{
         flex: 1,
-        // ✅ FIX 2: paddingTop zerado pois o header foi removido
         paddingTop: 0,
-        marginLeft: isDesktop && currentStep <= 2 ? '288px' : 0,
-        display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden'
+        marginLeft: isDesktop && currentStep <= 2 ? '260px' : 0,
+        display: 'flex', flexDirection: 'column',
+        minHeight: 0, overflow: 'hidden'
       }}>
         {currentStep === 1 && (
-          <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', paddingTop: '16px' }}>
+          <div style={{
+            flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch',
+            paddingTop: '20px',
+            // Subtle grid background
+            backgroundImage: `linear-gradient(rgba(16,185,129,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(16,185,129,0.04) 1px, transparent 1px)`,
+            backgroundSize: '50px 50px',
+          }}>
             <ContractTypeSelector onSelect={handleSelectContract} />
           </div>
         )}
@@ -887,10 +984,7 @@ const Chat = () => {
         )}
 
         {currentStep === 4 && generatedContract && (
-          <div style={{
-            position: 'fixed', inset: 0, zIndex: 100,
-            backgroundColor: '#f8faf9', overflowY: 'auto',
-          }}>
+          <div style={{ position: 'fixed', inset: 0, zIndex: 100, backgroundColor: '#080d14', overflowY: 'auto' }}>
             <ContractViewer
               contract={generatedContract}
               contractType={selectedContract}
@@ -901,10 +995,14 @@ const Chat = () => {
         )}
 
         {generationError && currentStep === 2 && (
-          <div style={{ position: 'fixed', bottom: '80px', left: isDesktop ? 'calc(288px + 16px)' : '16px', right: '16px', zIndex: 50 }}>
-            <div style={{ backgroundColor: '#fef2f2', border: '1px solid #fee2e2', borderRadius: '12px', padding: '16px' }}>
-              <p style={{ fontSize: '14px', color: '#991b1b' }}>{generationError}</p>
-              <button onClick={() => setGenerationError(null)} style={{ marginTop: '8px', fontSize: '14px', color: '#991b1b', textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer' }}>
+          <div style={{ position: 'fixed', bottom: '80px', left: isDesktop ? 'calc(260px + 16px)' : '16px', right: '16px', zIndex: 50 }}>
+            <div style={{
+              backgroundColor: 'rgba(239,68,68,0.1)',
+              border: '1px solid rgba(239,68,68,0.25)',
+              borderRadius: '14px', padding: '16px'
+            }}>
+              <p style={{ fontSize: '14px', color: '#fca5a5' }}>{generationError}</p>
+              <button onClick={() => setGenerationError(null)} style={{ marginTop: '8px', fontSize: '13px', color: '#fca5a5', textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer' }}>
                 Fechar
               </button>
             </div>
