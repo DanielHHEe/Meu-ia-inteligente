@@ -50,11 +50,10 @@ const Header = ({ onCreateContract }) => {
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6 }}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        scrolled
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled
           ? "bg-[#080d14]/95 backdrop-blur-xl shadow-2xl shadow-black/30 border-b border-white/5"
           : "bg-transparent"
-      }`}
+        }`}
     >
       <div className="max-w-7xl mx-auto px-6 md:px-10">
         <div className="flex items-center justify-between h-20">
@@ -573,40 +572,8 @@ const BenefitsSection = () => {
 };
 
 // ==================== PRICING SECTION ====================
+// ALTERAÇÕES: removido card "Pack 3 Contratos" e corrigido alinhamento do botão
 const PricingSection = ({ onCreateContract }) => {
-  const plans = [
-    {
-      name: "Contrato Único",
-      price: "19,90",
-      description: "Ideal para uma necessidade pontual",
-      features: [
-        "1 contrato personalizado",
-        "Gerado por IA avançada",
-        "Revisão jurídica incluída",
-        "Download imediato em PDF",
-        "Suporte por e-mail",
-      ],
-      popular: false,
-      cta: "Criar Contrato",
-    },
-    {
-      name: "Pack 3 Contratos",
-      price: "49,90",
-      originalPrice: "59,70",
-      description: "Melhor custo-benefício",
-      features: [
-        "3 contratos personalizados",
-        "Gerado por IA avançada",
-        "Revisão jurídica incluída",
-        "Download imediato em PDF",
-        "Suporte prioritário",
-        "Economia de R$ 9,80",
-      ],
-      popular: true,
-      cta: "Escolher Pack",
-    },
-  ];
-
   return (
     <section id="precos" className="py-28 md:py-40 bg-[#080d14] relative overflow-hidden">
       <div className="absolute inset-0 pointer-events-none"
@@ -633,100 +600,74 @@ const PricingSection = ({ onCreateContract }) => {
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-          {plans.map((plan, index) => (
-            <motion.div
-              key={plan.name}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.15 }}
-              className="relative"
+        {/* Único card centralizado */}
+        <div className="flex justify-center">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="w-full max-w-sm"
+          >
+            <div
+              className="relative rounded-3xl p-8 flex flex-col border border-white/8 bg-white/[0.02] hover:border-white/15 transition-all duration-300"
             >
-              {plan.popular && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20">
-                  <div className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold text-[#080d14] shadow-lg whitespace-nowrap"
-                    style={{ background: "linear-gradient(135deg, #fbbf24, #f59e0b)" }}>
-                    <Star className="w-3 h-3 fill-current" />
-                    Mais Popular
-                  </div>
-                </div>
-              )}
+              <div className="mb-8 pt-3">
+                <h3 className="text-lg font-bold text-white mb-1">Contrato Único</h3>
+                <p className="text-sm text-white/40">Ideal para uma necessidade pontual</p>
+              </div>
 
-              <div
-                className={`relative rounded-3xl p-8 h-full flex flex-col transition-all duration-300 ${
-                  plan.popular
-                    ? "border border-emerald-500/40 bg-emerald-500/5"
-                    : "border border-white/8 bg-white/[0.02] hover:border-white/15"
-                }`}
-                style={plan.popular ? {
-                  boxShadow: "0 0 60px rgba(16,185,129,0.12), inset 0 1px 0 rgba(255,255,255,0.05)"
-                } : {}}
-              >
-                {plan.popular && (
-                  <div className="absolute inset-0 rounded-3xl pointer-events-none"
-                    style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(16,185,129,0.08) 0%, transparent 60%)" }} />
-                )}
-
-                <div className="relative">
-                  <div className="mb-8 pt-3">
-                    <h3 className="text-lg font-bold text-white mb-1">{plan.name}</h3>
-                    <p className="text-sm text-white/40">{plan.description}</p>
-                  </div>
-
-                  <div className="mb-8">
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-sm text-white/40 font-medium">R$</span>
-                      <span className="text-6xl font-black text-white leading-none"
-                        style={{ fontFamily: "'Syne', sans-serif" }}>
-                        {plan.price}
-                      </span>
-                    </div>
-                    {plan.originalPrice && (
-                      <p className="text-sm text-white/30 mt-2">
-                        <span className="line-through">R$ {plan.originalPrice}</span>
-                        <span className="text-emerald-400 ml-2 font-medium">— economize R$ 9,80</span>
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="h-px bg-white/6 mb-8" />
-
-                  <ul className="space-y-3 mb-8 flex-1">
-                    {plan.features.map((feature) => (
-                      <li key={feature} className="flex items-start gap-3">
-                        <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${
-                          plan.popular ? "bg-emerald-500/20 border border-emerald-500/30" : "bg-white/8 border border-white/10"
-                        }`}>
-                          <Check className={`w-2.5 h-2.5 ${plan.popular ? "text-emerald-400" : "text-white/40"}`} />
-                        </div>
-                        <span className="text-sm text-white/60">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  <motion.button
-                    onClick={onCreateContract}
-                    whileHover={{ scale: 1.02, y: -2 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="w-full py-4 rounded-2xl font-bold text-sm transition-all duration-200 flex items-center justify-center gap-2"
-                    style={plan.popular ? {
-                      background: "linear-gradient(135deg, #10b981, #059669)",
-                      color: "white",
-                      boxShadow: "0 4px 24px rgba(16,185,129,0.3)",
-                    } : {
-                      background: "rgba(255,255,255,0.05)",
-                      color: "rgba(255,255,255,0.7)",
-                      border: "1px solid rgba(255,255,255,0.1)",
-                    }}
-                  >
-                    {plan.popular && <Sparkles className="w-4 h-4" />}
-                    {plan.cta}
-                  </motion.button>
+              <div className="mb-8">
+                <div className="flex items-baseline gap-1">
+                  <span className="text-sm text-white/40 font-medium">R$</span>
+                  <span className="text-6xl font-black text-white leading-none"
+                    style={{ fontFamily: "'Syne', sans-serif" }}>
+                    19,90
+                  </span>
                 </div>
               </div>
-            </motion.div>
-          ))}
+
+              <div className="h-px bg-white/6 mb-8" />
+
+              <ul className="space-y-3 mb-8 flex-1">
+                {[
+                  "1 contrato personalizado",
+                  "Gerado por IA avançada",
+                  "Revisão jurídica incluída",
+                  "Download imediato em PDF",
+                  "Suporte por e-mail",
+                ].map((feature) => (
+                  <li key={feature} className="flex items-start gap-3">
+                    <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 bg-white/8 border border-white/10">
+                      <Check className="w-2.5 h-2.5 text-white/40" />
+                    </div>
+                    <span className="text-sm text-white/60">{feature}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <motion.button
+                onClick={onCreateContract}
+                whileHover={{ scale: 1.02, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full py-4 rounded-2xl font-bold text-sm transition-all duration-200 flex items-center justify-center gap-2"
+                style={{
+                  backgroundColor: "#10b981", // emerald-500
+                  color: "#ffffff",
+                  fontSize: "0.875rem", // text-sm
+                  fontWeight: "500",
+                  padding: "0.625rem 1.25rem", // py-2.5 px-5
+                  borderRadius: "0.75rem", // rounded-xl
+                  boxShadow: "0 10px 15px -3px rgba(16,185,129,0.25)",
+                  transition: "all 0.2s ease",
+                  border: "none",
+                  cursor: "pointer"
+                }}
+              >
+                Criar Contrato
+              </motion.button>
+            </div>
+          </motion.div>
         </div>
 
         <motion.div
@@ -818,20 +759,18 @@ const FAQSection = () => {
             {faqs.map((faq, index) => (
               <div
                 key={index}
-                className={`rounded-2xl border transition-all duration-300 overflow-hidden ${
-                  openItem === index
+                className={`rounded-2xl border transition-all duration-300 overflow-hidden ${openItem === index
                     ? "border-emerald-500/25 bg-emerald-500/5"
                     : "border-white/6 bg-white/[0.02] hover:border-white/12"
-                }`}
+                  }`}
               >
                 <button
                   onClick={() => setOpenItem(openItem === index ? null : index)}
                   className="w-full flex items-center justify-between p-6 text-left font-semibold text-white/80 hover:text-white transition-colors"
                 >
                   <span className="text-sm leading-relaxed pr-4">{faq.question}</span>
-                  <div className={`w-7 h-7 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
-                    openItem === index ? "bg-emerald-500/20 rotate-180" : "bg-white/5"
-                  }`}>
+                  <div className={`w-7 h-7 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300 ${openItem === index ? "bg-emerald-500/20 rotate-180" : "bg-white/5"
+                    }`}>
                     <ChevronDown className={`w-4 h-4 ${openItem === index ? "text-emerald-400" : "text-white/40"}`} />
                   </div>
                 </button>
