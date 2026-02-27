@@ -27,6 +27,16 @@ import {
 
 import Chat from "./Chat";
 
+// ==================== SMOOTH SCROLL HELPER ====================
+const smoothScrollTo = (e, href) => {
+  e.preventDefault();
+  const id = href.replace("#", "");
+  const el = document.getElementById(id);
+  if (el) {
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+};
+
 // ==================== HEADER ====================
 const Header = ({ onCreateContract }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -50,10 +60,11 @@ const Header = ({ onCreateContract }) => {
       initial={{ y: -100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6 }}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+        scrolled
           ? "bg-[#080d14]/95 backdrop-blur-xl shadow-2xl shadow-black/30 border-b border-white/5"
           : "bg-transparent"
-        }`}
+      }`}
     >
       <div className="max-w-7xl mx-auto px-6 md:px-10">
         <div className="flex items-center justify-between h-20">
@@ -75,6 +86,7 @@ const Header = ({ onCreateContract }) => {
               <a
                 key={link.href}
                 href={link.href}
+                onClick={(e) => smoothScrollTo(e, link.href)}
                 className="text-sm font-medium text-white/60 hover:text-white transition-colors duration-200"
               >
                 {link.label}
@@ -115,7 +127,7 @@ const Header = ({ onCreateContract }) => {
                     key={link.href}
                     href={link.href}
                     className="text-sm font-medium text-white/60 hover:text-white px-3 py-3 rounded-lg hover:bg-white/5 transition-all"
-                    onClick={() => setIsMenuOpen(false)}
+                    onClick={(e) => { smoothScrollTo(e, link.href); setIsMenuOpen(false); }}
                   >
                     {link.label}
                   </a>
@@ -572,7 +584,6 @@ const BenefitsSection = () => {
 };
 
 // ==================== PRICING SECTION ====================
-// ALTERAÇÕES: removido card "Pack 3 Contratos" e corrigido alinhamento do botão
 const PricingSection = ({ onCreateContract }) => {
   return (
     <section id="precos" className="py-28 md:py-40 bg-[#080d14] relative overflow-hidden">
@@ -600,72 +611,77 @@ const PricingSection = ({ onCreateContract }) => {
           </p>
         </motion.div>
 
-        {/* Único card centralizado */}
-        <div className="flex justify-center">
+        {/* Card único centralizado com estilo verde destacado */}
+        <div className="max-w-sm mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="w-full max-w-sm"
+            className="relative"
           >
             <div
-              className="relative rounded-3xl p-8 flex flex-col border border-white/8 bg-white/[0.02] hover:border-white/15 transition-all duration-300"
+              className="relative rounded-3xl p-8 flex flex-col border border-emerald-500/40 bg-emerald-500/5"
+              style={{
+                boxShadow: "0 0 60px rgba(16,185,129,0.12), inset 0 1px 0 rgba(255,255,255,0.05)"
+              }}
             >
-              <div className="mb-8 pt-3">
-                <h3 className="text-lg font-bold text-white mb-1">Contrato Único</h3>
-                <p className="text-sm text-white/40">Ideal para uma necessidade pontual</p>
-              </div>
+              {/* Glow interno */}
+              <div className="absolute inset-0 rounded-3xl pointer-events-none"
+                style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(16,185,129,0.08) 0%, transparent 60%)" }} />
 
-              <div className="mb-8">
-                <div className="flex items-baseline gap-1">
-                  <span className="text-sm text-white/40 font-medium">R$</span>
-                  <span className="text-6xl font-black text-white leading-none"
-                    style={{ fontFamily: "'Syne', sans-serif" }}>
-                    19,90
-                  </span>
+              <div className="relative">
+                <div className="mb-8 pt-3">
+                  <h3 className="text-lg font-bold text-white mb-1">Contrato Único</h3>
+                  <p className="text-sm text-white/40">Ideal para uma necessidade pontual</p>
                 </div>
+
+                <div className="mb-8">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-sm text-white/40 font-medium">R$</span>
+                    <span
+                      className="text-6xl font-black text-white leading-none"
+                      style={{ fontFamily: "'Syne', sans-serif" }}
+                    >
+                      19,90
+                    </span>
+                  </div>
+                </div>
+
+                <div className="h-px bg-white/6 mb-8" />
+
+                <ul className="space-y-3 mb-8 flex-1">
+                  {[
+                    "1 contrato personalizado",
+                    "Gerado por IA avançada",
+                    "Revisão jurídica incluída",
+                    "Download imediato em PDF",
+                    "Suporte por e-mail",
+                  ].map((feature) => (
+                    <li key={feature} className="flex items-start gap-3">
+                      <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 bg-emerald-500/20 border border-emerald-500/30">
+                        <Check className="w-2.5 h-2.5 text-emerald-400" />
+                      </div>
+                      <span className="text-sm text-white/60">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <motion.button
+                  onClick={onCreateContract}
+                  whileHover={{ scale: 1.02, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full py-4 rounded-2xl font-bold text-sm transition-all duration-200 flex items-center justify-center gap-2"
+                  style={{
+                    background: "linear-gradient(135deg, #10b981, #059669)",
+                    color: "white",
+                    boxShadow: "0 4px 24px rgba(16,185,129,0.3)",
+                  }}
+                >
+                  <Sparkles className="w-4 h-4" />
+                  Criar Contrato
+                </motion.button>
               </div>
-
-              <div className="h-px bg-white/6 mb-8" />
-
-              <ul className="space-y-3 mb-8 flex-1">
-                {[
-                  "1 contrato personalizado",
-                  "Gerado por IA avançada",
-                  "Revisão jurídica incluída",
-                  "Download imediato em PDF",
-                  "Suporte por e-mail",
-                ].map((feature) => (
-                  <li key={feature} className="flex items-start gap-3">
-                    <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 bg-white/8 border border-white/10">
-                      <Check className="w-2.5 h-2.5 text-white/40" />
-                    </div>
-                    <span className="text-sm text-white/60">{feature}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <motion.button
-                onClick={onCreateContract}
-                whileHover={{ scale: 1.02, y: -2 }}
-                whileTap={{ scale: 0.98 }}
-                className="w-full py-4 rounded-2xl font-bold text-sm transition-all duration-200 flex items-center justify-center gap-2"
-                style={{
-                  backgroundColor: "#10b981", // emerald-500
-                  color: "#ffffff",
-                  fontSize: "0.875rem", // text-sm
-                  fontWeight: "500",
-                  padding: "0.625rem 1.25rem", // py-2.5 px-5
-                  borderRadius: "0.75rem", // rounded-xl
-                  boxShadow: "0 10px 15px -3px rgba(16,185,129,0.25)",
-                  transition: "all 0.2s ease",
-                  border: "none",
-                  cursor: "pointer"
-                }}
-              >
-                Criar Contrato
-              </motion.button>
             </div>
           </motion.div>
         </div>
@@ -759,18 +775,20 @@ const FAQSection = () => {
             {faqs.map((faq, index) => (
               <div
                 key={index}
-                className={`rounded-2xl border transition-all duration-300 overflow-hidden ${openItem === index
+                className={`rounded-2xl border transition-all duration-300 overflow-hidden ${
+                  openItem === index
                     ? "border-emerald-500/25 bg-emerald-500/5"
                     : "border-white/6 bg-white/[0.02] hover:border-white/12"
-                  }`}
+                }`}
               >
                 <button
                   onClick={() => setOpenItem(openItem === index ? null : index)}
                   className="w-full flex items-center justify-between p-6 text-left font-semibold text-white/80 hover:text-white transition-colors"
                 >
                   <span className="text-sm leading-relaxed pr-4">{faq.question}</span>
-                  <div className={`w-7 h-7 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300 ${openItem === index ? "bg-emerald-500/20 rotate-180" : "bg-white/5"
-                    }`}>
+                  <div className={`w-7 h-7 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
+                    openItem === index ? "bg-emerald-500/20 rotate-180" : "bg-white/5"
+                  }`}>
                     <ChevronDown className={`w-4 h-4 ${openItem === index ? "text-emerald-400" : "text-white/40"}`} />
                   </div>
                 </button>
@@ -914,22 +932,7 @@ const Footer = () => {
             <p className="text-white/30 text-sm leading-relaxed mb-6">
               Contratos profissionais gerados por IA. Rápido, seguro e acessível.
             </p>
-            <div className="flex gap-2">
-              {[
-                { href: "#", icon: Instagram, label: "Instagram" },
-                { href: "#", icon: Linkedin, label: "LinkedIn" },
-                { href: "mailto:contato@contrate-me.com.br", icon: Mail, label: "Email" },
-              ].map(({ href, icon: Icon, label }) => (
-                <a
-                  key={label}
-                  href={href}
-                  className="w-9 h-9 rounded-xl bg-white/5 border border-white/8 flex items-center justify-center hover:border-emerald-500/30 hover:bg-emerald-500/10 transition-all duration-200"
-                  aria-label={label}
-                >
-                  <Icon className="w-4 h-4 text-white/40" />
-                </a>
-              ))}
-            </div>
+           
           </div>
 
           {[
@@ -942,7 +945,11 @@ const Footer = () => {
               <ul className="space-y-3">
                 {items.map((link) => (
                   <li key={link.label}>
-                    <a href={link.href} className="text-sm text-white/30 hover:text-white/70 transition-colors">
+                    <a
+                      href={link.href}
+                      onClick={link.href.startsWith("#") && link.href !== "#" ? (e) => smoothScrollTo(e, link.href) : undefined}
+                      className="text-sm text-white/30 hover:text-white/70 transition-colors"
+                    >
                       {link.label}
                     </a>
                   </li>
@@ -956,7 +963,7 @@ const Footer = () => {
           <p className="text-xs text-white/20">
             © {currentYear} Contrate-me. Todos os direitos reservados.
           </p>
-          <p className="text-xs text-white/20">Feito com 💚 no Brasil</p>
+          
         </div>
       </div>
     </footer>
