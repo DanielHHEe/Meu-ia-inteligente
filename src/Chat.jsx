@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  FileText, Send, ArrowLeft, Bot, User, Sparkles, Loader2,
+  FileText, Send, Bot, User, Sparkles, Loader2,
   FileCheck, Building2, Users, Briefcase, Home, Shield,
   FileSignature, ChevronRight, CheckCircle2, Clock,
 } from "lucide-react";
@@ -187,7 +187,6 @@ const ContractTypeSelector = ({ onSelect }) => (
     animate={{ opacity: 1, y: 0 }}
     style={{ width: '100%', maxWidth: '900px', margin: '0 auto', padding: '24px 16px 32px' }}
   >
-    {/* Header */}
     <div style={{ textAlign: 'center', marginBottom: '32px' }}>
       <div style={{
         display: 'inline-flex', alignItems: 'center', gap: '8px',
@@ -212,7 +211,6 @@ const ContractTypeSelector = ({ onSelect }) => (
       </p>
     </div>
 
-    {/* Grid */}
     <div style={{
       display: 'grid',
       gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
@@ -327,71 +325,9 @@ const GeneratingBubble = () => (
 );
 
 // ==================== PDF CARD ====================
-const PdfCard = ({ contractType, generatedContract }) => {
-  const getContractText = () => {
-    if (!generatedContract) return '';
-    if (typeof generatedContract === 'string') return generatedContract;
-    if (typeof generatedContract.contract === 'string') return generatedContract.contract;
-    if (typeof generatedContract.content === 'string') return generatedContract.content;
-    return String(generatedContract);
-  };
-
-  const handlePdfClick = () => {
-    const contractText = getContractText();
-    if (!contractText.trim()) { alert('Contrato ainda não disponível.'); return; }
-    const fileName = `${contractType?.name || 'Contrato'}.pdf`;
-
-    const gerar = (JsPDF) => {
-      const doc = new JsPDF({ unit: 'mm', format: 'a4' });
-      const pageWidth  = doc.internal.pageSize.getWidth();
-      const pageHeight = doc.internal.pageSize.getHeight();
-      const margin = 20, maxWidth = pageWidth - margin * 2, lineHeight = 6;
-      let y = margin;
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(10);
-      for (const rawLine of contractText.split('\n')) {
-        const wrapped = doc.splitTextToSize(rawLine || ' ', maxWidth);
-        for (const segment of wrapped) {
-          if (y + lineHeight > pageHeight - margin) { doc.addPage(); y = margin; }
-          doc.text(segment, margin, y);
-          y += lineHeight;
-        }
-      }
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-      const isMobile = isIOS || /Android/.test(navigator.userAgent);
-      const pdfBlob = doc.output('blob');
-      const downloadViaBlob = (blob, name) => {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url; a.download = name; a.style.display = 'none';
-        document.body.appendChild(a); a.click(); document.body.removeChild(a);
-        setTimeout(() => URL.revokeObjectURL(url), 10000);
-      };
-      if (isMobile && navigator.share && navigator.canShare) {
-        const file = new File([pdfBlob], fileName, { type: 'application/pdf' });
-        if (navigator.canShare({ files: [file] })) {
-          navigator.share({ files: [file], title: fileName }).catch(() => downloadViaBlob(pdfBlob, fileName));
-          return;
-        }
-      }
-      downloadViaBlob(pdfBlob, fileName);
-    };
-
-    if (window.jspdf && window.jspdf.jsPDF) { gerar(window.jspdf.jsPDF); return; }
-    const script = document.createElement('script');
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
-    script.onload = () => { if (window.jspdf?.jsPDF) gerar(window.jspdf.jsPDF); };
-    script.onerror = () => {
-      const blob = new Blob([getContractText()], { type: 'text/plain;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = fileName.replace('.pdf', '.txt');
-      document.body.appendChild(a); a.click(); document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(url), 5000);
-    };
-    document.head.appendChild(script);
-  };
-
+// ⚠️ CORRIGIDO: agora abre o ContractViewer com gate de pagamento
+// em vez de baixar o PDF diretamente
+const PdfCard = ({ contractType, onOpenContractViewer }) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -416,12 +352,12 @@ const PdfCard = ({ contractType, generatedContract }) => {
           fontSize: '14px', color: 'rgba(255,255,255,0.85)',
           marginBottom: '8px', lineHeight: '1.5',
         }}>
-          ✅ Seu contrato foi gerado com sucesso! Clique abaixo para baixar o PDF.
+          ✅ Seu contrato foi gerado com sucesso! Clique abaixo para visualizar e baixar o PDF.
         </div>
 
-        {/* Download card */}
+        {/* Card que abre o ContractViewer */}
         <button
-          onClick={handlePdfClick}
+          onClick={onOpenContractViewer}
           style={{ width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'left' }}
         >
           <div
@@ -443,9 +379,9 @@ const PdfCard = ({ contractType, generatedContract }) => {
           >
             <div style={{
               width: '42px', height: '42px', borderRadius: '10px',
-              background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+              background: 'linear-gradient(135deg, #f59e0b, #d97706)',
               display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-              boxShadow: '0 4px 12px rgba(239,68,68,0.3)'
+              boxShadow: '0 4px 12px rgba(245,158,11,0.3)'
             }}>
               <FileText size={20} color="white" />
             </div>
@@ -457,16 +393,16 @@ const PdfCard = ({ contractType, generatedContract }) => {
                 {contractType?.name || 'Contrato'}.pdf
               </p>
               <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.35)', margin: '2px 0 0' }}>
-                PDF · Clique para baixar
+                Pagar R$ 19,90 via Pix para baixar
               </p>
             </div>
             <div style={{
               width: '26px', height: '26px', borderRadius: '8px',
-              backgroundColor: 'rgba(16,185,129,0.15)',
-              border: '1px solid rgba(16,185,129,0.25)',
+              backgroundColor: 'rgba(245,158,11,0.15)',
+              border: '1px solid rgba(245,158,11,0.25)',
               display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
             }}>
-              <ChevronRight size={14} color="#10b981" />
+              <ChevronRight size={14} color="#f59e0b" />
             </div>
           </div>
         </button>
@@ -476,9 +412,16 @@ const PdfCard = ({ contractType, generatedContract }) => {
 };
 
 // ==================== MESSAGE BUBBLE ====================
-const MessageBubble = ({ message, isBot, isGenerating, isPdfCard, contractType, generatedContract, onViewContract, onTypingComplete }) => {
+const MessageBubble = ({ message, isBot, isGenerating, isPdfCard, contractType, onOpenContractViewer, onTypingComplete }) => {
   if (isGenerating) return <GeneratingBubble />;
-  if (isPdfCard) return <PdfCard contractType={contractType} generatedContract={generatedContract} />;
+
+  // ⚠️ CORRIGIDO: passa onOpenContractViewer para o PdfCard
+  if (isPdfCard) return (
+    <PdfCard
+      contractType={contractType}
+      onOpenContractViewer={onOpenContractViewer}
+    />
+  );
 
   return (
     <motion.div
@@ -595,9 +538,7 @@ const ChatInput = ({ value, onChange, onSend, disabled }) => {
           border: focused
             ? '1.5px solid rgba(16,185,129,0.5)'
             : '1.5px solid rgba(255,255,255,0.08)',
-          boxShadow: focused
-            ? '0 0 0 3px rgba(16,185,129,0.08)'
-            : 'none',
+          boxShadow: focused ? '0 0 0 3px rgba(16,185,129,0.08)' : 'none',
           backdropFilter: 'blur(12px)',
           transition: 'border-color 0.2s, box-shadow 0.2s',
         }}>
@@ -614,8 +555,7 @@ const ChatInput = ({ value, onChange, onSend, disabled }) => {
             style={{
               flex: 1, backgroundColor: 'transparent', padding: '6px 0',
               color: 'white', resize: 'none', outline: 'none',
-              minHeight: '40px', maxHeight: '120px',
-              fontSize: '16px',
+              minHeight: '40px', maxHeight: '120px', fontSize: '16px',
               border: 'none', fontFamily: 'inherit', lineHeight: '1.5',
               WebkitAppearance: 'none', borderRadius: 0,
             }}
@@ -668,7 +608,6 @@ const ProgressSidebar = ({ currentStep, contractType }) => {
       flexDirection: 'column',
       padding: '28px 20px',
     }}>
-      {/* Logo */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '40px' }}>
         <div style={{
           width: '32px', height: '32px', borderRadius: '10px',
@@ -683,7 +622,6 @@ const ProgressSidebar = ({ currentStep, contractType }) => {
         </span>
       </div>
 
-      {/* Contract type */}
       <div style={{ marginBottom: '32px' }}>
         <p style={{ fontSize: '11px', fontWeight: '700', color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '10px' }}>
           Contrato
@@ -705,13 +643,12 @@ const ProgressSidebar = ({ currentStep, contractType }) => {
         )}
       </div>
 
-      {/* Steps */}
       <div style={{ flex: 1 }}>
         <p style={{ fontSize: '11px', fontWeight: '700', color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: '16px' }}>
           Progresso
         </p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-          {steps.map((step, i) => {
+          {steps.map((step) => {
             const isActive = currentStep === step.id;
             const isDone = currentStep > step.id;
             return (
@@ -740,7 +677,6 @@ const ProgressSidebar = ({ currentStep, contractType }) => {
         </div>
       </div>
 
-      {/* Time estimate */}
       <div style={{
         padding: '14px 16px', borderRadius: '14px',
         backgroundColor: 'rgba(255,255,255,0.03)',
@@ -759,7 +695,7 @@ const ProgressSidebar = ({ currentStep, contractType }) => {
 };
 
 // ==================== CHAT INTERFACE ====================
-const ChatInterface = ({ contractType, messages, isTyping, isGenerating, inputValue, setInputValue, onSendMessage, onViewContract, generatedContract }) => {
+const ChatInterface = ({ contractType, messages, isTyping, isGenerating, inputValue, setInputValue, onSendMessage, onOpenContractViewer }) => {
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -772,11 +708,8 @@ const ChatInterface = ({ contractType, messages, isTyping, isGenerating, inputVa
       <div style={{
         backgroundColor: 'rgba(8,13,20,0.9)',
         borderBottom: '1px solid rgba(255,255,255,0.06)',
-        padding: '10px 16px',
-        flexShrink: 0,
-        display: 'flex',
-        alignItems: 'center',
-        gap: '10px',
+        padding: '10px 16px', flexShrink: 0,
+        display: 'flex', alignItems: 'center', gap: '10px',
         backdropFilter: 'blur(12px)',
       }}>
         <div style={{
@@ -808,8 +741,8 @@ const ChatInterface = ({ contractType, messages, isTyping, isGenerating, inputVa
                 isGenerating={msg.isGenerating}
                 isPdfCard={msg.isPdfCard}
                 contractType={contractType}
-                generatedContract={generatedContract}
-                onViewContract={onViewContract}
+                // ⚠️ CORRIGIDO: passa o handler correto para abrir o ContractViewer
+                onOpenContractViewer={onOpenContractViewer}
               />
             ))}
             {isTyping && <TypingIndicator />}
@@ -838,7 +771,6 @@ const Chat = () => {
   const [generationError, setGenerationError] = useState(null);
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [contractReady, setContractReady] = useState(false);
 
   useEffect(() => {
     const style = document.createElement('style');
@@ -865,7 +797,10 @@ const Chat = () => {
     setVh();
     window.addEventListener('resize', setVh);
     window.addEventListener('orientationchange', setVh);
-    return () => { window.removeEventListener('resize', setVh); window.removeEventListener('orientationchange', setVh); };
+    return () => {
+      window.removeEventListener('resize', setVh);
+      window.removeEventListener('orientationchange', setVh);
+    };
   }, []);
 
   useEffect(() => {
@@ -907,10 +842,14 @@ const Chat = () => {
           try {
             const contract = await chatService.generateContract();
             setGeneratedContract(contract);
-            setContractReady(true);
-            setMessages(prev => prev.map(m => m.isGenerating ? { text: '__PDF_READY__', isBot: true, isPdfCard: true } : m));
+            // ⚠️ CORRIGIDO: marca como isPdfCard para mostrar o card que abre o ContractViewer
+            setMessages(prev => prev.map(m =>
+              m.isGenerating ? { text: '__PDF_READY__', isBot: true, isPdfCard: true } : m
+            ));
           } catch (e) {
-            setMessages(prev => prev.map(m => m.isGenerating ? { text: `❌ Erro ao gerar o contrato: ${e.message}`, isBot: true } : m));
+            setMessages(prev => prev.map(m =>
+              m.isGenerating ? { text: `❌ Erro ao gerar o contrato: ${e.message}`, isBot: true } : m
+            ));
           } finally {
             setIsGenerating(false);
           }
@@ -932,10 +871,11 @@ const Chat = () => {
     setGeneratedContract(null);
     setGenerationError(null);
     setIsGenerating(false);
-    setContractReady(false);
   };
 
-  const handleViewContract = () => setCurrentStep(4);
+  // ⚠️ CORRIGIDO: abre o ContractViewer (step 4) que contém o gate de pagamento
+  const handleOpenContractViewer = () => setCurrentStep(4);
+
   const isDesktop = windowWidth >= 1024;
 
   return (
@@ -959,7 +899,6 @@ const Chat = () => {
           <div style={{
             flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch',
             paddingTop: '20px',
-            // Subtle grid background
             backgroundImage: `linear-gradient(rgba(16,185,129,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(16,185,129,0.04) 1px, transparent 1px)`,
             backgroundSize: '50px 50px',
           }}>
@@ -977,12 +916,13 @@ const Chat = () => {
               inputValue={inputValue}
               setInputValue={setInputValue}
               onSendMessage={handleSendMessage}
-              onViewContract={handleViewContract}
-              generatedContract={generatedContract}
+              // ⚠️ CORRIGIDO: passa handler que abre o ContractViewer
+              onOpenContractViewer={handleOpenContractViewer}
             />
           </div>
         )}
 
+        {/* ⚠️ CORRIGIDO: ContractViewer com gate de pagamento integrado */}
         {currentStep === 4 && generatedContract && (
           <div style={{ position: 'fixed', inset: 0, zIndex: 100, backgroundColor: '#080d14', overflowY: 'auto' }}>
             <ContractViewer
