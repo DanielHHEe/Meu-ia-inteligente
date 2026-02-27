@@ -3,55 +3,10 @@ import { motion } from 'framer-motion';
 import { Download, FileText, CheckCircle, ArrowLeft, Loader2, Sparkles } from 'lucide-react';
 import html2pdf from 'html2pdf.js';
 
-// ============================================================
-// Remove APENAS o bloco de assinaturas/testemunhas que a IA
-// inseriu no FINAL do contrato (busca apenas nos últimos 30%).
-// Isso evita cortar cláusulas que mencionam as partes no meio.
-// ============================================================
-const stripSignatureBlock = (contractText) => {
-  if (!contractText) return contractText;
-
-  // Só busca no último 30% do texto — nunca corta cláusulas do meio
-  const safeZoneEnd = Math.floor(contractText.length * 0.70);
-  const tail = contractText.slice(safeZoneEnd);
-
-  // Padrões que indicam início do bloco de assinaturas no FINAL
-  const signaturePatterns = [
-    /por estarem (assim|de acordo)/i,
-    /em (testemunho|fé) do (exposto|que)/i,
-    /e (assim,?\s+)?por estarem/i,
-    /local[,\se]+data\s*[:\n]/i,
-    /_{5,}\s*\n\s*(contratante|contratado|locador|locat[aá]rio|vendedor|comprador|freelancer|parte\s+[ab]|revelador|receptor)/i,
-    /^ASSINATURAS?\s*$/im,
-    /_{5,}[\s,]+\d{1,2}\s+de\s+\w+\s+de\s+\d{4}/i,
-    // "TESTEMUNHA(S):" como linha isolada no final (não dentro de cláusula)
-    /\nTESTEMUNHA[S]?\s*[:\n]/,
-  ];
-
-  let cutInTail = tail.length;
-
-  for (const pattern of signaturePatterns) {
-    const match = tail.search(pattern);
-    if (match !== -1 && match < cutInTail) {
-      cutInTail = match;
-    }
-  }
-
-  // Se encontrou algo no tail, corta; senão retorna original
-  if (cutInTail < tail.length) {
-    return contractText.slice(0, safeZoneEnd + cutInTail).trimEnd();
-  }
-
-  return contractText.trimEnd();
-};
-
 const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
   const [downloading, setDownloading] = useState(false);
   const [downloaded, setDownloaded] = useState(false);
-  const contractRef = useRef(null);
-
-  // Texto limpo — sem bloco de assinaturas/testemunhas da IA
-  const cleanedContract = stripSignatureBlock(contract);
+  const paperRef = useRef(null);
 
   const handleDownload = async () => {
     if (downloading) return;
@@ -59,7 +14,7 @@ const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
     try {
       if (onDownload) {
         await onDownload('pdf');
-      } else if (contractRef.current) {
+      } else if (paperRef.current) {
         const opt = {
           margin: [15, 15, 15, 15],
           filename: `${contractType?.name || 'contrato'}.pdf`,
@@ -67,9 +22,7 @@ const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
           html2canvas: { scale: 2, useCORS: true },
           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
         };
-        // Captura o elemento completo (corpo + assinaturas)
-        const fullRef = contractRef.current.closest('.cv-paper');
-        await html2pdf().set(opt).from(fullRef || contractRef.current).save();
+        await html2pdf().set(opt).from(paperRef.current).save();
       }
       setDownloaded(true);
       setTimeout(() => setDownloaded(false), 3000);
@@ -221,7 +174,7 @@ const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
           </div>
         </motion.div>
 
-        {/* Contract Paper */}
+        {/* Contract Paper — ref cobre corpo + assinaturas para o PDF */}
         <motion.div
           className="cv-paper"
           initial={{ opacity: 0, y: 10 }}
@@ -230,43 +183,46 @@ const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
         >
           <div className="cv-paper-strip" />
 
-          {/* Corpo do contrato — sem bloco de assinaturas da IA */}
-          <div className="cv-paper-body">
-            <div ref={contractRef} className="contract-body">
-              {cleanedContract}
-            </div>
-          </div>
-
-          {/* Seção de assinaturas e testemunhas — única, visual, padronizada */}
-          <div className="cv-signatures">
-            <div className="cv-date">
-              {new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' })}
+          {/* paperRef envolve tudo que deve entrar no PDF */}
+          <div ref={paperRef}>
+            {/* Corpo do contrato — texto completo sem cortes */}
+            <div className="cv-paper-body">
+              <div className="contract-body">
+                {contract}
+              </div>
             </div>
 
-            {/* Blocos de assinatura dinâmicos por tipo de contrato */}
-            <div className="cv-sig-grid">
-              {getSignatureLabels(contractType?.id).map(({ label, sublabel }) => (
-                <div key={label} className="cv-sig-block">
-                  <div className="cv-sig-label">{label}</div>
-                  <div className="cv-sig-line" />
-                  <div className="cv-sig-sublabel">{sublabel}</div>
-                </div>
-              ))}
-            </div>
+            {/* Seção de assinaturas e testemunhas */}
+            <div className="cv-signatures">
+              <div className="cv-date">
+                {new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' })}
+              </div>
 
-            {/* Testemunhas — uma única vez */}
-            <div className="cv-witnesses">
-              <div className="cv-witnesses-title">TESTEMUNHAS</div>
-              <div className="cv-witness-grid">
-                {[1, 2].map(n => (
-                  <div key={n} className="cv-witness-item">
-                    <div className="cv-witness-num">{n}</div>
-                    <div className="cv-witness-fields">
-                      <div>Nome: ___________________________</div>
-                      <div>CPF: ____________________________</div>
-                    </div>
+              {/* Blocos de assinatura dinâmicos por tipo de contrato */}
+              <div className="cv-sig-grid">
+                {getSignatureLabels(contractType?.id).map(({ label, sublabel }) => (
+                  <div key={label} className="cv-sig-block">
+                    <div className="cv-sig-label">{label}</div>
+                    <div className="cv-sig-line" />
+                    <div className="cv-sig-sublabel">{sublabel}</div>
                   </div>
                 ))}
+              </div>
+
+              {/* Testemunhas */}
+              <div className="cv-witnesses">
+                <div className="cv-witnesses-title">TESTEMUNHAS</div>
+                <div className="cv-witness-grid">
+                  {[1, 2].map(n => (
+                    <div key={n} className="cv-witness-item">
+                      <div className="cv-witness-num">{n}</div>
+                      <div className="cv-witness-fields">
+                        <div>Nome: ___________________________</div>
+                        <div>CPF: ____________________________</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
