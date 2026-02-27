@@ -1,14 +1,21 @@
+// src/ContractViewer.jsx
+// ContractViewer com gate de pagamento — download só liberado após Pix confirmado
+
 import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Download, FileText, CheckCircle, ArrowLeft, Loader2, Sparkles } from 'lucide-react';
+import { Download, FileText, CheckCircle, ArrowLeft, Loader2, Sparkles, Lock } from 'lucide-react';
 import html2pdf from 'html2pdf.js';
+import PaymentModal from './PaymentModal';
 
 const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
   const [downloading, setDownloading] = useState(false);
   const [downloaded, setDownloaded] = useState(false);
+  const [isPaid, setIsPaid] = useState(false);
+  const [showPayment, setShowPayment] = useState(false);
   const paperRef = useRef(null);
 
-  const handleDownload = async () => {
+  // Dispara o download real em PDF
+  const triggerDownload = async () => {
     if (downloading) return;
     setDownloading(true);
     try {
@@ -31,6 +38,25 @@ const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
     }
   };
 
+  // Botão de download clicado
+  const handleDownloadClick = () => {
+    if (isPaid) {
+      // Já pagou — baixa direto
+      triggerDownload();
+    } else {
+      // Ainda não pagou — abre modal de pagamento
+      setShowPayment(true);
+    }
+  };
+
+  // Chamado pelo PaymentModal quando pagamento é confirmado
+  const handlePaymentConfirmed = () => {
+    setIsPaid(true);
+    setShowPayment(false);
+    // Inicia o download automaticamente após pagamento
+    setTimeout(() => triggerDownload(), 300);
+  };
+
   return (
     <div className="contract-viewer" style={{ minHeight: '100vh', background: '#f8faf9' }}>
       <style>{`
@@ -39,30 +65,32 @@ const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
         .contract-title { font-family: 'Playfair Display', Georgia, serif; }
         .contract-body {
           font-family: 'Georgia', 'Times New Roman', serif;
-          line-height: 1.85;
-          color: #1a1a1a;
-          white-space: pre-wrap;
-          word-wrap: break-word;
-          overflow-wrap: break-word;
+          line-height: 1.85; color: #1a1a1a;
+          white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;
         }
         .download-btn {
           position: relative; overflow: hidden;
-          background: linear-gradient(135deg, #059669 0%, #047857 50%, #065f46 100%);
-          transition: all 0.3s ease;
-          border: none; color: #fff; cursor: pointer;
+          transition: all 0.3s ease; border: none; color: #fff; cursor: pointer;
           border-radius: 12px; font-weight: 600;
           display: inline-flex; align-items: center; gap: 8px;
           padding: 12px 28px; font-size: 15px;
         }
-        .download-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(5,150,105,0.35); }
+        .download-btn.locked {
+          background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+          box-shadow: 0 4px 16px rgba(245,158,11,0.3);
+        }
+        .download-btn.unlocked {
+          background: linear-gradient(135deg, #059669 0%, #047857 100%);
+          box-shadow: 0 4px 16px rgba(5,150,105,0.3);
+        }
+        .download-btn:hover { transform: translateY(-1px); filter: brightness(1.1); }
         .download-btn:active { transform: translateY(0); }
         .download-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
         .cv-container { max-width: 900px; margin: 0 auto; padding: 16px; }
         @media (min-width: 640px) { .cv-container { padding: 24px; } }
         @media (min-width: 768px) { .cv-container { padding: 32px; } }
         .cv-header {
-          background: #fff; border-radius: 16px; padding: 20px;
-          margin-bottom: 16px;
+          background: #fff; border-radius: 16px; padding: 20px; margin-bottom: 16px;
           box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
         }
         @media (min-width: 640px) { .cv-header { padding: 24px; margin-bottom: 20px; } }
@@ -85,10 +113,29 @@ const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
         }
         .cv-success-text { font-size: 13px; color: #065f46; line-height: 1.5; margin: 0; }
         .cv-success-text strong { display: block; margin-bottom: 2px; }
+        /* Banner de pagamento */
+        .cv-payment-banner {
+          display: flex; align-items: center; justify-content: space-between;
+          gap: 12px; flex-wrap: wrap;
+          background: linear-gradient(135deg, #fffbeb, #fef3c7);
+          border: 1px solid #fcd34d; border-radius: 10px;
+          padding: 12px 16px; margin-top: 16px;
+        }
+        .cv-payment-banner.paid {
+          background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+          border-color: #6ee7b7;
+        }
         .cv-paper {
           background: #fff; border-radius: 16px; overflow: hidden;
           box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 6px 20px rgba(0,0,0,0.05);
           margin-bottom: 20px;
+        }
+        /* Preview bloqueado com blur */
+        .cv-paper.locked .cv-paper-body { position: relative; }
+        .cv-paper.locked .cv-paper-body::after {
+          content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 160px;
+          background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.95));
+          pointer-events: none;
         }
         .cv-paper-strip { height: 4px; background: linear-gradient(90deg, #059669, #10b981, #34d399); }
         .cv-paper-body { padding: 24px 20px; max-height: 60vh; overflow-y: auto; }
@@ -154,51 +201,91 @@ const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
               </div>
             </div>
             <div className="cv-actions">
-              <button className="download-btn" onClick={handleDownload} disabled={downloading}>
+              <button
+                className={`download-btn ${isPaid ? 'unlocked' : 'locked'}`}
+                onClick={handleDownloadClick}
+                disabled={downloading}
+              >
                 {downloading ? (
-                  <><Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /><span>Gerando...</span></>
+                  <><Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /><span>Gerando PDF...</span></>
                 ) : downloaded ? (
                   <><CheckCircle size={18} /><span>Baixado!</span></>
-                ) : (
+                ) : isPaid ? (
                   <><Download size={18} /><span>Baixar PDF</span></>
+                ) : (
+                  <><Lock size={18} /><span>Pagar R$ 19,90</span></>
                 )}
               </button>
             </div>
           </div>
+
+          {/* Banner de status do pagamento */}
+          <div className={`cv-payment-banner ${isPaid ? 'paid' : ''}`}>
+            {isPaid ? (
+              <>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <CheckCircle size={18} color="#059669" />
+                  <span style={{ fontSize: '13px', color: '#065f46', fontWeight: '600' }}>
+                    Pagamento confirmado — Download liberado!
+                  </span>
+                </div>
+              </>
+            ) : (
+              <>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Lock size={16} color="#d97706" />
+                  <span style={{ fontSize: '13px', color: '#92400e', fontWeight: '600' }}>
+                    Contrato pronto! Pague R$ 19,90 via Pix para liberar o download.
+                  </span>
+                </div>
+                <button
+                  onClick={() => setShowPayment(true)}
+                  style={{
+                    padding: '8px 18px', borderRadius: '8px',
+                    background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                    color: 'white', fontWeight: '700', fontSize: '13px',
+                    border: 'none', cursor: 'pointer', flexShrink: 0,
+                    boxShadow: '0 2px 8px rgba(245,158,11,0.3)',
+                  }}
+                >
+                  Pagar agora
+                </button>
+              </>
+            )}
+          </div>
+
           <div className="cv-success">
             <CheckCircle size={18} color="#059669" style={{ marginTop: 1, flexShrink: 0 }} />
             <p className="cv-success-text">
               <strong>Contrato gerado com sucesso!</strong>
-              Revise o documento abaixo e faça o download em PDF quando estiver pronto.
+              Revise o documento abaixo. Após o pagamento, o PDF completo será liberado para download.
             </p>
           </div>
         </motion.div>
 
-        {/* Contract Paper — ref cobre corpo + assinaturas para o PDF */}
+        {/* Contract Paper */}
         <motion.div
-          className="cv-paper"
+          className={`cv-paper ${isPaid ? '' : 'locked'}`}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.1 }}
         >
           <div className="cv-paper-strip" />
 
-          {/* paperRef envolve tudo que deve entrar no PDF */}
+          {/* paperRef cobre tudo que entra no PDF */}
           <div ref={paperRef}>
-            {/* Corpo do contrato — texto completo sem cortes */}
             <div className="cv-paper-body">
               <div className="contract-body">
                 {contract}
               </div>
             </div>
 
-            {/* Seção de assinaturas e testemunhas */}
+            {/* Assinaturas e testemunhas */}
             <div className="cv-signatures">
               <div className="cv-date">
                 {new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' })}
               </div>
 
-              {/* Blocos de assinatura dinâmicos por tipo de contrato */}
               <div className="cv-sig-grid">
                 {getSignatureLabels(contractType?.id).map(({ label, sublabel }) => (
                   <div key={label} className="cv-sig-block">
@@ -209,7 +296,6 @@ const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
                 ))}
               </div>
 
-              {/* Testemunhas */}
               <div className="cv-witnesses">
                 <div className="cv-witnesses-title">TESTEMUNHAS</div>
                 <div className="cv-witness-grid">
@@ -236,45 +322,28 @@ const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
           </button>
         </div>
       </div>
+
+      {/* Modal de pagamento */}
+      <PaymentModal
+        isOpen={showPayment}
+        onClose={() => setShowPayment(false)}
+        onPaymentConfirmed={handlePaymentConfirmed}
+        contractType={contractType}
+      />
     </div>
   );
 };
 
-// ============================================================
-// Labels de assinatura por tipo de contrato
-// ============================================================
 const getSignatureLabels = (contractTypeId) => {
   const labels = {
-    'aluguel': [
-      { label: 'LOCADOR',    sublabel: 'Assinatura e Carimbo' },
-      { label: 'LOCATÁRIO',  sublabel: 'Assinatura e Carimbo' },
-    ],
-    'prestacao-servicos': [
-      { label: 'CONTRATANTE', sublabel: 'Assinatura e Carimbo' },
-      { label: 'CONTRATADO',  sublabel: 'Assinatura e Carimbo' },
-    ],
-    'trabalho-freelancer': [
-      { label: 'CONTRATANTE', sublabel: 'Assinatura e Carimbo' },
-      { label: 'FREELANCER',  sublabel: 'Assinatura e Carimbo' },
-    ],
-    'compra-venda': [
-      { label: 'VENDEDOR',   sublabel: 'Assinatura e Carimbo' },
-      { label: 'COMPRADOR',  sublabel: 'Assinatura e Carimbo' },
-    ],
-    'parceria': [
-      { label: 'PARTE A', sublabel: 'Assinatura e Carimbo' },
-      { label: 'PARTE B', sublabel: 'Assinatura e Carimbo' },
-    ],
-    'confidencialidade': [
-      { label: 'PARTE REVELADORA', sublabel: 'Assinatura e Carimbo' },
-      { label: 'PARTE RECEPTORA',  sublabel: 'Assinatura e Carimbo' },
-    ],
+    'aluguel':             [{ label: 'LOCADOR',          sublabel: 'Assinatura e Carimbo' }, { label: 'LOCATÁRIO',        sublabel: 'Assinatura e Carimbo' }],
+    'prestacao-servicos':  [{ label: 'CONTRATANTE',      sublabel: 'Assinatura e Carimbo' }, { label: 'CONTRATADO',       sublabel: 'Assinatura e Carimbo' }],
+    'trabalho-freelancer': [{ label: 'CONTRATANTE',      sublabel: 'Assinatura e Carimbo' }, { label: 'FREELANCER',       sublabel: 'Assinatura e Carimbo' }],
+    'compra-venda':        [{ label: 'VENDEDOR',         sublabel: 'Assinatura e Carimbo' }, { label: 'COMPRADOR',        sublabel: 'Assinatura e Carimbo' }],
+    'parceria':            [{ label: 'PARTE A',          sublabel: 'Assinatura e Carimbo' }, { label: 'PARTE B',          sublabel: 'Assinatura e Carimbo' }],
+    'confidencialidade':   [{ label: 'PARTE REVELADORA', sublabel: 'Assinatura e Carimbo' }, { label: 'PARTE RECEPTORA',  sublabel: 'Assinatura e Carimbo' }],
   };
-
-  return labels[contractTypeId] || [
-    { label: 'CONTRATANTE', sublabel: 'Assinatura e Carimbo' },
-    { label: 'CONTRATADO',  sublabel: 'Assinatura e Carimbo' },
-  ];
+  return labels[contractTypeId] || [{ label: 'CONTRATANTE', sublabel: 'Assinatura e Carimbo' }, { label: 'CONTRATADO', sublabel: 'Assinatura e Carimbo' }];
 };
 
 export default ContractViewer;
