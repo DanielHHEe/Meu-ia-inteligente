@@ -149,109 +149,51 @@ export const CONTRACT_TEMPLATES = {
 
 // ============================================================
 // CAMPOS OBRIGATÓRIOS POR CONTRATO
-// Deve ser idêntico às questions do Chat.jsx
 // ============================================================
 export const FIELD_ORDER_BY_CONTRACT = {
-
-  // 13 campos
   'prestacao-servicos': [
-    'contratante_nome',
-    'contratante_cpf_cnpj',
-    'contratado_nome',
-    'contratado_cpf_cnpj',
-    'descricao_servico',
-    'valor_total',
-    'forma_pagamento',
-    'prazo_execucao',
-    'multa_atraso_contratado',
-    'multa_limite',
-    'multa_rescisao',
-    'cidade',
-    'estado'
+    'contratante_nome', 'contratante_cpf_cnpj',
+    'contratado_nome', 'contratado_cpf_cnpj',
+    'descricao_servico', 'valor_total', 'forma_pagamento', 'prazo_execucao',
+    'multa_atraso_contratado', 'multa_limite', 'multa_rescisao',
+    'cidade', 'estado'
   ],
-
-  // 16 campos
   'aluguel': [
-    'locador_nome',
-    'locador_cpf_cnpj',
-    'locatario_nome',
-    'locatario_cpf_cnpj',
-    'descricao_imovel',
-    'endereco_imovel',
-    'valor_aluguel',
-    'dia_vencimento',
-    'data_inicio',
-    'prazo_locacao',
-    'multa_atraso',
-    'juros_atraso',
-    'correcao_monetaria',
-    'prazo_tolerancia',
-    'cidade',
-    'estado'
+    'locador_nome', 'locador_cpf_cnpj',
+    'locatario_nome', 'locatario_cpf_cnpj',
+    'descricao_imovel', 'endereco_imovel',
+    'valor_aluguel', 'dia_vencimento', 'data_inicio', 'prazo_locacao',
+    'multa_atraso', 'juros_atraso', 'correcao_monetaria', 'prazo_tolerancia',
+    'cidade', 'estado'
   ],
-
-  // 13 campos
   'parceria': [
-    'parte_a_nome',
-    'parte_a_cpf_cnpj',
-    'parte_b_nome',
-    'parte_b_cpf_cnpj',
-    'objeto_parceria',
-    'contribuicao_a',
-    'contribuicao_b',
-    'participacao_resultados',
-    'prazo_parceria',
-    'multa_descumprimento',
-    'multa_rescisao',
-    'cidade',
-    'estado'
+    'parte_a_nome', 'parte_a_cpf_cnpj',
+    'parte_b_nome', 'parte_b_cpf_cnpj',
+    'objeto_parceria', 'contribuicao_a', 'contribuicao_b',
+    'participacao_resultados', 'prazo_parceria',
+    'multa_descumprimento', 'multa_rescisao',
+    'cidade', 'estado'
   ],
-
-  // 10 campos
   'confidencialidade': [
-    'revelador_nome',
-    'revelador_cpf_cnpj',
-    'receptor_nome',
-    'receptor_cpf_cnpj',
-    'informacoes_confidenciais',
-    'prazo_confidencialidade',
-    'multa_violacao',
-    'perdas_danos',
-    'cidade',
-    'estado'
+    'revelador_nome', 'revelador_cpf_cnpj',
+    'receptor_nome', 'receptor_cpf_cnpj',
+    'informacoes_confidenciais', 'prazo_confidencialidade',
+    'multa_violacao', 'perdas_danos',
+    'cidade', 'estado'
   ],
-
-  // 13 campos
   'trabalho-freelancer': [
-    'contratante_nome',
-    'contratante_cpf_cnpj',
-    'freelancer_nome',
-    'freelancer_cpf',
-    'escopo_trabalho',
-    'valor_projeto',
-    'forma_pagamento',
-    'prazo_entrega',
-    'multa_atraso_entrega',
-    'multa_atraso_pagamento',
-    'multa_rescisao',
-    'cidade',
-    'estado'
+    'contratante_nome', 'contratante_cpf_cnpj',
+    'freelancer_nome', 'freelancer_cpf',
+    'escopo_trabalho', 'valor_projeto', 'forma_pagamento', 'prazo_entrega',
+    'multa_atraso_entrega', 'multa_atraso_pagamento', 'multa_rescisao',
+    'cidade', 'estado'
   ],
-
-  // 12 campos
   'compra-venda': [
-    'vendedor_nome',
-    'vendedor_cpf_cnpj',
-    'comprador_nome',
-    'comprador_cpf_cnpj',
-    'descricao_bem',
-    'valor_venda',
-    'forma_pagamento',
-    'prazo_entrega_bem',
-    'multa_atraso_pagamento',
-    'multa_desistencia',
-    'cidade',
-    'estado'
+    'vendedor_nome', 'vendedor_cpf_cnpj',
+    'comprador_nome', 'comprador_cpf_cnpj',
+    'descricao_bem', 'valor_venda', 'forma_pagamento', 'prazo_entrega_bem',
+    'multa_atraso_pagamento', 'multa_desistencia',
+    'cidade', 'estado'
   ]
 };
 
@@ -356,140 +298,189 @@ CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 };
 
 // ============================================================
-// CLÁUSULAS POR CONTRATO
+// CLÁUSULAS PROFISSIONAIS POR CONTRATO
+// Nível escritório de advocacia sênior — inclui LGPD,
+// Anticorrupção, PI, Força Maior e Assinatura Digital
 // ============================================================
 const CONTRACT_CLAUSES = {
   'prestacao-servicos': [
-    'CLÁUSULA 1: DO OBJETO',
-    'CLÁUSULA 2: DAS OBRIGAÇÕES DO CONTRATADO',
-    'CLÁUSULA 3: DAS OBRIGAÇÕES DO CONTRATANTE',
-    'CLÁUSULA 4: DO VALOR E FORMA DE PAGAMENTO',
-    'CLÁUSULA 5: DO PRAZO DE EXECUÇÃO',
-    'CLÁUSULA 6: DAS PENALIDADES E MULTAS',
-    'CLÁUSULA 7: DA RESCISÃO',
-    'CLÁUSULA 8: DA PROPRIEDADE INTELECTUAL',
-    'CLÁUSULA 9: DAS DISPOSIÇÕES GERAIS',
-    'CLÁUSULA 10: DO FORO'
+    'CLÁUSULA 1ª — DO OBJETO E DO ESCOPO DOS SERVIÇOS',
+    'CLÁUSULA 2ª — DAS OBRIGAÇÕES DO CONTRATADO',
+    'CLÁUSULA 3ª — DAS OBRIGAÇÕES DO CONTRATANTE',
+    'CLÁUSULA 4ª — DO PREÇO, DA FORMA E DAS CONDIÇÕES DE PAGAMENTO',
+    'CLÁUSULA 5ª — DO PRAZO DE EXECUÇÃO E DA ENTREGA',
+    'CLÁUSULA 6ª — DAS PENALIDADES, DA MORA E DAS MULTAS CONTRATUAIS',
+    'CLÁUSULA 7ª — DA PROPRIEDADE INTELECTUAL E DOS DIREITOS AUTORAIS',
+    'CLÁUSULA 8ª — DA CONFIDENCIALIDADE E DO SIGILO PROFISSIONAL',
+    'CLÁUSULA 9ª — DA PROTEÇÃO DE DADOS PESSOAIS (LGPD — Lei 13.709/2018)',
+    'CLÁUSULA 10ª — DA ANTICORRUPÇÃO E DA CONFORMIDADE LEGAL (Lei 12.846/2013)',
+    'CLÁUSULA 11ª — DO CASO FORTUITO E DA FORÇA MAIOR',
+    'CLÁUSULA 12ª — DA RESCISÃO E DO DISTRATO',
+    'CLÁUSULA 13ª — DA VALIDADE DA ASSINATURA DIGITAL (MP 2.200-2/2001)',
+    'CLÁUSULA 14ª — DAS DISPOSIÇÕES GERAIS E DA INDEPENDÊNCIA DAS CLÁUSULAS',
+    'CLÁUSULA 15ª — DO FORO DE ELEIÇÃO'
   ],
   'aluguel': [
-    'CLÁUSULA 1: DO OBJETO',
-    'CLÁUSULA 2: DAS OBRIGAÇÕES DAS PARTES',
-    'CLÁUSULA 3: DO VALOR E FORMA DE PAGAMENTO',
-    'CLÁUSULA 4: DO PRAZO E VIGÊNCIA',
-    'CLÁUSULA 5: DAS PENALIDADES E MULTAS POR ATRASO',
-    'CLÁUSULA 6: DA CORREÇÃO MONETÁRIA',
-    'CLÁUSULA 7: DAS RESPONSABILIDADES DO LOCATÁRIO',
-    'CLÁUSULA 8: DAS RESPONSABILIDADES DO LOCADOR',
-    'CLÁUSULA 9: DA RESCISÃO',
-    'CLÁUSULA 10: DAS DISPOSIÇÕES GERAIS',
-    'CLÁUSULA 11: DO FORO'
+    'CLÁUSULA 1ª — DO OBJETO E DA IDENTIFICAÇÃO DO IMÓVEL',
+    'CLÁUSULA 2ª — DO PRAZO, DO INÍCIO E DO TÉRMINO DA LOCAÇÃO',
+    'CLÁUSULA 3ª — DO VALOR DO ALUGUEL E DA FORMA DE PAGAMENTO',
+    'CLÁUSULA 4ª — DA CORREÇÃO MONETÁRIA E DO REAJUSTE ANUAL',
+    'CLÁUSULA 5ª — DAS PENALIDADES, DA MORA E DOS ENCARGOS POR ATRASO',
+    'CLÁUSULA 6ª — DAS OBRIGAÇÕES DO LOCADOR',
+    'CLÁUSULA 7ª — DAS OBRIGAÇÕES DO LOCATÁRIO',
+    'CLÁUSULA 8ª — DAS BENFEITORIAS E DAS REFORMAS NO IMÓVEL',
+    'CLÁUSULA 9ª — DA PROTEÇÃO DE DADOS PESSOAIS (LGPD — Lei 13.709/2018)',
+    'CLÁUSULA 10ª — DO CASO FORTUITO E DA FORÇA MAIOR',
+    'CLÁUSULA 11ª — DA RESCISÃO ANTECIPADA E DO AVISO PRÉVIO',
+    'CLÁUSULA 12ª — DA VISTORIA E DA RESTITUIÇÃO DO IMÓVEL',
+    'CLÁUSULA 13ª — DA VALIDADE DA ASSINATURA DIGITAL (MP 2.200-2/2001)',
+    'CLÁUSULA 14ª — DAS DISPOSIÇÕES GERAIS',
+    'CLÁUSULA 15ª — DO FORO DE ELEIÇÃO'
   ],
   'parceria': [
-    'CLÁUSULA 1: DO OBJETO DA PARCERIA',
-    'CLÁUSULA 2: DAS CONTRIBUIÇÕES DAS PARTES',
-    'CLÁUSULA 3: DA PARTICIPAÇÃO NOS RESULTADOS',
-    'CLÁUSULA 4: DAS OBRIGAÇÕES DAS PARTES',
-    'CLÁUSULA 5: DO PRAZO',
-    'CLÁUSULA 6: DAS PENALIDADES E MULTAS',
-    'CLÁUSULA 7: DA CONFIDENCIALIDADE',
-    'CLÁUSULA 8: DA RESCISÃO',
-    'CLÁUSULA 9: DAS DISPOSIÇÕES GERAIS',
-    'CLÁUSULA 10: DO FORO'
+    'CLÁUSULA 1ª — DO OBJETO E DA NATUREZA DA PARCERIA',
+    'CLÁUSULA 2ª — DAS CONTRIBUIÇÕES E OBRIGAÇÕES DE CADA PARTE',
+    'CLÁUSULA 3ª — DA PARTICIPAÇÃO NOS RESULTADOS, LUCROS E PERDAS',
+    'CLÁUSULA 4ª — DA ADMINISTRAÇÃO E DA TOMADA DE DECISÕES',
+    'CLÁUSULA 5ª — DO PRAZO E DA VIGÊNCIA',
+    'CLÁUSULA 6ª — DAS PENALIDADES, DA MORA E DAS MULTAS CONTRATUAIS',
+    'CLÁUSULA 7ª — DA CONFIDENCIALIDADE E DO SIGILO COMERCIAL',
+    'CLÁUSULA 8ª — DA PROPRIEDADE INTELECTUAL DESENVOLVIDA EM PARCERIA',
+    'CLÁUSULA 9ª — DA PROTEÇÃO DE DADOS PESSOAIS (LGPD — Lei 13.709/2018)',
+    'CLÁUSULA 10ª — DA ANTICORRUPÇÃO E DA CONFORMIDADE LEGAL (Lei 12.846/2013)',
+    'CLÁUSULA 11ª — DO CASO FORTUITO E DA FORÇA MAIOR',
+    'CLÁUSULA 12ª — DA RESCISÃO, DO DISTRATO E DA LIQUIDAÇÃO',
+    'CLÁUSULA 13ª — DA VALIDADE DA ASSINATURA DIGITAL (MP 2.200-2/2001)',
+    'CLÁUSULA 14ª — DAS DISPOSIÇÕES GERAIS',
+    'CLÁUSULA 15ª — DO FORO DE ELEIÇÃO'
   ],
   'confidencialidade': [
-    'CLÁUSULA 1: DO OBJETO',
-    'CLÁUSULA 2: DAS INFORMAÇÕES CONFIDENCIAIS',
-    'CLÁUSULA 3: DAS OBRIGAÇÕES DA PARTE RECEPTORA',
-    'CLÁUSULA 4: DAS EXCEÇÕES À CONFIDENCIALIDADE',
-    'CLÁUSULA 5: DO PRAZO',
-    'CLÁUSULA 6: DAS PENALIDADES E MULTAS',
-    'CLÁUSULA 7: DAS DISPOSIÇÕES GERAIS',
-    'CLÁUSULA 8: DO FORO'
+    'CLÁUSULA 1ª — DO OBJETO E DA FINALIDADE DO ACORDO',
+    'CLÁUSULA 2ª — DA DEFINIÇÃO E DO ESCOPO DAS INFORMAÇÕES CONFIDENCIAIS',
+    'CLÁUSULA 3ª — DAS OBRIGAÇÕES E RESTRIÇÕES DA PARTE RECEPTORA',
+    'CLÁUSULA 4ª — DAS EXCEÇÕES À OBRIGAÇÃO DE CONFIDENCIALIDADE',
+    'CLÁUSULA 5ª — DO PRAZO DE VIGÊNCIA E DA SOBREVIVÊNCIA DAS OBRIGAÇÕES',
+    'CLÁUSULA 6ª — DAS PENALIDADES, DA MULTA E DAS PERDAS E DANOS',
+    'CLÁUSULA 7ª — DA PROTEÇÃO DE DADOS PESSOAIS (LGPD — Lei 13.709/2018)',
+    'CLÁUSULA 8ª — DA ANTICORRUPÇÃO E DA CONFORMIDADE LEGAL (Lei 12.846/2013)',
+    'CLÁUSULA 9ª — DO CASO FORTUITO E DA FORÇA MAIOR',
+    'CLÁUSULA 10ª — DA VALIDADE DA ASSINATURA DIGITAL (MP 2.200-2/2001)',
+    'CLÁUSULA 11ª — DAS DISPOSIÇÕES GERAIS',
+    'CLÁUSULA 12ª — DO FORO DE ELEIÇÃO'
   ],
   'trabalho-freelancer': [
-    'CLÁUSULA 1: DO OBJETO',
-    'CLÁUSULA 2: DO ESCOPO DO TRABALHO',
-    'CLÁUSULA 3: DO VALOR E FORMA DE PAGAMENTO',
-    'CLÁUSULA 4: DO PRAZO DE ENTREGA',
-    'CLÁUSULA 5: DAS REVISÕES E ALTERAÇÕES',
-    'CLÁUSULA 6: DAS PENALIDADES E MULTAS',
-    'CLÁUSULA 7: DA PROPRIEDADE INTELECTUAL',
-    'CLÁUSULA 8: DA RESCISÃO',
-    'CLÁUSULA 9: DAS DISPOSIÇÕES GERAIS',
-    'CLÁUSULA 10: DO FORO'
+    'CLÁUSULA 1ª — DO OBJETO E DO ESCOPO DO TRABALHO',
+    'CLÁUSULA 2ª — DAS OBRIGAÇÕES DO FREELANCER',
+    'CLÁUSULA 3ª — DAS OBRIGAÇÕES DO CONTRATANTE',
+    'CLÁUSULA 4ª — DO VALOR, DA FORMA E DAS CONDIÇÕES DE PAGAMENTO',
+    'CLÁUSULA 5ª — DO PRAZO DE ENTREGA E DAS REVISÕES',
+    'CLÁUSULA 6ª — DAS PENALIDADES, DA MORA E DAS MULTAS CONTRATUAIS',
+    'CLÁUSULA 7ª — DA PROPRIEDADE INTELECTUAL E DA CESSÃO DE DIREITOS AUTORAIS',
+    'CLÁUSULA 8ª — DA CONFIDENCIALIDADE E DO SIGILO PROFISSIONAL',
+    'CLÁUSULA 9ª — DA PROTEÇÃO DE DADOS PESSOAIS (LGPD — Lei 13.709/2018)',
+    'CLÁUSULA 10ª — DA ANTICORRUPÇÃO E DA CONFORMIDADE LEGAL (Lei 12.846/2013)',
+    'CLÁUSULA 11ª — DA AUSÊNCIA DE VÍNCULO EMPREGATÍCIO',
+    'CLÁUSULA 12ª — DO CASO FORTUITO E DA FORÇA MAIOR',
+    'CLÁUSULA 13ª — DA RESCISÃO E DO DISTRATO',
+    'CLÁUSULA 14ª — DA VALIDADE DA ASSINATURA DIGITAL (MP 2.200-2/2001)',
+    'CLÁUSULA 15ª — DAS DISPOSIÇÕES GERAIS',
+    'CLÁUSULA 16ª — DO FORO DE ELEIÇÃO'
   ],
   'compra-venda': [
-    'CLÁUSULA 1: DO OBJETO',
-    'CLÁUSULA 2: DO VALOR E FORMA DE PAGAMENTO',
-    'CLÁUSULA 3: DA ENTREGA E TRANSFERÊNCIA DE POSSE',
-    'CLÁUSULA 4: DAS GARANTIAS',
-    'CLÁUSULA 5: DAS PENALIDADES E MULTAS',
-    'CLÁUSULA 6: DA RESCISÃO',
-    'CLÁUSULA 7: DAS DISPOSIÇÕES GERAIS',
-    'CLÁUSULA 8: DO FORO'
+    'CLÁUSULA 1ª — DO OBJETO E DA DESCRIÇÃO DO BEM',
+    'CLÁUSULA 2ª — DO PREÇO, DA FORMA E DAS CONDIÇÕES DE PAGAMENTO',
+    'CLÁUSULA 3ª — DA ENTREGA, DA TRADIÇÃO E DA TRANSFERÊNCIA DE POSSE',
+    'CLÁUSULA 4ª — DAS GARANTIAS LEGAIS E CONTRATUAIS (Vícios Redibitórios)',
+    'CLÁUSULA 5ª — DAS PENALIDADES, DA MORA E DAS MULTAS CONTRATUAIS',
+    'CLÁUSULA 6ª — DAS DECLARAÇÕES E GARANTIAS DO VENDEDOR',
+    'CLÁUSULA 7ª — DA PROTEÇÃO DE DADOS PESSOAIS (LGPD — Lei 13.709/2018)',
+    'CLÁUSULA 8ª — DA ANTICORRUPÇÃO E DA CONFORMIDADE LEGAL (Lei 12.846/2013)',
+    'CLÁUSULA 9ª — DO CASO FORTUITO E DA FORÇA MAIOR',
+    'CLÁUSULA 10ª — DA RESCISÃO E DO VENCIMENTO ANTECIPADO',
+    'CLÁUSULA 11ª — DA VALIDADE DA ASSINATURA DIGITAL (MP 2.200-2/2001)',
+    'CLÁUSULA 12ª — DAS DISPOSIÇÕES GERAIS',
+    'CLÁUSULA 13ª — DO FORO DE ELEIÇÃO'
   ]
 };
 
 const LEGAL_REF = {
-  'prestacao-servicos': 'segundo o Código Civil Brasileiro (arts. 593 a 609)',
-  'aluguel': 'segundo a Lei 8.245/91 (Lei do Inquilinato) e o Código Civil',
-  'parceria': 'segundo o Código Civil Brasileiro',
-  'confidencialidade': 'segundo o Código Civil e a Lei de Propriedade Industrial',
-  'trabalho-freelancer': 'segundo a Lei 11.196/05, LC 128/08 e o Código Civil',
-  'compra-venda': 'segundo o Código Civil Brasileiro (arts. 481 a 532)'
+  'prestacao-servicos': 'segundo o Código Civil Brasileiro (arts. 593 a 609) e legislação aplicável',
+  'aluguel': 'segundo a Lei 8.245/91 (Lei do Inquilinato) e o Código Civil Brasileiro',
+  'parceria': 'segundo o Código Civil Brasileiro e a legislação comercial aplicável',
+  'confidencialidade': 'segundo o Código Civil, a Lei de Propriedade Industrial (Lei 9.279/96) e a LGPD (Lei 13.709/2018)',
+  'trabalho-freelancer': 'segundo a Lei 11.196/05, LC 128/08, a Lei 9.610/98 (Direitos Autorais) e o Código Civil',
+  'compra-venda': 'segundo o Código Civil Brasileiro (arts. 481 a 532) e o Código de Defesa do Consumidor'
 };
 
 // ============================================================
 // SYSTEM PROMPT — coleta de dados
 // ============================================================
-const SYSTEM_PROMPT = `Você é um assistente jurídico especialista em contratos brasileiros.
-Conduza uma entrevista profissional e amigável para coletar TODAS as informações necessárias.
+const SYSTEM_PROMPT = `Você é um Advogado Especialista em Direito Civil e Contratos Empresariais, com mais de 20 anos de experiência em escritório de advocacia sênior.
 
-REGRAS ABSOLUTAS — NUNCA VIOLE:
-1. Faça APENAS UMA pergunta por vez
+Conduza uma entrevista técnica, profissional e objetiva para coletar todas as informações necessárias à elaboração de um instrumento contratual juridicamente válido e robusto.
+
+REGRAS ABSOLUTAS DE FORMATAÇÃO — NUNCA VIOLE:
+- NUNCA use markdown nas suas respostas: sem asteriscos (**), sem underline (__), sem hashtags (#), sem backticks
+- Escreva APENAS em texto puro e simples
+- Suas perguntas devem ser frases diretas, sem nenhum símbolo especial antes ou depois
+
+REGRAS ABSOLUTAS DE CONDUÇÃO — NUNCA VIOLE:
+1. Faça APENAS UMA pergunta por vez, de forma clara e direta
 2. Siga RIGOROSAMENTE a lista de campos obrigatórios fornecida — não pule NENHUM campo
 3. NÃO gere o contrato durante a entrevista
 4. NÃO antecipe respostas nem invente valores
-5. Somente após coletar TODOS os campos da lista, pergunte: "**Deseja adicionar mais alguma informação ao contrato?**"
-6. Aguarde a resposta. Se o usuário disser "não" ou "nada", responda EXATAMENTE: "**Perfeito! Vou gerar seu contrato agora.**"
-7. Se o usuário disser que quer adicionar algo, colete essa informação e repita a pergunta do passo 5
+5. Somente após coletar TODOS os campos da lista, pergunte: "Deseja adicionar algo a mais para por no contrato ?"
+6. Aguarde a resposta. Se o usuário disser "não" ou "nada", responda EXATAMENTE: "Perfeito! Vou gerar seu contrato agora."
+7. Se o usuário quiser adicionar informações, colete-as e repita a pergunta do passo 5
 8. NUNCA encerre sem ter coletado todos os campos da lista`;
 
 // ============================================================
-// PROMPT INICIAL
+// PROMPT INICIAL — sem markdown
 // ============================================================
 export const getInitialPrompt = (contractType) => {
   const prompts = {
-    'prestacao-servicos': `Ótimo! Você escolheu **Contrato de Prestação de Serviços**. Vou fazer algumas perguntas para montar seu contrato completo.
+    'prestacao-servicos': `Ótimo! Você escolheu o Contrato de Prestação de Serviços. Vou fazer algumas perguntas para montar seu contrato completo.
 
-**Qual o nome completo do CONTRATANTE (quem vai pagar pelo serviço)?**`,
+Qual o nome completo do CONTRATANTE (quem vai pagar pelo serviço)?`,
 
-    'aluguel': `Ótimo! Você escolheu **Contrato de Aluguel**. Vou fazer algumas perguntas para montar seu contrato completo.
+    'aluguel': `Ótimo! Você escolheu o Contrato de Aluguel. Vou fazer algumas perguntas para montar seu contrato completo.
 
-**Qual o nome completo do LOCADOR (proprietário do imóvel)?**`,
+Qual o nome completo do LOCADOR (proprietário do imóvel)?`,
 
-    'compra-venda': `Ótimo! Você escolheu **Contrato de Compra e Venda**. Vou fazer algumas perguntas para montar seu contrato completo.
+    'compra-venda': `Ótimo! Você escolheu o Contrato de Compra e Venda. Vou fazer algumas perguntas para montar seu contrato completo.
 
-**Qual o nome completo do VENDEDOR?**`,
+Qual o nome completo do VENDEDOR?`,
 
-    'parceria': `Ótimo! Você escolheu **Contrato de Parceria**. Vou fazer algumas perguntas para montar seu contrato completo.
+    'parceria': `Ótimo! Você escolheu o Contrato de Parceria. Vou fazer algumas perguntas para montar seu contrato completo.
 
-**Qual o nome completo da PARTE A?**`,
+Qual o nome completo da PARTE A?`,
 
-    'confidencialidade': `Ótimo! Você escolheu **Termo de Confidencialidade (NDA)**. Vou fazer algumas perguntas para montar seu contrato completo.
+    'confidencialidade': `Ótimo! Você escolheu o Termo de Confidencialidade (NDA). Vou fazer algumas perguntas para montar seu contrato completo.
 
-**Qual o nome completo da parte REVELADORA?**`,
+Qual o nome completo da parte REVELADORA?`,
 
-    'trabalho-freelancer': `Ótimo! Você escolheu **Contrato Freelancer**. Vou fazer algumas perguntas para montar seu contrato completo.
+    'trabalho-freelancer': `Ótimo! Você escolheu o Contrato Freelancer. Vou fazer algumas perguntas para montar seu contrato completo.
 
-**Qual o nome completo do CONTRATANTE (o cliente que vai pagar)?**`
+Qual o nome completo do CONTRATANTE (o cliente que vai pagar)?`
   };
-
-  return prompts[contractType] || `Ótimo! Vamos montar seu contrato.\n\n**Qual o nome completo da parte contratante?**`;
+  return prompts[contractType] || `Ótimo! Vamos montar seu contrato.\n\nQual o nome completo da parte contratante?`;
 };
 
 // ============================================================
-// ENVIO DE MENSAGEM PARA A IA (coleta)
+// HELPER — remove markdown residual da resposta da IA
+// ============================================================
+const stripMarkdown = (text) => {
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '$1')
+    .replace(/\*(.*?)\*/g, '$1')
+    .replace(/__(.*?)__/g, '$1')
+    .replace(/_(.*?)_/g, '$1')
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/`{1,3}[^`]*`{1,3}/gs, (match) => match.replace(/`/g, ''));
+};
+
+// ============================================================
+// ENVIO DE MENSAGEM PARA A IA (coleta) — lógica preservada
 // ============================================================
 export const sendMessageToIA = async (messages, contractType) => {
   if (!API_CONFIG.openaiApiKey) {
@@ -500,7 +491,6 @@ export const sendMessageToIA = async (messages, contractType) => {
   const totalFields = (FIELD_ORDER_BY_CONTRACT[contractType] || []).length;
   const fieldsInstruction = REQUIRED_FIELDS_INSTRUCTION[contractType] || '';
 
-  // Aviso de progresso — injeta quando perto do fim
   let progressNote = '';
   if (userResponses >= totalFields - 1) {
     progressNote = `\n\n⚠️ ATENÇÃO: Você já recebeu ${userResponses} respostas. O total de campos é ${totalFields}. Verifique se TODOS foram coletados antes de perguntar sobre informações adicionais. NÃO encerre antes de coletar todos.`;
@@ -533,7 +523,8 @@ export const sendMessageToIA = async (messages, contractType) => {
     }
 
     const data = await response.json();
-    return data.choices[0].message.content;
+    // Garante remoção de markdown mesmo se o modelo ignorar a instrução
+    return stripMarkdown(data.choices[0].message.content);
   } catch (error) {
     console.error('Erro na IA:', error);
     throw error;
@@ -541,8 +532,7 @@ export const sendMessageToIA = async (messages, contractType) => {
 };
 
 // ============================================================
-// EXTRAÇÃO DE DADOS VIA IA (JSON estruturado)
-// Lê o contexto das perguntas + respostas — não depende de posição
+// EXTRAÇÃO DE DADOS VIA IA (JSON estruturado) — lógica preservada
 // ============================================================
 export const extractAnswersFromConversation = async (messages, contractType) => {
   const fieldOrder = FIELD_ORDER_BY_CONTRACT[contractType] || [];
@@ -596,8 +586,6 @@ Formato de saída esperado (exemplo):
 
     const data = await response.json();
     let raw = data.choices[0].message.content.trim();
-
-    // Remove blocos de código markdown se presentes
     raw = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '').trim();
 
     const answers = JSON.parse(raw);
@@ -606,8 +594,6 @@ Formato de saída esperado (exemplo):
 
   } catch (err) {
     console.error('[extractAnswers] Falha na extração via IA — fallback por posição:', err);
-
-    // Fallback por posição
     const answers = {};
     const userMessages = messages.filter(m => m.role === 'user').map(m => m.content);
     fieldOrder.forEach((field, index) => {
@@ -618,7 +604,7 @@ Formato de saída esperado (exemplo):
 };
 
 // ============================================================
-// GERAÇÃO DO CONTRATO FINAL
+// GERAÇÃO DO CONTRATO FINAL — NÍVEL ESCRITÓRIO SÊNIOR
 // ============================================================
 export const generateContractFromConversation = async (messages, contractType) => {
   if (!API_CONFIG.openaiApiKey) throw new Error('Chave da API não configurada');
@@ -628,25 +614,24 @@ export const generateContractFromConversation = async (messages, contractType) =
   const contractTitle = selectedTemplate.title.toUpperCase();
   const legalRef = LEGAL_REF[contractType] || 'segundo o Código Civil Brasileiro';
 
-  // Preenche o template com os valores reais
   let filledTemplate = selectedTemplate.template;
   Object.keys(answers).forEach(key => {
     filledTemplate = filledTemplate.replace(new RegExp(`{${key}}`, 'g'), answers[key] || '');
   });
   filledTemplate = filledTemplate.replace(/{[^}]+}/g, '');
 
-  // Bloco de dados explícito para o prompt
   const dataBlock = Object.entries(answers)
     .filter(([, v]) => v && v.trim() !== '')
     .map(([k, v]) => `• ${k}: ${v}`)
     .join('\n');
 
-  // Cláusulas com valores interpolados
   const clausulasList = (CONTRACT_CLAUSES[contractType] || [])
     .map(c => `   - ${c}`)
     .join('\n');
 
-  const prompt = `Com base nas informações abaixo, gere um ${contractTitle} completo e juridicamente válido ${legalRef}.
+  const prompt = `Você é um Advogado Sênior especialista em Direito Civil e Empresarial Brasileiro. Elabore o instrumento contratual abaixo com rigor técnico-jurídico, vocabulário formal e estrutura de escritório de advocacia de alto padrão.
+
+Com base nas informações abaixo, redija um ${contractTitle} completo, robusto e juridicamente impecável, ${legalRef}.
 
 ═══════════════════════════════════════════════════
 DADOS DO CONTRATO (USE EXATAMENTE ESTES VALORES)
@@ -659,20 +644,41 @@ TEMPLATE DE REFERÊNCIA
 ${filledTemplate}
 
 ═══════════════════════════════════════════════════
-INSTRUÇÕES OBRIGATÓRIAS
+INSTRUÇÕES OBRIGATÓRIAS DE REDAÇÃO
 ═══════════════════════════════════════════════════
-1. Use SOMENTE os dados fornecidos acima — NUNCA invente valores
-2. NÃO use placeholders — substitua TUDO pelos valores reais
+1. USE SOMENTE os dados fornecidos — JAMAIS invente valores, nomes ou percentuais
+2. NÃO utilize placeholders — substitua TUDO pelos valores reais informados
 3. NUNCA coloque CPF/CNPJ no campo de nome, nem endereço no campo de cidade
-4. "cidade" e "estado" são APENAS para a cláusula de foro — não confunda com outros campos
-5. As cláusulas de multas e penalidades DEVEM usar os valores de multa informados acima
-6. Cada cláusula deve ser detalhada e juridicamente robusta
-7. NÃO inclua seção de assinaturas ou testemunhas (ela é adicionada separadamente)
+4. "cidade" e "estado" destinam-se EXCLUSIVAMENTE à cláusula de eleição de foro
+5. As cláusulas de penalidades DEVEM refletir com precisão os valores de multa informados
+6. CADA CLÁUSULA deve ser redigida de forma EXTENSA e DETALHADA, com:
+   - Cabeçalho em NEGRITO e CAIXA ALTA (ex: **CLÁUSULA 1ª — DO OBJETO**)
+   - Corpo jurídico completo com parágrafos numerados (§1º, §2º, §3º...)
+   - Uso de terminologia técnica: "mora", "vencimento antecipado", "caráter irretratável",
+     "sub-rogação", "solidariedade", "notificação extrajudicial", "ato ilícito", "perdas e danos"
+   - Referência explícita aos dispositivos legais aplicáveis (artigos do CC, leis específicas)
 
-ESTRUTURA OBRIGATÓRIA:
+7. CLÁUSULA DE LGPD: deve conter obrigações de controlador/operador, finalidade do tratamento,
+   base legal (art. 7º Lei 13.709/18), direitos dos titulares e medidas de segurança adotadas
+
+8. CLÁUSULA DE ANTICORRUPÇÃO: deve referenciar a Lei 12.846/2013, proibir atos de corrupção,
+   suborno, pagamentos indevidos a agentes públicos e prever rescisão imediata em caso de violação
+
+9. CLÁUSULA DE FORÇA MAIOR: deve definir hipóteses (pandemias, desastres naturais, atos de guerra,
+   decisões governamentais), estabelecer prazo de comunicação (máximo 5 dias úteis) e consequências
+
+10. CLÁUSULA DE ASSINATURA DIGITAL: deve reconhecer validade jurídica nos termos da MP 2.200-2/2001,
+    ICP-Brasil e demais padrões aceitos pelas partes, com força de instrumento particular
+
+11. Inicie o documento com o PREÂMBULO completo identificando as partes, qualificação completa
+    (nome, CPF/CNPJ, estado civil se pessoa física, sede se jurídica) e a declaração de livre vontade
+
+12. NÃO inclua seção de assinaturas ou testemunhas (adicionada separadamente pelo sistema)
+
+ESTRUTURA OBRIGATÓRIA — DESENVOLVA CADA CLÁUSULA COM CORPO JURÍDICO COMPLETO:
 ${clausulasList}
 
-GERE O CONTRATO COMPLETO AGORA.`;
+REDIJA O INSTRUMENTO CONTRATUAL COMPLETO AGORA, sem resumos, sem omissões e sem placeholders.`;
 
   try {
     const response = await fetch(API_CONFIG.apiUrl, {
@@ -686,7 +692,7 @@ GERE O CONTRATO COMPLETO AGORA.`;
         messages: [
           {
             role: 'system',
-            content: 'Você é um advogado especialista em contratos brasileiros. Gere contratos profissionais e juridicamente válidos. NUNCA use placeholders. NUNCA invente dados. NUNCA troque campos (ex: não coloque CPF no lugar de nome, não coloque endereço no lugar de cidade).'
+            content: `Você é um Advogado Sênior especialista em Direito Civil e Empresarial com 20+ anos de experiência. Redija contratos profissionais, extensos e juridicamente impecáveis, com linguagem técnica formal, parágrafos numerados e referências legais precisas. NUNCA use placeholders. NUNCA invente dados. NUNCA troque campos. Use terminologia jurídica brasileira de alto padrão: "mora", "vencimento antecipado", "caráter irretratável", "sub-rogação", "perdas e danos", "notificação extrajudicial". Cada cláusula deve ter pelo menos 3 parágrafos detalhados.`
           },
           { role: 'user', content: prompt }
         ],

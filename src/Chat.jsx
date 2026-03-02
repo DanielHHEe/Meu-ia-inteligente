@@ -833,7 +833,7 @@ const ProgressSidebar = ({ currentStep, contractType }) => {
     <div className="hidden lg:flex" style={{ width: '260px', position: 'fixed', left: 0, top: 0, bottom: 0, backgroundColor: '#060b11', borderRight: '1px solid rgba(255,255,255,0.06)', flexDirection: 'column', padding: '28px 20px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '40px' }}>
         <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: 'linear-gradient(135deg, #10b981, #059669)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', boxShadow: '0 0 16px rgba(16,185,129,0.3)' }}>
-          <img src="/robozinho.png" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <img src="/rob.png" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         </div>
         <span style={{ fontSize: '15px', fontWeight: '700', color: 'white' }}>
           Contrate<span style={{ color: '#10b981' }}>-me</span>

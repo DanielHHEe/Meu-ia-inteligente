@@ -1,143 +1,307 @@
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
 import {
-  FileText,
-  Menu,
-  X,
-  ArrowRight,
-  CheckCircle2,
-  Sparkles,
-  FileEdit,
-  CreditCard,
-  Download,
-  Shield,
-  Clock,
-  PiggyBank,
-  Smartphone,
-  Scale,
-  Zap,
-  Check,
-  Star,
-  Mail,
-  Instagram,
-  Linkedin,
-  ChevronDown,
+  motion, AnimatePresence,
+  useScroll, useTransform, useSpring, useInView,
+} from "framer-motion";
+import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
+import * as THREE from "three";
+import {
+  Menu, X, ArrowRight, Sparkles, FileEdit, CreditCard, Download,
+  Shield, Clock, PiggyBank, Smartphone, Scale, Zap, Check, Star,
+  ChevronDown, Quote,
 } from "lucide-react";
 
 import Chat from "./Chat";
 
-// ==================== SMOOTH SCROLL HELPER ====================
+// ─────────────────────────────────────────────
+// SMOOTH SCROLL
+// ─────────────────────────────────────────────
 const smoothScrollTo = (e, href) => {
   e.preventDefault();
-  const id = href.replace("#", "");
-  const el = document.getElementById(id);
-  if (el) {
-    el.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
+  const el = document.getElementById(href.replace("#", ""));
+  if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
 };
 
-// ==================== HEADER ====================
+// ─────────────────────────────────────────────
+// FLOATING PARTICLES (canvas)
+// ─────────────────────────────────────────────
+const FloatingParticles = () => {
+  const ref = useRef(null);
+  useEffect(() => {
+    const canvas = ref.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    let animId;
+    const resize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
+    resize();
+    window.addEventListener("resize", resize);
+    const pts = Array.from({ length: 60 }, () => ({
+      x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+      r: Math.random() * 1.5 + 0.3,
+      vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3,
+      a: Math.random() * 0.5 + 0.1,
+    }));
+    const draw = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      pts.forEach(p => {
+        p.x = (p.x + p.vx + canvas.width) % canvas.width;
+        p.y = (p.y + p.vy + canvas.height) % canvas.height;
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(16,185,129,${p.a})`; ctx.fill();
+      });
+      for (let i = 0; i < pts.length; i++)
+        for (let j = i + 1; j < pts.length; j++) {
+          const dx = pts[i].x - pts[j].x, dy = pts[i].y - pts[j].y;
+          const d = Math.sqrt(dx * dx + dy * dy);
+          if (d < 100) {
+            ctx.beginPath();
+            ctx.strokeStyle = `rgba(16,185,129,${0.06 * (1 - d / 100)})`;
+            ctx.lineWidth = 0.5;
+            ctx.moveTo(pts[i].x, pts[i].y); ctx.lineTo(pts[j].x, pts[j].y); ctx.stroke();
+          }
+        }
+      animId = requestAnimationFrame(draw);
+    };
+    draw();
+    return () => { cancelAnimationFrame(animId); window.removeEventListener("resize", resize); };
+  }, []);
+  return <canvas ref={ref} className="absolute inset-0 pointer-events-none" style={{ opacity: 0.7 }} />;
+};
+
+// ─────────────────────────────────────────────
+// 3D DOCUMENT (Three.js)
+// ─────────────────────────────────────────────
+const ThreeDDocument = () => {
+  const mountRef = useRef(null);
+  const mouseRef = useRef({ x: 0, y: 0 });
+  useEffect(() => {
+    const mount = mountRef.current;
+    if (!mount) return;
+    const w = mount.clientWidth || 460, h = mount.clientHeight || 420;
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(w, h); renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    mount.appendChild(renderer.domElement);
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 100);
+    camera.position.set(0, 0, 5);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+    const d1 = new THREE.DirectionalLight(0x10b981, 2.5); d1.position.set(3, 5, 5); scene.add(d1);
+    const d2 = new THREE.DirectionalLight(0x3b82f6, 1.2); d2.position.set(-3, -2, 3); scene.add(d2);
+    const group = new THREE.Group(); scene.add(group);
+    const docGeo = new THREE.BoxGeometry(2.2, 2.9, 0.08);
+    group.add(new THREE.Mesh(docGeo, new THREE.MeshPhysicalMaterial({ color: 0x0d1a2a, roughness: 0.2, metalness: 0.1, transparent: true, opacity: 0.95, emissive: 0x051020 })));
+    group.add(new THREE.LineSegments(new THREE.EdgesGeometry(docGeo), new THREE.LineBasicMaterial({ color: 0x10b981, transparent: true, opacity: 0.6 })));
+    const lm = new THREE.MeshBasicMaterial({ color: 0x10b981, transparent: true, opacity: 0.45 });
+    [1.4, 1.0, 1.3, 0.8, 1.2, 0.9, 1.1].forEach((lw, i) => {
+      const m = new THREE.Mesh(new THREE.BoxGeometry(lw, 0.07, 0.01), lm.clone());
+      m.position.set((lw - 1.4) / 2 - 0.3, 0.9 - i * 0.22, 0.05); group.add(m);
+    });
+    const sealMesh = new THREE.Mesh(new THREE.RingGeometry(0.25, 0.32, 32), new THREE.MeshBasicMaterial({ color: 0x10b981, transparent: true, opacity: 0.8, side: THREE.DoubleSide }));
+    sealMesh.position.set(0.6, -1.0, 0.05); group.add(sealMesh);
+    const sealInner = new THREE.Mesh(new THREE.CircleGeometry(0.18, 32), new THREE.MeshBasicMaterial({ color: 0x10b981, transparent: true, opacity: 0.15 }));
+    sealInner.position.set(0.6, -1.0, 0.05);
+    group.add(sealInner);
+    const pPos = new Float32Array(40 * 3);
+    for (let i = 0; i < 40; i++) { pPos[i*3]=(Math.random()-.5)*5; pPos[i*3+1]=(Math.random()-.5)*5; pPos[i*3+2]=(Math.random()-.5)*3; }
+    const pGeo = new THREE.BufferGeometry(); pGeo.setAttribute("position", new THREE.BufferAttribute(pPos, 3));
+    const ps = new THREE.Points(pGeo, new THREE.PointsMaterial({ color: 0x10b981, size: 0.04, transparent: true, opacity: 0.6 }));
+    scene.add(ps);
+    const onMM = (e) => { const r = mount.getBoundingClientRect(); mouseRef.current.x = ((e.clientX-r.left)/r.width-.5)*2; mouseRef.current.y = -((e.clientY-r.top)/r.height-.5)*2; };
+    mount.addEventListener("mousemove", onMM);
+    let frame;
+    const animate = () => {
+      frame = requestAnimationFrame(animate);
+      group.rotation.y += (mouseRef.current.x*0.5 - group.rotation.y)*0.05;
+      group.rotation.x += (mouseRef.current.y*0.3 - group.rotation.x)*0.05;
+      group.rotation.y += 0.003; ps.rotation.y += 0.001;
+      sealMesh.material.opacity = 0.5 + Math.sin(Date.now()*0.003)*0.3;
+      renderer.render(scene, camera);
+    };
+    animate();
+    return () => { cancelAnimationFrame(frame); mount.removeEventListener("mousemove", onMM); renderer.dispose(); if (mount.contains(renderer.domElement)) mount.removeChild(renderer.domElement); };
+  }, []);
+  return <div ref={mountRef} className="w-full h-full cursor-grab active:cursor-grabbing" style={{ minHeight: 420 }} />;
+};
+
+// ─────────────────────────────────────────────
+// INFINITE MARQUEE
+// ─────────────────────────────────────────────
+const InfiniteMarquee = ({ testimonials, direction = 1, speed = 35 }) => {
+  const trackRef = useRef(null);
+  const animRef = useRef(null);
+  const posRef = useRef(0);
+  const pausedRef = useRef(false);
+  const items = [...testimonials, ...testimonials, ...testimonials];
+  const CARD_WIDTH = 360, GAP = 20;
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    const total = testimonials.length * (CARD_WIDTH + GAP);
+    const go = () => {
+      if (!pausedRef.current) {
+        posRef.current += (speed / 60) * direction;
+        if (posRef.current >= total) posRef.current -= total;
+        if (posRef.current < 0) posRef.current += total;
+        track.style.transform = `translateX(${-posRef.current}px)`;
+      }
+      animRef.current = requestAnimationFrame(go);
+    };
+    animRef.current = requestAnimationFrame(go);
+    return () => cancelAnimationFrame(animRef.current);
+  }, [direction, speed, testimonials.length]);
+  return (
+    <div className="overflow-hidden" onMouseEnter={() => { pausedRef.current = true; }} onMouseLeave={() => { pausedRef.current = false; }}>
+      <div ref={trackRef} className="flex will-change-transform" style={{ gap: GAP, width: "max-content" }}>
+        {items.map((t, idx) => (
+          <div key={idx} style={{ width: CARD_WIDTH, flexShrink: 0, boxShadow: "0 4px 24px rgba(0,0,0,0.25)" }}
+            className="relative p-6 rounded-2xl border border-white/6 bg-white/[0.025] hover:border-emerald-500/30 hover:bg-white/[0.05] transition-all duration-300 group cursor-default">
+            <div className="absolute top-4 right-5 opacity-[0.07] group-hover:opacity-[0.15] transition-opacity"><Quote className="w-9 h-9 text-emerald-400" /></div>
+            <div className="flex gap-1 mb-3">{[...Array(t.rating)].map((_, i) => <Star key={i} className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />)}</div>
+            <p className="text-sm text-white/55 leading-relaxed mb-5 italic" style={{ display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>"{t.text}"</p>
+            <div className="flex items-center gap-3">
+              <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${t.color} flex items-center justify-center flex-shrink-0 shadow-lg`}><span className="text-xs font-bold text-white">{t.avatar}</span></div>
+              <div className="flex-1 min-w-0"><p className="text-sm font-semibold text-white truncate">{t.name}</p><p className="text-xs text-white/35 truncate">{t.role}</p></div>
+              <div className="text-right flex-shrink-0"><span className="text-[11px] text-emerald-400/70 block font-medium">{t.contractType}</span><span className="text-[11px] text-white/20">{t.date}</span></div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// ─────────────────────────────────────────────
+// PARALLAX SECTION DIVIDER  (new)
+// ─────────────────────────────────────────────
+const ParallaxBanner = () => {
+  const ref = useRef(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
+  const y1 = useTransform(scrollYProgress, [0, 1], [-80, 80]);
+  const y2 = useTransform(scrollYProgress, [0, 1], [80, -80]);
+  const x1 = useTransform(scrollYProgress, [0, 1], [-40, 40]);
+  const x2 = useTransform(scrollYProgress, [0, 1], [40, -40]);
+  const scale = useTransform(scrollYProgress, [0, 0.5, 1], [0.9, 1.05, 0.9]);
+  const opacity = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0, 1, 1, 0]);
+
+  return (
+    <div ref={ref} className="relative h-[320px] overflow-hidden bg-[#060c13] flex items-center justify-center">
+      {/* Parallax background layers */}
+      <motion.div style={{ y: y1 }} className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full blur-[100px]" style={{ background: "radial-gradient(circle, rgba(16,185,129,0.12) 0%, transparent 70%)" }} />
+      </motion.div>
+      <motion.div style={{ y: y2 }} className="absolute inset-0 pointer-events-none">
+        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full blur-[100px]" style={{ background: "radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%)" }} />
+      </motion.div>
+
+      {/* Floating stat chips with independent parallax */}
+      <motion.div style={{ x: x1, y: y1 }} className="absolute left-[8%] top-[20%] px-5 py-3 rounded-2xl bg-white/4 border border-emerald-500/20 backdrop-blur-sm hidden md:flex items-center gap-3">
+        <div className="w-8 h-8 rounded-xl bg-emerald-500/20 flex items-center justify-center"><Shield className="w-4 h-4 text-emerald-400" /></div>
+        <div><p className="text-white font-bold text-sm">100% Legal</p><p className="text-white/40 text-xs">Revisado por especialistas</p></div>
+      </motion.div>
+      <motion.div style={{ x: x2, y: y2 }} className="absolute right-[8%] bottom-[20%] px-5 py-3 rounded-2xl bg-white/4 border border-amber-500/20 backdrop-blur-sm hidden md:flex items-center gap-3">
+        <div className="w-8 h-8 rounded-xl bg-amber-500/20 flex items-center justify-center"><Zap className="w-4 h-4 text-amber-400" /></div>
+        <div><p className="text-white font-bold text-sm">2 minutos</p><p className="text-white/40 text-xs">Do zero ao PDF pronto</p></div>
+      </motion.div>
+      <motion.div style={{ x: x1, y: y2 }} className="absolute right-[12%] top-[18%] px-5 py-3 rounded-2xl bg-white/4 border border-blue-500/20 backdrop-blur-sm hidden lg:flex items-center gap-3">
+        <div className="w-8 h-8 rounded-xl bg-blue-500/20 flex items-center justify-center"><Star className="w-4 h-4 text-blue-400 fill-blue-400" /></div>
+        <div><p className="text-white font-bold text-sm">4.9 / 5</p><p className="text-white/40 text-xs">+1.200 avaliações</p></div>
+      </motion.div>
+
+      {/* Central text with scale parallax */}
+      <motion.div style={{ scale, opacity }} className="relative z-10 text-center px-6">
+        <p className="text-xs font-bold text-emerald-400 uppercase tracking-[0.25em] mb-3">Simples assim</p>
+        <h3 className="text-3xl md:text-5xl font-black text-white leading-tight" style={{ fontFamily: "'Syne', sans-serif" }}>
+          Contrato profissional<br />
+          <span style={{ background: "linear-gradient(135deg, #10b981, #34d399, #6ee7b7)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>por R$ 19,90.</span>
+        </h3>
+      </motion.div>
+
+      {/* Grid pattern */}
+      <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: `linear-gradient(rgba(16,185,129,1) 1px, transparent 1px), linear-gradient(90deg, rgba(16,185,129,1) 1px, transparent 1px)`, backgroundSize: "40px 40px" }} />
+    </div>
+  );
+};
+
+// ─────────────────────────────────────────────
+// WHATSAPP BUTTON
+// ─────────────────────────────────────────────
+const WhatsAppButton = () => {
+  const phoneNumber = "5599991999125";
+  const message = "Olá! Preciso de ajuda com meu contrato.";
+  return (
+    <motion.a href={`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`}
+      target="_blank" rel="noopener noreferrer"
+      initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+      transition={{ delay: 1.5, type: "spring", stiffness: 260, damping: 20 }}
+      whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}
+      className="fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 rounded-full"
+      style={{ background: "linear-gradient(135deg, #25d366, #128c7e)", boxShadow: "0 4px 24px rgba(37,211,102,0.45)" }}>
+      <span className="absolute inset-0 rounded-full animate-ping" style={{ background: "rgba(37,211,102,0.3)" }} />
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" className="w-7 h-7 relative z-10" fill="white">
+        <path d="M16 2C8.268 2 2 8.268 2 16c0 2.478.67 4.8 1.832 6.793L2 30l7.418-1.807A13.94 13.94 0 0 0 16 30c7.732 0 14-6.268 14-14S23.732 2 16 2zm0 25.6a11.54 11.54 0 0 1-5.885-1.608l-.422-.25-4.403 1.072 1.102-4.288-.276-.44A11.56 11.56 0 0 1 4.4 16C4.4 9.59 9.59 4.4 16 4.4S27.6 9.59 27.6 16 22.41 27.6 16 27.6zm6.34-8.62c-.347-.174-2.055-1.014-2.374-1.13-.32-.116-.552-.174-.784.174-.232.347-.9 1.13-1.103 1.362-.203.232-.406.26-.753.087-.347-.174-1.466-.54-2.792-1.722-1.032-.92-1.728-2.055-1.931-2.402-.203-.347-.022-.535.152-.708.157-.156.347-.406.52-.61.174-.203.232-.347.347-.579.116-.232.058-.435-.029-.61-.087-.174-.784-1.89-1.074-2.588-.283-.68-.57-.587-.784-.598l-.667-.012c-.232 0-.61.087-.928.435-.319.347-1.218 1.19-1.218 2.9s1.247 3.364 1.42 3.596c.174.232 2.453 3.745 5.944 5.252.831.359 1.48.573 1.985.733.834.265 1.593.228 2.193.138.669-.1 2.055-.84 2.345-1.651.29-.812.29-1.508.203-1.651-.086-.145-.318-.232-.666-.406z" />
+      </svg>
+    </motion.a>
+  );
+};
+
+// ─────────────────────────────────────────────
+// HEADER
+// ─────────────────────────────────────────────
 const Header = ({ onCreateContract }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    const fn = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", fn);
+    return () => window.removeEventListener("scroll", fn);
   }, []);
-
   const navLinks = [
     { label: "Como Funciona", href: "#como-funciona" },
     { label: "Vantagens", href: "#vantagens" },
+    { label: "Avaliações", href: "#avaliacoes" },
     { label: "Preços", href: "#precos" },
     { label: "FAQ", href: "#faq" },
   ];
-
   return (
-    <motion.header
-      initial={{ y: -100, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.6 }}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        scrolled
-          ? "bg-[#080d14]/95 backdrop-blur-xl shadow-2xl shadow-black/30 border-b border-white/5"
-          : "bg-transparent"
-      }`}
-    >
+    <motion.header initial={{ y: -100, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.6 }}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled ? "bg-[#080d14]/95 backdrop-blur-xl shadow-2xl shadow-black/30 border-b border-white/5" : "bg-transparent"}`}>
       <div className="max-w-7xl mx-auto px-6 md:px-10">
         <div className="flex items-center justify-between h-20">
-          <a href="#" className="flex items-center gap-3 group">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center overflow-hidden shadow-lg shadow-emerald-500/30">
-              <img
-                src="/robozinho.png"
-                alt="Robozinho"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <span className="text-lg font-semibold text-white tracking-tight">
-              Contrate<span className="text-emerald-400">-me</span>
-            </span>
+          <a href="#" className="flex items-center gap-3">
+            <motion.div whileHover={{ rotate: 10, scale: 1.1 }} className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center overflow-hidden shadow-lg shadow-emerald-500/30">
+              <img src="/rob.png" alt="Logo" className="w-full h-full object-cover" />
+            </motion.div>
+            <span className="text-lg font-semibold text-white tracking-tight">Contrate<span className="text-emerald-400">-me</span></span>
           </a>
-
           <nav className="hidden md:flex items-center gap-8">
-            {navLinks.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                onClick={(e) => smoothScrollTo(e, link.href)}
-                className="text-sm font-medium text-white/60 hover:text-white transition-colors duration-200"
-              >
+            {navLinks.map((link, i) => (
+              <motion.a key={link.href} href={link.href} onClick={(e) => smoothScrollTo(e, link.href)}
+                initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 * i }}
+                className="text-sm font-medium text-white/60 hover:text-white transition-colors duration-200 relative group">
                 {link.label}
-              </a>
+                <span className="absolute -bottom-1 left-0 w-0 h-px bg-emerald-400 group-hover:w-full transition-all duration-300" />
+              </motion.a>
             ))}
           </nav>
-
-          <div className="hidden md:flex items-center gap-4">
-            <motion.button
-              onClick={onCreateContract}
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-semibold rounded-xl transition-all duration-200 shadow-lg shadow-emerald-500/25"
-            >
+          <div className="hidden md:block">
+            <motion.button onClick={onCreateContract} whileHover={{ scale: 1.03, boxShadow: "0 0 30px rgba(16,185,129,0.5)" }} whileTap={{ scale: 0.97 }}
+              className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-semibold rounded-xl shadow-lg shadow-emerald-500/25 transition-all">
               Criar Contrato
             </motion.button>
           </div>
-
-          <button
-            className="md:hidden p-2 text-white/80"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          >
+          <button className="md:hidden p-2 text-white/80" onClick={() => setIsMenuOpen(!isMenuOpen)}>
             {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
-
         <AnimatePresence>
           {isMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="md:hidden border-t border-white/10 py-4"
-            >
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="md:hidden border-t border-white/10 py-4">
               <nav className="flex flex-col gap-2">
                 {navLinks.map((link) => (
-                  <a
-                    key={link.href}
-                    href={link.href}
-                    className="text-sm font-medium text-white/60 hover:text-white px-3 py-3 rounded-lg hover:bg-white/5 transition-all"
-                    onClick={(e) => { smoothScrollTo(e, link.href); setIsMenuOpen(false); }}
-                  >
-                    {link.label}
-                  </a>
+                  <a key={link.href} href={link.href} className="text-sm font-medium text-white/60 hover:text-white px-3 py-3 rounded-lg hover:bg-white/5 transition-all"
+                    onClick={(e) => { setIsMenuOpen(false); setTimeout(() => smoothScrollTo(e, link.href), 300); }}>{link.label}</a>
                 ))}
-                <motion.button
-                  onClick={() => { setIsMenuOpen(false); onCreateContract(); }}
-                  className="mt-2 px-5 py-3 bg-emerald-500 text-white font-semibold rounded-xl"
-                >
-                  Criar Contrato
-                </motion.button>
+                <button onClick={() => { setIsMenuOpen(false); onCreateContract(); }} className="mt-2 px-5 py-3 bg-emerald-500 text-white font-semibold rounded-xl">Criar Contrato</button>
               </nav>
             </motion.div>
           )}
@@ -147,326 +311,143 @@ const Header = ({ onCreateContract }) => {
   );
 };
 
-// ==================== HERO SECTION ====================
+// ─────────────────────────────────────────────
+// HERO SECTION  (with deep parallax layers)
+// ─────────────────────────────────────────────
 const HeroSection = ({ onCreateContract }) => {
-  const benefits = [
-    "Juridicamente revisado",
-    "Pronto em 2 minutos",
-    "Pagamento via Pix",
-  ];
+  const benefits = ["Juridicamente revisado", "Pronto em 2 minutos", "Pagamento via Pix"];
+  const { scrollY } = useScroll();
+  // Multiple parallax layers at different speeds
+  const gridY      = useTransform(scrollY, [0, 800], [0, 200]);
+  const blob1Y     = useTransform(scrollY, [0, 800], [0, 120]);
+  const blob2Y     = useTransform(scrollY, [0, 800], [0, 80]);
+  const blob1X     = useTransform(scrollY, [0, 800], [0, -30]);
+  const blob2X     = useTransform(scrollY, [0, 800], [0, 30]);
+  const contentY   = useTransform(scrollY, [0, 600], [0, 60]);
+  const heroOpacity = useTransform(scrollY, [0, 500], [1, 0]);
+
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    const target = 1247, step = Math.ceil(target / 60);
+    let c = 0;
+    const iv = setInterval(() => { c = Math.min(c + step, target); setCount(c); if (c >= target) clearInterval(iv); }, 30);
+    return () => clearInterval(iv);
+  }, []);
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#080d14]">
-      {/* Background grid */}
-      <div
-        className="absolute inset-0 opacity-20"
-        style={{
-          backgroundImage: `linear-gradient(rgba(16,185,129,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(16,185,129,0.15) 1px, transparent 1px)`,
-          backgroundSize: "60px 60px",
-        }}
-      />
+      {/* Layer 1 — grid (fastest) */}
+      <motion.div style={{ y: gridY }} className="absolute inset-0 pointer-events-none">
+        <div className="absolute inset-0 opacity-20" style={{ backgroundImage: `linear-gradient(rgba(16,185,129,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(16,185,129,0.15) 1px, transparent 1px)`, backgroundSize: "60px 60px" }} />
+        <FloatingParticles />
+      </motion.div>
 
-      {/* Glow blobs */}
-      <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-emerald-400/5 rounded-full blur-[80px] pointer-events-none" />
+      {/* Layer 2 — blobs (medium speed, drift sideways too) */}
+      <motion.div style={{ y: blob1Y, x: blob1X }} className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full pointer-events-none" style2={{ background: "radial-gradient(circle, rgba(16,185,129,0.12) 0%, transparent 70%)", filter: "blur(120px)" }}>
+        <motion.div animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.15, 0.1] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }} className="w-full h-full rounded-full" style={{ background: "radial-gradient(circle, rgba(16,185,129,0.12) 0%, transparent 70%)", filter: "blur(120px)" }} />
+      </motion.div>
+      <motion.div style={{ y: blob2Y, x: blob2X }} className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full pointer-events-none">
+        <motion.div animate={{ scale: [1, 1.15, 1], opacity: [0.1, 0.14, 0.1] }} transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 2 }} className="w-full h-full rounded-full" style={{ background: "radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%)", filter: "blur(120px)" }} />
+      </motion.div>
 
-      <div className="max-w-7xl mx-auto px-6 md:px-10 relative z-10 pt-24">
+      {/* Layer 3 — content (slowest, fades out) */}
+      <motion.div style={{ y: contentY, opacity: heroOpacity }} className="max-w-7xl mx-auto px-6 md:px-10 relative z-10 pt-24 w-full">
         <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-8"
-            >
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-sm font-medium text-emerald-400 tracking-wide">
-                Gerado por Inteligência Artificial
-              </span>
+          <motion.div initial={{ opacity: 0, y: 60 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}>
+            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }} className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-8">
+              <motion.span animate={{ scale: [1, 1.4, 1] }} transition={{ duration: 1.5, repeat: Infinity }} className="w-2 h-2 rounded-full bg-emerald-400" />
+              <span className="text-sm font-medium text-emerald-400 tracking-wide">Gerado por Inteligência Artificial</span>
             </motion.div>
-
-            <h1
-              className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white leading-[1.05] mb-6 tracking-tight"
-              style={{ fontFamily: "'Syne', sans-serif" }}
-            >
-              Seu contrato{" "}
-              <br />
-              <span
-                style={{
-                  background: "linear-gradient(135deg, #10b981 0%, #34d399 50%, #6ee7b7 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
-                }}
-              >
-                profissional
-              </span>
-              <br />
-              em 2 minutos.
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white leading-[1.05] mb-6 tracking-tight" style={{ fontFamily: "'Syne', sans-serif" }}>
+              {["Seu contrato", "profissional", "em 2 minutos."].map((line, i) => (
+                <motion.span key={i} initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + i * 0.15, duration: 0.7 }} className="block"
+                  style={i === 1 ? { background: "linear-gradient(135deg, #10b981 0%, #34d399 50%, #6ee7b7 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" } : {}}>
+                  {line}
+                </motion.span>
+              ))}
             </h1>
-
-            <p className="text-lg text-white/50 mb-8 max-w-lg leading-relaxed">
-              Sem advogados caros. Sem burocracia. Pague via Pix e baixe seu
-              contrato personalizado instantaneamente.
-            </p>
-
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 }} className="text-lg text-white/50 mb-8 max-w-lg leading-relaxed">
+              Sem advogados caros. Sem burocracia. Pague via Pix e baixe seu contrato personalizado instantaneamente.
+            </motion.p>
             <div className="flex flex-wrap gap-5 mb-10">
-              {benefits.map((benefit, index) => (
-                <motion.div
-                  key={benefit}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.5 + index * 0.1 }}
-                  className="flex items-center gap-2"
-                >
-                  <div className="w-5 h-5 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center">
-                    <Check className="w-3 h-3 text-emerald-400" />
-                  </div>
-                  <span className="text-sm text-white/70 font-medium">{benefit}</span>
+              {benefits.map((b, i) => (
+                <motion.div key={b} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.7 + i * 0.1 }} className="flex items-center gap-2">
+                  <div className="w-5 h-5 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center"><Check className="w-3 h-3 text-emerald-400" /></div>
+                  <span className="text-sm text-white/70 font-medium">{b}</span>
                 </motion.div>
               ))}
             </div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.7 }}
-              className="flex flex-col sm:flex-row gap-4"
-            >
-              <motion.button
-                onClick={onCreateContract}
-                whileHover={{ scale: 1.03, y: -2 }}
-                whileTap={{ scale: 0.97 }}
-                className="group relative px-8 py-4 text-white font-semibold rounded-2xl flex items-center justify-center gap-2 overflow-hidden"
-                style={{
-                  background: "linear-gradient(135deg, #10b981, #059669)",
-                  boxShadow: "0 0 40px rgba(16,185,129,0.35), 0 4px 20px rgba(0,0,0,0.3)",
-                }}
-              >
-                <span>Criar Meu Contrato</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.85 }}>
+              <motion.button onClick={onCreateContract} whileHover={{ scale: 1.05, y: -3, boxShadow: "0 0 60px rgba(16,185,129,0.5)" }} whileTap={{ scale: 0.97 }}
+                className="group relative px-8 py-4 text-white font-semibold rounded-2xl flex items-center gap-2 overflow-hidden"
+                style={{ background: "linear-gradient(135deg, #10b981, #059669)", boxShadow: "0 0 40px rgba(16,185,129,0.35), 0 4px 20px rgba(0,0,0,0.3)" }}>
+                <motion.span className="absolute inset-0 bg-white/10" initial={{ x: "-100%" }} whileHover={{ x: "100%" }} transition={{ duration: 0.4 }} />
+                <span className="relative">Criar Meu Contrato</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform relative" />
               </motion.button>
-              <button className="px-8 py-4 border border-white/10 text-white/70 font-medium rounded-2xl hover:border-white/30 hover:text-white transition-all backdrop-blur-sm">
-                Ver Exemplo
-              </button>
             </motion.div>
-
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.9 }}
-              className="mt-8 text-sm text-white/30"
-            >
-              <span className="text-emerald-400 font-semibold">+500 contratos</span>{" "}
-              gerados com sucesso
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.1 }} className="mt-8 text-sm text-white/30">
+              <span className="text-emerald-400 font-semibold">Já temos +{count} contratos</span> gerados com sucesso
             </motion.p>
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="relative hidden lg:block"
-          >
-            {/* Floating card */}
-            <motion.div
-              animate={{ y: [0, -12, 0] }}
-              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-              className="relative"
-            >
-              {/* Glow behind card */}
-              <div className="absolute inset-0 bg-emerald-500/10 rounded-3xl blur-2xl scale-110" />
-
-              <div
-                className="relative bg-white/5 backdrop-blur-2xl rounded-3xl p-8 border border-white/10"
-                style={{ boxShadow: "0 25px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1)" }}
-              >
-                {/* Card header */}
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center">
-                      <span className="text-xl">📄</span>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-white text-sm">
-                        Prestação de Serviços
-                      </h3>
-                      <p className="text-xs text-white/40">Gerado agora há pouco</p>
-                    </div>
-                  </div>
-                  <span className="px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/25 text-emerald-400 text-xs font-medium">
-                    Pronto
-                  </span>
-                </div>
-
-                {/* Fake content lines */}
-                <div className="space-y-3 mb-6">
-                  <div className="h-2.5 bg-white/8 rounded-full w-full" />
-                  <div className="h-2.5 bg-white/8 rounded-full w-5/6" />
-                  <div className="h-2.5 bg-white/5 rounded-full w-4/5" />
-                  <div className="h-2.5 bg-white/8 rounded-full w-full" />
-                  <div className="h-2.5 bg-white/5 rounded-full w-3/4" />
-                  <div className="h-2.5 bg-white/8 rounded-full w-5/6" />
-                </div>
-
-                {/* Divider */}
-                <div className="h-px bg-white/8 mb-5" />
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                      <Check className="w-3.5 h-3.5 text-emerald-400" />
-                    </div>
-                    <span className="text-sm text-emerald-400 font-medium">
-                      Pronto para download
-                    </span>
-                  </div>
-                  <span className="text-lg font-bold text-white">R$ 19,90</span>
-                </div>
-
-                {/* Download bar */}
-                <div className="mt-5 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-3">
-                  <Download className="w-4 h-4 text-emerald-400" />
-                  <div className="flex-1">
-                    <div className="h-1.5 bg-emerald-500/30 rounded-full overflow-hidden">
-                      <motion.div
-                        className="h-full bg-emerald-400 rounded-full"
-                        initial={{ width: "0%" }}
-                        animate={{ width: "100%" }}
-                        transition={{ duration: 2, delay: 1, ease: "easeInOut", repeat: Infinity, repeatDelay: 2 }}
-                      />
-                    </div>
-                  </div>
-                  <span className="text-xs text-emerald-400 font-medium">PDF</span>
-                </div>
-              </div>
+          {/* 3D Document */}
+          <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1, delay: 0.4, ease: [0.16, 1, 0.3, 1] }} className="relative hidden lg:block h-[480px]">
+            <ThreeDDocument />
+            <motion.div animate={{ y: [0, -6, 0] }} transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }} className="absolute top-6 -left-6 px-4 py-2.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl flex items-center gap-2" style={{ boxShadow: "0 8px 32px rgba(0,0,0,0.3)" }}>
+              <Shield className="w-4 h-4 text-emerald-400" /><span className="text-xs font-semibold text-white">Juridicamente revisado</span>
             </motion.div>
-
-            {/* Floating badges */}
-            <motion.div
-              animate={{ y: [0, -6, 0] }}
-              transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
-              className="absolute -top-6 -left-6 px-4 py-2.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl flex items-center gap-2"
-              style={{ boxShadow: "0 8px 32px rgba(0,0,0,0.3)" }}
-            >
-              <Shield className="w-4 h-4 text-emerald-400" />
-              <span className="text-xs font-semibold text-white">Juridicamente revisado</span>
+            <motion.div animate={{ y: [0, -8, 0] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1 }} className="absolute bottom-10 -right-4 px-4 py-2.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl flex items-center gap-2" style={{ boxShadow: "0 8px 32px rgba(0,0,0,0.3)" }}>
+              <Zap className="w-4 h-4 text-amber-400" /><span className="text-xs font-semibold text-white">Pronto em 2 min</span>
             </motion.div>
-
-            <motion.div
-              animate={{ y: [0, -8, 0] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-              className="absolute -bottom-4 -right-4 px-4 py-2.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl flex items-center gap-2"
-              style={{ boxShadow: "0 8px 32px rgba(0,0,0,0.3)" }}
-            >
-              <Zap className="w-4 h-4 text-amber-400" />
-              <span className="text-xs font-semibold text-white">Pronto em 2 min</span>
-            </motion.div>
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 0.5 }} transition={{ delay: 1.5 }} className="absolute bottom-0 left-1/2 -translate-x-1/2 text-xs text-emerald-400/60 text-center whitespace-nowrap">↕ Mova o mouse para interagir</motion.p>
           </motion.div>
         </div>
-      </div>
-
-      {/* Bottom fade */}
+      </motion.div>
       <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#080d14] to-transparent pointer-events-none" />
     </section>
   );
 };
 
-// ==================== HOW IT WORKS SECTION ====================
+// ─────────────────────────────────────────────
+// HOW IT WORKS
+// ─────────────────────────────────────────────
 const HowItWorksSection = () => {
   const steps = [
-    {
-      icon: FileEdit,
-      number: "01",
-      title: "Preencha os dados",
-      description:
-        "Responda perguntas simples sobre o tipo de contrato e as partes envolvidas.",
-    },
-    {
-      icon: Sparkles,
-      number: "02",
-      title: "IA gera o rascunho",
-      description:
-        "Nossa inteligência artificial cria um contrato personalizado e juridicamente revisado.",
-    },
-    {
-      icon: CreditCard,
-      number: "03",
-      title: "Pague via Pix",
-      description: "Pagamento rápido e seguro. Sem cartão, sem complicação.",
-    },
-    {
-      icon: Download,
-      number: "04",
-      title: "Baixe seu contrato",
-      description:
-        "Receba seu contrato em PDF pronto para assinatura em segundos.",
-    },
+    { icon: FileEdit, number: "01", title: "Preencha os dados", description: "Responda perguntas simples sobre o tipo de contrato e as partes envolvidas." },
+    { icon: Sparkles, number: "02", title: "IA gera o rascunho", description: "Nossa inteligência artificial cria um contrato personalizado e juridicamente revisado." },
+    { icon: CreditCard, number: "03", title: "Pague via Pix", description: "Pagamento rápido e seguro. Sem cartão, sem complicação." },
+    { icon: Download, number: "04", title: "Baixe seu contrato", description: "Receba seu contrato em PDF pronto para assinatura em segundos." },
   ];
-
   return (
     <section id="como-funciona" className="py-28 md:py-40 bg-[#080d14] relative overflow-hidden">
-      <div
-        className="absolute inset-0 opacity-10"
-        style={{
-          backgroundImage: `radial-gradient(circle at 20% 50%, rgba(16,185,129,0.3) 0%, transparent 50%), radial-gradient(circle at 80% 50%, rgba(59,130,246,0.2) 0%, transparent 50%)`,
-        }}
-      />
-
+      <div className="absolute inset-0 opacity-10" style={{ backgroundImage: `radial-gradient(circle at 20% 50%, rgba(16,185,129,0.3) 0%, transparent 50%), radial-gradient(circle at 80% 50%, rgba(59,130,246,0.2) 0%, transparent 50%)` }} />
       <div className="max-w-7xl mx-auto px-6 md:px-10 relative z-10">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="mb-20"
-        >
-          <span className="inline-block text-xs font-bold text-emerald-400 uppercase tracking-[0.2em] mb-4">
-            Simples e Rápido
-          </span>
-          <h2
-            className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight"
-            style={{ fontFamily: "'Syne', sans-serif" }}
-          >
-            Como Funciona
-          </h2>
+        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-20">
+          <span className="inline-block text-xs font-bold text-emerald-400 uppercase tracking-[0.2em] mb-4">Simples e Rápido</span>
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight" style={{ fontFamily: "'Syne', sans-serif" }}>Como Funciona</h2>
         </motion.div>
-
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-px bg-white/5 rounded-3xl overflow-hidden border border-white/5">
           {steps.map((step, index) => (
-            <motion.div
-              key={step.number}
-              initial={{ opacity: 0, y: 20 }}
+            <motion.div key={step.number}
+              initial={{ opacity: 0, y: 50 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="relative bg-[#0d1520] p-8 lg:p-10 group hover:bg-[#0f1c2a] transition-colors duration-300"
-            >
-              <div
-                className="absolute top-6 right-6 text-6xl font-black opacity-[0.04] select-none"
-                style={{ fontFamily: "'Syne', sans-serif" }}
-              >
-                {step.number}
-              </div>
-
-              <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-8 group-hover:border-emerald-500/40 group-hover:bg-emerald-500/15 transition-all duration-300">
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{ duration: 0.6, delay: index * 0.15, ease: [0.16, 1, 0.3, 1] }}
+              whileHover={{ backgroundColor: "rgba(15,28,42,1)", y: -4 }}
+              className="relative bg-[#0d1520] p-8 lg:p-10 group transition-all duration-300">
+              <div className="absolute top-6 right-6 text-6xl font-black opacity-[0.04] select-none" style={{ fontFamily: "'Syne', sans-serif" }}>{step.number}</div>
+              <motion.div whileHover={{ scale: 1.15, rotate: 5 }} className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-8 group-hover:border-emerald-500/40 group-hover:bg-emerald-500/15 transition-all duration-300">
                 <step.icon className="w-5 h-5 text-emerald-400" />
-              </div>
-
-              <div className="text-xs font-bold text-emerald-500/60 mb-3 tracking-widest">
-                {step.number}
-              </div>
+              </motion.div>
+              <div className="text-xs font-bold text-emerald-500/60 mb-3 tracking-widest">{step.number}</div>
               <h3 className="text-lg font-bold text-white mb-3">{step.title}</h3>
               <p className="text-sm text-white/40 leading-relaxed">{step.description}</p>
-
               {index < steps.length - 1 && (
                 <div className="hidden lg:block absolute top-1/2 -right-4 z-10">
-                  <ArrowRight className="w-4 h-4 text-white/15" />
+                  <motion.div animate={{ x: [0, 4, 0] }} transition={{ duration: 1.5, repeat: Infinity }}>
+                    <ArrowRight className="w-4 h-4 text-white/15" />
+                  </motion.div>
                 </div>
               )}
             </motion.div>
@@ -477,105 +458,99 @@ const HowItWorksSection = () => {
   );
 };
 
-// ==================== BENEFITS SECTION ====================
+// ─────────────────────────────────────────────
+// BENEFIT CARD  (slides in from left or right)
+// ─────────────────────────────────────────────
+const BenefitCard = ({ benefit, index }) => {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-80px" });
+
+  // Even index → slide from left, Odd → from right
+  const fromX = index % 2 === 0 ? -80 : 80;
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, x: fromX, y: 20 }}
+      animate={isInView ? { opacity: 1, x: 0, y: 0 } : {}}
+      transition={{ duration: 0.7, delay: (index % 3) * 0.1, ease: [0.16, 1, 0.3, 1] }}
+      whileHover={{ y: -8, scale: 1.02 }}
+      className="group relative p-8 rounded-2xl border border-white/5 bg-white/[0.02] hover:border-emerald-500/25 hover:bg-white/[0.05] transition-all duration-300 cursor-default"
+      style={{ boxShadow: "0 0 0 0 rgba(16,185,129,0)" }}
+    >
+      {/* Hover glow */}
+      <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-400 pointer-events-none" style={{ background: "radial-gradient(ellipse at 0% 0%, rgba(16,185,129,0.07) 0%, transparent 60%)" }} />
+
+      {/* Animated left border accent on hover */}
+      <motion.div
+        initial={{ scaleY: 0 }}
+        whileHover={{ scaleY: 1 }}
+        transition={{ duration: 0.3 }}
+        className="absolute left-0 top-4 bottom-4 w-0.5 rounded-full origin-top"
+        style={{ background: "linear-gradient(to bottom, #10b981, #34d399)" }}
+      />
+
+      <div className="relative">
+        <motion.div
+          whileHover={{ scale: 1.2, rotate: -8 }}
+          transition={{ type: "spring", stiffness: 300 }}
+          className="w-11 h-11 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-6 group-hover:border-emerald-500/50 group-hover:bg-emerald-500/20 group-hover:shadow-lg group-hover:shadow-emerald-500/20 transition-all duration-300">
+          <benefit.icon className="w-5 h-5 text-emerald-400" />
+        </motion.div>
+        <h3 className="text-base font-bold text-white mb-2.5 group-hover:text-emerald-50 transition-colors">{benefit.title}</h3>
+        <p className="text-sm text-white/40 leading-relaxed group-hover:text-white/55 transition-colors">{benefit.description}</p>
+      </div>
+    </motion.div>
+  );
+};
+
+// ─────────────────────────────────────────────
+// BENEFITS SECTION
+// ─────────────────────────────────────────────
 const BenefitsSection = () => {
+  const sectionRef = useRef(null);
+  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start end", "end start"] });
+  // Parallax on the background blob
+  const blobY = useTransform(scrollYProgress, [0, 1], [-60, 60]);
+  const blobX = useTransform(scrollYProgress, [0, 1], [30, -30]);
+
   const benefits = [
-    {
-      icon: Shield,
-      title: "Juridicamente Revisado",
-      description:
-        "Todos os contratos seguem padrões legais brasileiros e são revisados por especialistas.",
-    },
-    {
-      icon: PiggyBank,
-      title: "Economia de até 90%",
-      description:
-        "Pague uma fração do valor cobrado por advogados tradicionais.",
-    },
-    {
-      icon: Clock,
-      title: "Disponível 24h",
-      description:
-        "Gere seu contrato a qualquer hora, qualquer dia. Sem espera, sem agendamento.",
-    },
-    {
-      icon: Zap,
-      title: "Pronto em Minutos",
-      description:
-        "Tecnologia de IA avançada que gera contratos personalizados em tempo recorde.",
-    },
-    {
-      icon: Smartphone,
-      title: "100% Online",
-      description:
-        "Acesse de qualquer dispositivo. Sem downloads, sem instalações.",
-    },
-    {
-      icon: Scale,
-      title: "Vários Tipos de Contratos",
-      description: "Prestação de serviços, aluguel, parceria e muito mais.",
-    },
+    { icon: Shield, title: "Juridicamente Revisado", description: "Todos os contratos seguem padrões legais brasileiros e são revisados por especialistas." },
+    { icon: PiggyBank, title: "Economia de até 90%", description: "Pague uma fração do valor cobrado por advogados tradicionais." },
+    { icon: Clock, title: "Disponível 24h", description: "Gere seu contrato a qualquer hora, qualquer dia. Sem espera, sem agendamento." },
+    { icon: Zap, title: "Pronto em Minutos", description: "Tecnologia de IA avançada que gera contratos personalizados em tempo recorde." },
+    { icon: Smartphone, title: "100% Online", description: "Acesse de qualquer dispositivo. Sem downloads, sem instalações." },
+    { icon: Scale, title: "Vários Tipos de Contratos", description: "Prestação de serviços, aluguel, parceria e muito mais." },
   ];
 
   return (
-    <section id="vantagens" className="py-28 md:py-40 bg-[#0a1018] relative overflow-hidden">
-      <div className="absolute right-0 top-0 w-1/2 h-full opacity-5 pointer-events-none"
-        style={{ background: "radial-gradient(ellipse at 100% 50%, #10b981 0%, transparent 70%)" }} />
+    <section ref={sectionRef} id="vantagens" className="py-28 md:py-40 bg-[#0a1018] relative overflow-hidden">
+      {/* Parallax background blob */}
+      <motion.div style={{ y: blobY, x: blobX }} className="absolute right-0 top-0 w-2/3 h-full pointer-events-none">
+        <div className="absolute inset-0 opacity-[0.06]" style={{ background: "radial-gradient(ellipse at 100% 50%, #10b981 0%, transparent 70%)" }} />
+      </motion.div>
+
+      {/* Parallax decorative circles */}
+      <motion.div style={{ y: useTransform(scrollYProgress, [0, 1], [-30, 30]) }} className="absolute -left-20 top-1/2 w-64 h-64 rounded-full border border-emerald-500/5 pointer-events-none" />
+      <motion.div style={{ y: useTransform(scrollYProgress, [0, 1], [30, -30]) }} className="absolute -right-10 bottom-20 w-48 h-48 rounded-full border border-emerald-500/8 pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-6 md:px-10 relative z-10">
         <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8 mb-20">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <span className="inline-block text-xs font-bold text-emerald-400 uppercase tracking-[0.2em] mb-4">
-              Por que escolher
-            </span>
-            <h2
-              className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight"
-              style={{ fontFamily: "'Syne', sans-serif" }}
-            >
+          <motion.div initial={{ opacity: 0, x: -40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}>
+            <span className="inline-block text-xs font-bold text-emerald-400 uppercase tracking-[0.2em] mb-4">Por que escolher</span>
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight" style={{ fontFamily: "'Syne', sans-serif" }}>
               Vantagens do<br />
-              <span style={{
-                background: "linear-gradient(135deg, #10b981, #34d399)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-              }}>Contrate-me</span>
+              <span style={{ background: "linear-gradient(135deg, #10b981, #34d399)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>Contrate-me</span>
             </h2>
           </motion.div>
-          <motion.p
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="text-white/40 max-w-xs leading-relaxed text-sm lg:text-right"
-          >
+          <motion.p initial={{ opacity: 0, x: 40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.7, delay: 0.1 }} className="text-white/40 max-w-xs leading-relaxed text-sm lg:text-right">
             A forma mais inteligente de criar contratos profissionais sem complicação.
           </motion.p>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {benefits.map((benefit, index) => (
-            <motion.div
-              key={benefit.title}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.07 }}
-              className="group relative p-8 rounded-2xl border border-white/5 bg-white/[0.02] hover:border-emerald-500/20 hover:bg-white/[0.04] transition-all duration-400"
-            >
-              <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-400 pointer-events-none"
-                style={{ background: "radial-gradient(ellipse at 0% 0%, rgba(16,185,129,0.05) 0%, transparent 60%)" }} />
-
-              <div className="relative">
-                <div className="w-11 h-11 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:border-emerald-500/40 transition-all duration-300">
-                  <benefit.icon className="w-5 h-5 text-emerald-400" />
-                </div>
-                <h3 className="text-base font-bold text-white mb-2.5">{benefit.title}</h3>
-                <p className="text-sm text-white/40 leading-relaxed">{benefit.description}</p>
-              </div>
-            </motion.div>
+            <BenefitCard key={benefit.title} benefit={benefit} index={index} />
           ))}
         </div>
       </div>
@@ -583,118 +558,108 @@ const BenefitsSection = () => {
   );
 };
 
-// ==================== PRICING SECTION ====================
-const PricingSection = ({ onCreateContract }) => {
+// ─────────────────────────────────────────────
+// TESTIMONIALS — DUAL INFINITE MARQUEE
+// ─────────────────────────────────────────────
+const TestimonialsSection = () => {
+  const testimonials = [
+    { name: "Mariana Costa", role: "Designer Freelancer", avatar: "MC", rating: 5, text: "Incrível! Precisava de um contrato para um cliente grande e em menos de 3 minutos já tinha tudo pronto. Economizei muito comparado a contratar um advogado.", contractType: "Prestação de Serviços", date: "há 2 dias", color: "from-purple-500 to-pink-500" },
+    { name: "Rafael Mendonça", role: "Desenvolvedor Web", avatar: "RM", rating: 5, text: "Uso o Contrate-me todo mês para novos projetos. Simplesmente perfeito. O contrato é profissional e os clientes ficam impressionados com a qualidade.", contractType: "Contrato de TI", date: "há 5 dias", color: "from-blue-500 to-cyan-500" },
+    { name: "Juliana Ferreira", role: "Consultora de Marketing", avatar: "JF", rating: 5, text: "Finalmente um serviço que realmente funciona! O processo é super intuitivo, o pagamento via Pix é instantâneo e o PDF ficou impecável. Super recomendo!", contractType: "Consultoria", date: "há 1 semana", color: "from-emerald-500 to-teal-500" },
+    { name: "Carlos Albuquerque", role: "Fotógrafo Profissional", avatar: "CA", rating: 5, text: "Já tive problemas com clientes que não pagavam por falta de contrato. Com o Contrate-me isso acabou. Rápido, barato e juridicamente sólido!", contractType: "Fotografia", date: "há 2 semanas", color: "from-orange-500 to-red-500" },
+    { name: "Fernanda Lima", role: "Arquiteta", avatar: "FL", rating: 5, text: "Minha advogada cobrava R$500 por contrato básico. Aqui paguei R$19,90 e recebi algo ainda mais completo e personalizado. Não tem como não usar!", contractType: "Projeto Arquitetônico", date: "há 3 semanas", color: "from-violet-500 to-purple-500" },
+    { name: "Thiago Nunes", role: "Professor Particular", avatar: "TN", rating: 5, text: "Precisava formalizar meus contratos com alunos e pais. O Contrate-me gerou algo perfeito, com todas as cláusulas que eu precisava. Ótimo serviço!", contractType: "Contrato Educacional", date: "há 1 mês", color: "from-amber-500 to-orange-500" },
+    { name: "Beatriz Rocha", role: "Nutricionista", avatar: "BR", rating: 5, text: "Prático demais! Gerei contratos para minha clínica em minutos. A linguagem jurídica é clara e os pacientes ficam mais tranquilos assinando.", contractType: "Atendimento Clínico", date: "há 1 mês", color: "from-rose-500 to-pink-500" },
+    { name: "Lucas Pimentel", role: "Social Media", avatar: "LP", rating: 5, text: "Comecei a usar e não largo mais. Para quem é freelancer como eu, ter um contrato profissional rápido e barato é essencial. Melhor custo-benefício!", contractType: "Gestão de Redes", date: "há 2 meses", color: "from-sky-500 to-blue-500" },
+  ];
+  const row1 = testimonials.slice(0, 4);
+  const row2 = testimonials.slice(4);
   return (
-    <section id="precos" className="py-28 md:py-40 bg-[#080d14] relative overflow-hidden">
-      <div className="absolute inset-0 pointer-events-none"
-        style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(16,185,129,0.06) 0%, transparent 60%)" }} />
+    <section id="avaliacoes" className="py-28 md:py-40 bg-[#080d14] relative overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at 50% 50%, rgba(16,185,129,0.04) 0%, transparent 70%)" }} />
+      <div className="absolute left-0 top-0 bottom-0 w-28 z-10 pointer-events-none" style={{ background: "linear-gradient(to right, #080d14, transparent)" }} />
+      <div className="absolute right-0 top-0 bottom-0 w-28 z-10 pointer-events-none" style={{ background: "linear-gradient(to left, #080d14, transparent)" }} />
+      <div className="max-w-7xl mx-auto px-6 md:px-10 relative z-10 mb-14">
+        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center">
+          <span className="inline-block text-xs font-bold text-emerald-400 uppercase tracking-[0.2em] mb-4">Depoimentos</span>
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4" style={{ fontFamily: "'Syne', sans-serif" }}>
+            O que nossos clientes<br />
+            <span style={{ background: "linear-gradient(135deg, #10b981, #34d399)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>estão dizendo</span>
+          </h2>
+          <div className="flex items-center justify-center gap-1.5 mt-4">
+            {[...Array(5)].map((_, i) => (
+              <motion.div key={i} initial={{ opacity: 0, scale: 0 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}>
+                <Star className="w-5 h-5 text-amber-400 fill-amber-400" />
+              </motion.div>
+            ))}
+            <span className="text-white/40 text-sm ml-2">4.9/5 · +1.200 avaliações</span>
+          </div>
+        </motion.div>
+      </div>
+      <div className="mb-4"><InfiniteMarquee testimonials={row1} direction={1} speed={32} /></div>
+      <InfiniteMarquee testimonials={row2} direction={-1} speed={28} />
+    </section>
+  );
+};
+
+// ─────────────────────────────────────────────
+// PRICING  (with parallax decorations)
+// ─────────────────────────────────────────────
+const PricingSection = ({ onCreateContract }) => {
+  const ref = useRef(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
+  const decorY1 = useTransform(scrollYProgress, [0, 1], [-50, 50]);
+  const decorY2 = useTransform(scrollYProgress, [0, 1], [50, -50]);
+  const decorX1 = useTransform(scrollYProgress, [0, 1], [-20, 20]);
+
+  return (
+    <section ref={ref} id="precos" className="py-28 md:py-40 bg-[#0a1018] relative overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(16,185,129,0.06) 0%, transparent 60%)" }} />
+
+      {/* Parallax floating orbs */}
+      <motion.div style={{ y: decorY1, x: decorX1 }} className="absolute top-20 left-10 w-32 h-32 rounded-full border border-emerald-500/10 pointer-events-none" />
+      <motion.div style={{ y: decorY2 }} className="absolute bottom-20 right-10 w-48 h-48 rounded-full border border-emerald-500/8 pointer-events-none" />
+      <motion.div style={{ y: decorY1 }} className="absolute top-1/2 right-20 w-20 h-20 rounded-full bg-emerald-500/5 blur-xl pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-6 md:px-10 relative z-10">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center mb-20"
-        >
-          <span className="inline-block text-xs font-bold text-emerald-400 uppercase tracking-[0.2em] mb-4">
-            Preços Transparentes
-          </span>
-          <h2
-            className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4"
-            style={{ fontFamily: "'Syne', sans-serif" }}
-          >
-            Escolha o Melhor Plano
-          </h2>
-          <p className="text-white/40 max-w-lg mx-auto">
-            Sem mensalidades. Sem surpresas. Pague apenas pelo que usar.
-          </p>
+        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-20">
+          <span className="inline-block text-xs font-bold text-emerald-400 uppercase tracking-[0.2em] mb-4">Preços Transparentes</span>
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4" style={{ fontFamily: "'Syne', sans-serif" }}>Escolha o Melhor Plano</h2>
+          <p className="text-white/40 max-w-lg mx-auto">Sem mensalidades. Sem surpresas. Pague apenas pelo que usar.</p>
         </motion.div>
-
-        {/* Card único centralizado com estilo verde destacado */}
         <div className="max-w-sm mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="relative"
-          >
-            <div
-              className="relative rounded-3xl p-8 flex flex-col border border-emerald-500/40 bg-emerald-500/5"
-              style={{
-                boxShadow: "0 0 60px rgba(16,185,129,0.12), inset 0 1px 0 rgba(255,255,255,0.05)"
-              }}
-            >
-              {/* Glow interno */}
-              <div className="absolute inset-0 rounded-3xl pointer-events-none"
-                style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(16,185,129,0.08) 0%, transparent 60%)" }} />
-
+          <motion.div initial={{ opacity: 0, y: 30, scale: 0.95 }} whileInView={{ opacity: 1, y: 0, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.5 }}>
+            <motion.div whileHover={{ boxShadow: "0 0 80px rgba(16,185,129,0.2)" }} className="relative rounded-3xl p-8 border border-emerald-500/40 bg-emerald-500/5 transition-all duration-300" style={{ boxShadow: "0 0 60px rgba(16,185,129,0.12), inset 0 1px 0 rgba(255,255,255,0.05)" }}>
+              <div className="absolute inset-0 rounded-3xl pointer-events-none" style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(16,185,129,0.08) 0%, transparent 60%)" }} />
               <div className="relative">
-                <div className="mb-8 pt-3">
-                  <h3 className="text-lg font-bold text-white mb-1">Contrato Único</h3>
-                  <p className="text-sm text-white/40">Ideal para uma necessidade pontual</p>
-                </div>
-
+                <div className="mb-8 pt-3"><h3 className="text-lg font-bold text-white mb-1">Contrato Único</h3><p className="text-sm text-white/40">Ideal para uma necessidade pontual</p></div>
                 <div className="mb-8">
                   <div className="flex items-baseline gap-1">
                     <span className="text-sm text-white/40 font-medium">R$</span>
-                    <span
-                      className="text-6xl font-black text-white leading-none"
-                      style={{ fontFamily: "'Syne', sans-serif" }}
-                    >
-                      19,90
-                    </span>
+                    <motion.span initial={{ scale: 0.8 }} whileInView={{ scale: 1 }} transition={{ type: "spring", stiffness: 200 }} className="text-6xl font-black text-white leading-none" style={{ fontFamily: "'Syne', sans-serif" }}>19,90</motion.span>
                   </div>
                 </div>
-
                 <div className="h-px bg-white/6 mb-8" />
-
-                <ul className="space-y-3 mb-8 flex-1">
-                  {[
-                    "1 contrato personalizado",
-                    "Gerado por IA avançada",
-                    "Revisão jurídica incluída",
-                    "Download imediato em PDF",
-                    "Suporte por e-mail",
-                  ].map((feature) => (
-                    <li key={feature} className="flex items-start gap-3">
-                      <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 bg-emerald-500/20 border border-emerald-500/30">
-                        <Check className="w-2.5 h-2.5 text-emerald-400" />
-                      </div>
-                      <span className="text-sm text-white/60">{feature}</span>
-                    </li>
+                <ul className="space-y-3 mb-8">
+                  {["1 contrato personalizado", "Gerado por IA avançada", "Revisão jurídica incluída", "Download imediato em PDF", "Suporte por e-mail", "Suporte por whatsapp"].map((f, i) => (
+                    <motion.li key={f} initial={{ opacity: 0, x: -10 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.07 }} className="flex items-start gap-3">
+                      <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 bg-emerald-500/20 border border-emerald-500/30"><Check className="w-2.5 h-2.5 text-emerald-400" /></div>
+                      <span className="text-sm text-white/60">{f}</span>
+                    </motion.li>
                   ))}
                 </ul>
-
-                <motion.button
-                  onClick={onCreateContract}
-                  whileHover={{ scale: 1.02, y: -2 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full py-4 rounded-2xl font-bold text-sm transition-all duration-200 flex items-center justify-center gap-2"
-                  style={{
-                    background: "linear-gradient(135deg, #10b981, #059669)",
-                    color: "white",
-                    boxShadow: "0 4px 24px rgba(16,185,129,0.3)",
-                  }}
-                >
-                  <Sparkles className="w-4 h-4" />
-                  Criar Contrato
+                <motion.button onClick={onCreateContract} whileHover={{ scale: 1.03, y: -2, boxShadow: "0 8px 40px rgba(16,185,129,0.5)" }} whileTap={{ scale: 0.98 }}
+                  className="w-full py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 overflow-hidden relative"
+                  style={{ background: "linear-gradient(135deg, #10b981, #059669)", color: "white", boxShadow: "0 4px 24px rgba(16,185,129,0.3)" }}>
+                  <motion.span className="absolute inset-0 bg-white/10" initial={{ x: "-100%" }} whileHover={{ x: "100%" }} transition={{ duration: 0.4 }} />
+                  <Sparkles className="w-4 h-4 relative" /><span className="relative">Criar Contrato</span>
                 </motion.button>
               </div>
-            </div>
+            </motion.div>
           </motion.div>
         </div>
-
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.4 }}
-          className="text-center mt-12"
-        >
+        <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.4 }} className="text-center mt-12">
           <div className="inline-flex items-center gap-3 px-6 py-3 rounded-2xl bg-white/[0.03] border border-white/8">
-            <span className="text-xl">💳</span>
             <span className="text-sm text-white/50">Pagamento seguro via</span>
             <span className="text-sm font-bold text-emerald-400">Pix</span>
             <span className="text-white/20">•</span>
@@ -706,108 +671,44 @@ const PricingSection = ({ onCreateContract }) => {
   );
 };
 
-// ==================== FAQ SECTION ====================
+// ─────────────────────────────────────────────
+// FAQ
+// ─────────────────────────────────────────────
 const FAQSection = () => {
   const [openItem, setOpenItem] = useState(null);
-
   const faqs = [
-    {
-      question: "Os contratos são válidos juridicamente?",
-      answer:
-        "Sim! Todos os nossos contratos são elaborados seguindo as normas do Código Civil Brasileiro e são revisados por especialistas jurídicos. Eles possuem validade legal para uso em acordos formais entre partes.",
-    },
-    {
-      question: "Como funciona o pagamento via Pix?",
-      answer:
-        "Após preencher os dados do seu contrato, você receberá um QR Code ou código Pix para pagamento. A aprovação é instantânea e, assim que confirmado, seu contrato estará disponível para download imediatamente.",
-    },
-    {
-      question: "Quais tipos de contratos posso gerar?",
-      answer:
-        "Oferecemos diversos modelos: Prestação de Serviços, Contrato de Aluguel, Acordo de Parceria, Contrato de Trabalho Freelancer, Termo de Confidencialidade (NDA), entre outros. Novos modelos são adicionados frequentemente.",
-    },
-    {
-      question: "Posso editar o contrato depois de gerado?",
-      answer:
-        "Sim! O contrato é entregue em formato PDF editável. Você pode fazer ajustes menores diretamente no documento. Para alterações mais significativas, recomendamos gerar um novo contrato com as informações atualizadas.",
-    },
-    {
-      question: "E se eu precisar de ajuda com meu contrato?",
-      answer:
-        "Nossa equipe de suporte está disponível por e-mail para tirar dúvidas sobre o uso da plataforma e dos contratos gerados. Para questões jurídicas específicas, recomendamos consultar um advogado.",
-    },
-    {
-      question: "Existe limite de contratos por mês?",
-      answer:
-        "Não! Você pode gerar quantos contratos precisar. Cada contrato é cobrado individualmente, ou você pode aproveitar nossos packs com desconto para múltiplos contratos.",
-    },
+    { question: "Os contratos são válidos juridicamente?", answer: "Sim! Todos os nossos contratos são elaborados seguindo as normas do Código Civil Brasileiro e são revisados por especialistas jurídicos. Eles possuem validade legal para uso em acordos formais entre partes." },
+    { question: "Como funciona o pagamento via Pix?", answer: "Após preencher os dados do seu contrato, você receberá um QR Code ou código Pix para pagamento. A aprovação é instantânea e, assim que confirmado, seu contrato estará disponível para download imediatamente." },
+    { question: "Quais tipos de contratos posso gerar?", answer: "Oferecemos diversos modelos: Prestação de Serviços, Contrato de Aluguel, Acordo de Parceria, Contrato de Trabalho Freelancer, Termo de Confidencialidade (NDA), entre outros. Novos modelos são adicionados frequentemente." },
+    { question: "Posso editar o contrato depois de gerado?", answer: "Sim! O contrato é entregue em formato PDF editável. Você pode fazer ajustes menores diretamente no documento. Para alterações mais significativas, recomendamos gerar um novo contrato com as informações atualizadas." },
+    { question: "E se eu precisar de ajuda com meu contrato?", answer: "Nossa equipe de suporte está disponível por e-mail e por whatsapp para tirar dúvidas sobre o uso da plataforma e dos contratos gerados." },
+    { question: "Existe limite de contratos por mês?", answer: "Não! Você pode gerar quantos contratos precisar. Cada contrato é cobrado individualmente, ou você pode aproveitar nossos packs com desconto para múltiplos contratos." },
   ];
-
   return (
-    <section id="faq" className="py-28 md:py-40 bg-[#0a1018] relative">
+    <section id="faq" className="py-28 md:py-40 bg-[#080d14] relative">
       <div className="max-w-7xl mx-auto px-6 md:px-10">
         <div className="flex flex-col lg:flex-row gap-16 lg:gap-24">
-          {/* Left column */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="lg:w-72 flex-shrink-0"
-          >
-            <span className="inline-block text-xs font-bold text-emerald-400 uppercase tracking-[0.2em] mb-4">
-              Dúvidas Frequentes
-            </span>
-            <h2
-              className="text-4xl md:text-5xl font-bold text-white leading-tight"
-              style={{ fontFamily: "'Syne', sans-serif" }}
-            >
-              Perguntas e Respostas
-            </h2>
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="lg:w-72 flex-shrink-0">
+            <span className="inline-block text-xs font-bold text-emerald-400 uppercase tracking-[0.2em] mb-4">Dúvidas Frequentes</span>
+            <h2 className="text-4xl md:text-5xl font-bold text-white leading-tight" style={{ fontFamily: "'Syne', sans-serif" }}>Perguntas e Respostas</h2>
           </motion.div>
-
-          {/* Right column - FAQ items */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="flex-1 space-y-3"
-          >
+          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="flex-1 space-y-3">
             {faqs.map((faq, index) => (
-              <div
-                key={index}
-                className={`rounded-2xl border transition-all duration-300 overflow-hidden ${
-                  openItem === index
-                    ? "border-emerald-500/25 bg-emerald-500/5"
-                    : "border-white/6 bg-white/[0.02] hover:border-white/12"
-                }`}
-              >
-                <button
-                  onClick={() => setOpenItem(openItem === index ? null : index)}
-                  className="w-full flex items-center justify-between p-6 text-left font-semibold text-white/80 hover:text-white transition-colors"
-                >
+              <motion.div key={index} whileHover={{ x: 2 }} className={`rounded-2xl border transition-all duration-300 overflow-hidden ${openItem === index ? "border-emerald-500/25 bg-emerald-500/5" : "border-white/6 bg-white/[0.02] hover:border-white/12"}`}>
+                <button onClick={() => setOpenItem(openItem === index ? null : index)} className="w-full flex items-center justify-between p-6 text-left font-semibold text-white/80 hover:text-white transition-colors">
                   <span className="text-sm leading-relaxed pr-4">{faq.question}</span>
-                  <div className={`w-7 h-7 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
-                    openItem === index ? "bg-emerald-500/20 rotate-180" : "bg-white/5"
-                  }`}>
+                  <motion.div animate={{ rotate: openItem === index ? 180 : 0 }} className={`w-7 h-7 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors duration-300 ${openItem === index ? "bg-emerald-500/20" : "bg-white/5"}`}>
                     <ChevronDown className={`w-4 h-4 ${openItem === index ? "text-emerald-400" : "text-white/40"}`} />
-                  </div>
+                  </motion.div>
                 </button>
                 <AnimatePresence>
                   {openItem === index && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="overflow-hidden"
-                    >
-                      <div className="px-6 pb-6 text-sm text-white/40 leading-relaxed border-t border-white/5 pt-4">
-                        {faq.answer}
-                      </div>
+                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }} className="overflow-hidden">
+                      <div className="px-6 pb-6 text-sm text-white/40 leading-relaxed border-t border-white/5 pt-4">{faq.answer}</div>
                     </motion.div>
                   )}
                 </AnimatePresence>
-              </div>
+              </motion.div>
             ))}
           </motion.div>
         </div>
@@ -816,106 +717,62 @@ const FAQSection = () => {
   );
 };
 
-// ==================== CTA SECTION ====================
+// ─────────────────────────────────────────────
+// CTA
+// ─────────────────────────────────────────────
 const CTASection = ({ onCreateContract }) => {
+  const ref = useRef(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
+  const bgY = useTransform(scrollYProgress, [0, 1], [-40, 40]);
+
   return (
-    <section className="py-28 md:py-40 bg-[#080d14] relative overflow-hidden">
-      {/* Radial glow */}
-      <div className="absolute inset-0 pointer-events-none"
-        style={{ background: "radial-gradient(ellipse at 50% 100%, rgba(16,185,129,0.12) 0%, transparent 60%)" }} />
-
-      <div
-        className="absolute inset-6 md:inset-12 rounded-3xl border border-emerald-500/10 pointer-events-none"
-        style={{ background: "rgba(16,185,129,0.02)" }}
-      />
-
+    <section ref={ref} className="py-28 md:py-40 bg-[#0a1018] relative overflow-hidden">
+      <motion.div style={{ y: bgY }} className="absolute inset-0 pointer-events-none">
+        <div style={{ background: "radial-gradient(ellipse at 50% 100%, rgba(16,185,129,0.12) 0%, transparent 60%)" }} className="absolute inset-0" />
+      </motion.div>
+      <div className="absolute inset-6 md:inset-12 rounded-3xl border border-emerald-500/10 pointer-events-none" style={{ background: "rgba(16,185,129,0.02)" }} />
       <div className="max-w-4xl mx-auto px-6 md:px-10 relative z-10 text-center">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.7 }}
-        >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-8">
-            <Sparkles className="w-4 h-4 text-emerald-400" />
-            <span className="text-sm font-medium text-emerald-400">Comece agora mesmo</span>
-          </div>
-
-          <h2
-            className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight"
-            style={{ fontFamily: "'Syne', sans-serif" }}
-          >
+        <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }}>
+          <motion.div whileHover={{ scale: 1.05 }} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-8">
+            <Sparkles className="w-4 h-4 text-emerald-400" /><span className="text-sm font-medium text-emerald-400">Comece agora mesmo</span>
+          </motion.div>
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight" style={{ fontFamily: "'Syne', sans-serif" }}>
             Pronto para criar seu<br />
-            <span style={{
-              background: "linear-gradient(135deg, #10b981, #34d399)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-            }}>contrato profissional?</span>
+            <span style={{ background: "linear-gradient(135deg, #10b981, #34d399)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>contrato profissional?</span>
           </h2>
-
-          <p className="text-white/40 mb-12 max-w-lg mx-auto leading-relaxed">
-            Junte-se a centenas de pessoas que já simplificaram a criação de contratos com o Contrate-me.
-          </p>
-
+          <p className="text-white/40 mb-12 max-w-lg mx-auto leading-relaxed">Junte-se a centenas de pessoas que já simplificaram a criação de contratos com o Contrate-me.</p>
           <div className="flex flex-wrap justify-center gap-6 mb-12">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center">
-                <Shield className="w-4 h-4 text-emerald-400" />
-              </div>
-              <span className="text-sm text-white/60 font-medium">100% Seguro</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center">
-                <Clock className="w-4 h-4 text-emerald-400" />
-              </div>
-              <span className="text-sm text-white/60 font-medium">Pronto em 2 minutos</span>
-            </div>
+            {[{ icon: Shield, label: "100% Seguro" }, { icon: Clock, label: "Pronto em 2 minutos" }].map(({ icon: Icon, label }) => (
+              <motion.div key={label} whileHover={{ y: -3 }} className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center"><Icon className="w-4 h-4 text-emerald-400" /></div>
+                <span className="text-sm text-white/60 font-medium">{label}</span>
+              </motion.div>
+            ))}
           </div>
-
-          <motion.button
-            onClick={onCreateContract}
-            whileHover={{ scale: 1.04, y: -3 }}
-            whileTap={{ scale: 0.97 }}
-            className="group px-10 py-5 text-white font-bold rounded-2xl flex items-center justify-center mx-auto gap-2 text-base"
-            style={{
-              background: "linear-gradient(135deg, #10b981, #059669)",
-              boxShadow: "0 0 60px rgba(16,185,129,0.35), 0 4px 20px rgba(0,0,0,0.3)",
-            }}
-          >
-            Criar Meu Contrato Agora
-            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+          <motion.button onClick={onCreateContract} whileHover={{ scale: 1.05, y: -4, boxShadow: "0 0 80px rgba(16,185,129,0.5)" }} whileTap={{ scale: 0.97 }}
+            className="group px-10 py-5 text-white font-bold rounded-2xl flex items-center justify-center mx-auto gap-2 text-base overflow-hidden relative"
+            style={{ background: "linear-gradient(135deg, #10b981, #059669)", boxShadow: "0 0 60px rgba(16,185,129,0.35), 0 4px 20px rgba(0,0,0,0.3)" }}>
+            <motion.span className="absolute inset-0 bg-white/10" initial={{ x: "-100%" }} whileHover={{ x: "100%" }} transition={{ duration: 0.4 }} />
+            <span className="relative">Criar Meu Contrato Agora</span>
+            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform relative" />
           </motion.button>
-
-          <p className="mt-6 text-sm text-white/25">
-            A partir de R$ 19,90 • Pagamento via Pix
-          </p>
+          <p className="mt-6 text-sm text-white/25">A partir de R$ 19,90 • Pagamento via Pix</p>
         </motion.div>
       </div>
     </section>
   );
 };
 
-// ==================== FOOTER ====================
+// ─────────────────────────────────────────────
+// FOOTER
+// ─────────────────────────────────────────────
 const Footer = () => {
   const currentYear = new Date().getFullYear();
-
   const links = {
-    produto: [
-      { label: "Como Funciona", href: "#como-funciona" },
-      { label: "Preços", href: "#precos" },
-      { label: "FAQ", href: "#faq" },
-    ],
-    legal: [
-      { label: "Termos de Uso", href: "#" },
-      { label: "Política de Privacidade", href: "#" },
-      { label: "LGPD", href: "#" },
-    ],
-    contato: [
-      { label: "contato@contrate-me.com.br", href: "mailto:contato@contrate-me.com.br" },
-    ],
+    produto: [{ label: "Como Funciona", href: "#como-funciona" }, { label: "Preços", href: "#precos" }, { label: "FAQ", href: "#faq" }],
+    legal: [{ label: "Termos de Uso", href: "#" }, { label: "Política de Privacidade", href: "#" }, { label: "LGPD", href: "#" }],
+    contato: [{ label: "contato@contrate-me.com.br", href: "mailto:contato@contrate-me.com.br" }],
   };
-
   return (
     <footer className="bg-[#060b11] border-t border-white/5">
       <div className="max-w-7xl mx-auto px-6 md:px-10">
@@ -923,70 +780,54 @@ const Footer = () => {
           <div className="lg:col-span-1">
             <a href="#" className="flex items-center gap-3 mb-5">
               <div className="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center overflow-hidden">
-                <img src="/robozinho.png" alt="Robozinho" className="w-full h-full object-cover" />
+                <img src="/rob.png" alt="Logo" className="w-full h-full object-cover" />
               </div>
-              <span className="text-lg font-semibold text-white">
-                Contrate<span className="text-emerald-400">-me</span>
-              </span>
+              <span className="text-lg font-semibold text-white">Contrate<span className="text-emerald-400">-me</span></span>
             </a>
-            <p className="text-white/30 text-sm leading-relaxed mb-6">
-              Contratos profissionais gerados por IA. Rápido, seguro e acessível.
-            </p>
-           
+            <p className="text-white/30 text-sm leading-relaxed mb-6">Contratos profissionais gerados por IA. Rápido, seguro e acessível.</p>
           </div>
-
-          {[
-            { title: "Produto", items: links.produto },
-            { title: "Legal", items: links.legal },
-            { title: "Contato", items: links.contato },
-          ].map(({ title, items }) => (
+          {[{ title: "Produto", items: links.produto }, { title: "Legal", items: links.legal }, { title: "Contato", items: links.contato }].map(({ title, items }) => (
             <div key={title}>
               <h4 className="text-xs font-bold text-white/50 uppercase tracking-[0.15em] mb-5">{title}</h4>
               <ul className="space-y-3">
                 {items.map((link) => (
                   <li key={link.label}>
-                    <a
-                      href={link.href}
-                      onClick={link.href.startsWith("#") && link.href !== "#" ? (e) => smoothScrollTo(e, link.href) : undefined}
-                      className="text-sm text-white/30 hover:text-white/70 transition-colors"
-                    >
-                      {link.label}
-                    </a>
+                    <a href={link.href} onClick={link.href.startsWith("#") && link.href !== "#" ? (e) => smoothScrollTo(e, link.href) : undefined} className="text-sm text-white/30 hover:text-white/70 transition-colors">{link.label}</a>
                   </li>
                 ))}
               </ul>
             </div>
           ))}
         </div>
-
         <div className="py-6 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-xs text-white/20">
-            © {currentYear} Contrate-me. Todos os direitos reservados.
-          </p>
-          
+          <p className="text-xs text-white/20">© {currentYear} Contrate-me. Todos os direitos reservados.</p>
         </div>
       </div>
     </footer>
   );
 };
 
-// ==================== MAIN APP ====================
+// ─────────────────────────────────────────────
+// APP
+// ─────────────────────────────────────────────
 const LandingPage = () => {
   const navigate = useNavigate();
   const handleCreateContract = () => navigate("/chat");
-
   return (
     <div className="min-h-screen bg-[#080d14]">
       <Header onCreateContract={handleCreateContract} />
       <main>
         <HeroSection onCreateContract={handleCreateContract} />
         <HowItWorksSection />
+        <ParallaxBanner />
         <BenefitsSection />
+        <TestimonialsSection />
         <PricingSection onCreateContract={handleCreateContract} />
         <FAQSection />
         <CTASection onCreateContract={handleCreateContract} />
       </main>
       <Footer />
+      <WhatsAppButton />
     </div>
   );
 };
