@@ -234,7 +234,7 @@ const ParallaxBanner = () => {
       </motion.div>
       <motion.div style={{ x: x1, y: y2 }} className="absolute right-[12%] top-[18%] px-5 py-3 rounded-2xl bg-white/4 border border-blue-500/20 backdrop-blur-sm hidden lg:flex items-center gap-3">
         <div className="w-8 h-8 rounded-xl bg-blue-500/20 flex items-center justify-center"><Star className="w-4 h-4 text-blue-400 fill-blue-400" /></div>
-        <div><p className="text-white font-bold text-sm">4.9 / 5</p><p className="text-white/40 text-xs">+1.200 avaliações</p></div>
+        <div><p className="text-white font-bold text-sm">4.9 / 5</p><p className="text-white/40 text-xs">+500 avaliações</p></div>
       </motion.div>
 
       {/* Central text with scale parallax */}
@@ -358,7 +358,7 @@ const HeroSection = ({ onCreateContract }) => {
 
   const [count, setCount] = useState(0);
   useEffect(() => {
-    const target = 1247, step = Math.ceil(target / 60);
+    const target = 1100, step = Math.ceil(target / 60);
     let c = 0;
     const iv = setInterval(() => { c = Math.min(c + step, target); setCount(c); if (c >= target) clearInterval(iv); }, 30);
     return () => clearInterval(iv);

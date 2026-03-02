@@ -181,7 +181,6 @@ const contractTypes = [
 ];
 
 // ==================== PAYMENT MODAL ====================
-// Modal flutuante — NÃO troca de tela, NÃO redireciona
 const PaymentModal = ({ isOpen, onClose, onPaymentConfirmed, contractType }) => {
   const [step, setStep] = useState('loading');
   const [paymentData, setPaymentData] = useState(null);
@@ -222,7 +221,6 @@ const PaymentModal = ({ isOpen, onClose, onPaymentConfirmed, contractType }) => 
     }
   }, [isOpen, createPayment]);
 
-  // Polling de confirmação do pagamento
   useEffect(() => {
     if (step !== 'qrcode' || !externalRefRef.current) return;
     pollRef.current = setInterval(async () => {
@@ -240,7 +238,6 @@ const PaymentModal = ({ isOpen, onClose, onPaymentConfirmed, contractType }) => 
     return () => clearInterval(pollRef.current);
   }, [step, onPaymentConfirmed]);
 
-  // Countdown do QR Code
   useEffect(() => {
     if (step !== 'qrcode') return;
     timerRef.current = setInterval(() => {
@@ -344,7 +341,6 @@ const PaymentModal = ({ isOpen, onClose, onPaymentConfirmed, contractType }) => 
             {/* Body */}
             <div style={{ padding: '18px 20px 22px' }}>
 
-              {/* LOADING */}
               {step === 'loading' && (
                 <div style={{ textAlign: 'center', padding: '32px 0' }}>
                   <div style={{
@@ -360,10 +356,8 @@ const PaymentModal = ({ isOpen, onClose, onPaymentConfirmed, contractType }) => 
                 </div>
               )}
 
-              {/* QR CODE */}
               {step === 'qrcode' && paymentData && (
                 <>
-                  {/* Valor */}
                   <div style={{
                     textAlign: 'center', padding: '14px 16px',
                     borderRadius: '14px', background: 'rgba(16,185,129,0.06)',
@@ -377,7 +371,6 @@ const PaymentModal = ({ isOpen, onClose, onPaymentConfirmed, contractType }) => 
                     </p>
                   </div>
 
-                  {/* QR Code image */}
                   {paymentData.qrCodeBase64 && (
                     <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '14px' }}>
                       <div style={{ padding: '10px', borderRadius: '14px', backgroundColor: 'white', boxShadow: '0 2px 12px rgba(0,0,0,0.15)' }}>
@@ -394,7 +387,6 @@ const PaymentModal = ({ isOpen, onClose, onPaymentConfirmed, contractType }) => 
                     Escaneie o QR Code ou copie o código abaixo
                   </p>
 
-                  {/* Copia e cola */}
                   <button
                     onClick={handleCopy}
                     style={{
@@ -422,7 +414,6 @@ const PaymentModal = ({ isOpen, onClose, onPaymentConfirmed, contractType }) => 
                     </div>
                   </button>
 
-                  {/* Status de aguardo */}
                   <div style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                     padding: '9px 13px', borderRadius: '10px',
@@ -450,7 +441,6 @@ const PaymentModal = ({ isOpen, onClose, onPaymentConfirmed, contractType }) => 
                 </>
               )}
 
-              {/* CONFIRMADO */}
               {step === 'confirmed' && (
                 <div style={{ textAlign: 'center', padding: '20px 0' }}>
                   <motion.div
@@ -485,7 +475,6 @@ const PaymentModal = ({ isOpen, onClose, onPaymentConfirmed, contractType }) => 
                 </div>
               )}
 
-              {/* EXPIRADO */}
               {step === 'expired' && (
                 <div style={{ textAlign: 'center', padding: '22px 0' }}>
                   <div style={{
@@ -513,7 +502,6 @@ const PaymentModal = ({ isOpen, onClose, onPaymentConfirmed, contractType }) => 
                 </div>
               )}
 
-              {/* ERRO */}
               {step === 'error' && (
                 <div style={{ textAlign: 'center', padding: '22px 0' }}>
                   <div style={{
@@ -646,7 +634,6 @@ const GeneratingBubble = () => (
 );
 
 // ==================== PDF CARD ====================
-// Abre o PaymentModal diretamente NO CHAT — sem mudar de tela
 const PdfCard = ({ contractType, isPaid, onOpenPayment, onDownload }) => (
   <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
     style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '0 8px' }}>
@@ -655,7 +642,6 @@ const PdfCard = ({ contractType, isPaid, onOpenPayment, onDownload }) => (
     </div>
 
     <div style={{ maxWidth: '340px' }}>
-      {/* Mensagem de status */}
       <div style={{
         padding: '11px 16px', borderRadius: '18px', borderBottomLeftRadius: '4px',
         backgroundColor: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)',
@@ -666,7 +652,6 @@ const PdfCard = ({ contractType, isPaid, onOpenPayment, onDownload }) => (
           : '✅ Contrato gerado! Clique abaixo para pagar e baixar o PDF.'}
       </div>
 
-      {/* Card clicável */}
       <button
         onClick={isPaid ? onDownload : onOpenPayment}
         style={{ width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'left' }}
@@ -784,12 +769,19 @@ const ChatInput = ({ value, onChange, onSend, disabled }) => {
   }, [value]);
 
   return (
-    <div style={{ padding: '10px 16px 14px', background: 'linear-gradient(to top, rgba(8,13,20,1) 60%, rgba(8,13,20,0))' }}>
+    // ✅ FIX MOBILE: padding inferior respeita a safe-area do browser bar
+    <div style={{
+      padding: '10px 16px 14px',
+      paddingBottom: 'calc(14px + env(safe-area-inset-bottom, 0px))',
+      background: 'linear-gradient(to top, rgba(8,13,20,1) 60%, rgba(8,13,20,0))',
+    }}>
       <div style={{ maxWidth: '672px', margin: '0 auto' }}>
         <div style={{
           display: 'flex', alignItems: 'flex-end', gap: '10px',
-          backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '18px',
-          padding: '8px 8px 8px 16px',
+          backgroundColor: 'rgba(255,255,255,0.05)',
+          // ✅ FIX: border-radius mais arredondado
+          borderRadius: '28px',
+          padding: '8px 8px 8px 18px',
           border: focused ? '1.5px solid rgba(16,185,129,0.5)' : '1.5px solid rgba(255,255,255,0.08)',
           boxShadow: focused ? '0 0 0 3px rgba(16,185,129,0.08)' : 'none',
           backdropFilter: 'blur(12px)', transition: 'border-color 0.2s, box-shadow 0.2s',
@@ -798,11 +790,20 @@ const ChatInput = ({ value, onChange, onSend, disabled }) => {
             ref={textareaRef} value={value} onChange={e => onChange(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); onSend(); } }}
             onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
+            // ✅ FIX: placeholder mais claro via style inline (reforçado pelo CSS global)
             placeholder="Digite sua resposta..." disabled={disabled} rows={1}
-            style={{ flex: 1, backgroundColor: 'transparent', padding: '6px 0', color: 'white', resize: 'none', outline: 'none', minHeight: '40px', maxHeight: '120px', fontSize: '16px', border: 'none', fontFamily: 'inherit', lineHeight: '1.5', WebkitAppearance: 'none', borderRadius: 0 }}
+            style={{
+              flex: 1, backgroundColor: 'transparent', padding: '6px 0',
+              color: 'white', resize: 'none', outline: 'none',
+              minHeight: '40px', maxHeight: '120px', fontSize: '16px',
+              border: 'none', fontFamily: 'inherit', lineHeight: '1.5',
+              WebkitAppearance: 'none', borderRadius: 0,
+            }}
           />
           <button onClick={onSend} disabled={disabled || !value.trim()} style={{
-            flexShrink: 0, width: '36px', height: '36px', borderRadius: '12px',
+            flexShrink: 0, width: '36px', height: '36px',
+            // ✅ FIX: botão também mais arredondado para combinar
+            borderRadius: '18px',
             background: !disabled && value.trim() ? 'linear-gradient(135deg, #059669, #10b981)' : 'rgba(255,255,255,0.07)',
             color: !disabled && value.trim() ? 'white' : 'rgba(255,255,255,0.25)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -896,7 +897,6 @@ const Chat = () => {
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
   const [isGenerating, setIsGenerating] = useState(false);
 
-  // ✅ Controle de pagamento — modal inline, sem troca de tela
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [isPaid, setIsPaid] = useState(false);
 
@@ -913,13 +913,44 @@ const Chat = () => {
       @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
       @keyframes bounce { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-5px); } }
       * { box-sizing: border-box; margin: 0; padding: 0; }
-      body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; overflow: hidden; background: #080d14; }
+
+      /* ✅ FIX MOBILE: garante fundo escuro em html/body, eliminando o verde nas safe areas */
+      html, body {
+        font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        overflow: hidden;
+        background: #080d14 !important;
+        background-color: #080d14 !important;
+      }
+
       ::-webkit-scrollbar { width: 4px; }
       ::-webkit-scrollbar-track { background: transparent; }
       ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
-      ::placeholder { color: rgba(255,255,255,0.25) !important; }
+
+      /* ✅ FIX: placeholder mais visível (era 0.25, agora 0.5) */
+      ::placeholder { color: rgba(255,255,255,0.5) !important; }
+      ::-webkit-input-placeholder { color: rgba(255,255,255,0.5) !important; }
+      ::-moz-placeholder { color: rgba(255,255,255,0.5) !important; }
     `;
     document.head.appendChild(style);
+
+    // ✅ FIX MOBILE: define theme-color escuro para a barra de status do browser
+    let metaTheme = document.querySelector('meta[name="theme-color"]');
+    if (!metaTheme) {
+      metaTheme = document.createElement('meta');
+      metaTheme.name = 'theme-color';
+      document.head.appendChild(metaTheme);
+    }
+    metaTheme.content = '#080d14';
+
+    // ✅ FIX iOS: status bar escura para Safari
+    let metaApple = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+    if (!metaApple) {
+      metaApple = document.createElement('meta');
+      metaApple.name = 'apple-mobile-web-app-status-bar-style';
+      document.head.appendChild(metaApple);
+    }
+    metaApple.content = 'black-translucent';
+
     return () => style.remove();
   }, []);
 
@@ -994,13 +1025,11 @@ const Chat = () => {
     }
   };
 
-  // ✅ Pagamento confirmado → fecha modal, marca como pago
   const handlePaymentConfirmed = () => {
     setIsPaid(true);
     setShowPaymentModal(false);
   };
 
-  // ✅ Download do PDF — só funciona após isPaid = true
   const handleDownload = () => {
     if (!generatedContract || !isPaid) return;
     const contractText = typeof generatedContract === 'string'
@@ -1062,12 +1091,21 @@ const Chat = () => {
   const isDesktop = windowWidth >= 1024;
 
   return (
-    <div style={{ height: 'calc(var(--vh, 1vh) * 100)', display: 'flex', flexDirection: 'column', overflow: 'hidden', backgroundColor: '#080d14' }}>
+    // ✅ FIX MOBILE: safe-area-inset para top e bottom evita que o conteúdo
+    // fique sob a status bar ou a barra do browser com fundo errado
+    <div style={{
+      height: 'calc(var(--vh, 1vh) * 100)',
+      display: 'flex',
+      flexDirection: 'column',
+      overflow: 'hidden',
+      backgroundColor: '#080d14',
+      paddingTop: 'env(safe-area-inset-top, 0px)',
+      paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+    }}>
       {isDesktop && <ProgressSidebar currentStep={currentStep} contractType={selectedContract} />}
 
       <main style={{ flex: 1, marginLeft: isDesktop ? '260px' : 0, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' }}>
 
-        {/* STEP 1 — Seleção do tipo */}
         {currentStep === 1 && (
           <div style={{
             flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', paddingTop: '20px',
@@ -1078,7 +1116,6 @@ const Chat = () => {
           </div>
         )}
 
-        {/* STEP 2 — Chat (permanece visível durante todo o processo) */}
         {currentStep === 2 && selectedContract && (
           <div style={{ display: 'flex', flexDirection: 'column', height: '100%', backgroundColor: '#0a1018' }}>
             {/* Top bar */}
@@ -1126,7 +1163,6 @@ const Chat = () => {
         )}
       </main>
 
-      {/* ✅ Modal de pagamento — flutua SOBRE o chat, sem trocar de tela */}
       <PaymentModal
         isOpen={showPaymentModal}
         onClose={() => setShowPaymentModal(false)}
