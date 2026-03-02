@@ -132,7 +132,11 @@ const InfiniteMarquee = ({ testimonials, direction = 1, speed = 35 }) => {
   const posRef = useRef(0);
   const pausedRef = useRef(false);
   const items = [...testimonials, ...testimonials, ...testimonials];
-  const CARD_WIDTH = 360, GAP = 20;
+
+  // Responsive card width: 260px on mobile, 320px on larger screens
+  const CARD_WIDTH = typeof window !== "undefined" && window.innerWidth < 640 ? 260 : 320;
+  const GAP = 16;
+
   useEffect(() => {
     const track = trackRef.current;
     if (!track) return;
@@ -148,20 +152,45 @@ const InfiniteMarquee = ({ testimonials, direction = 1, speed = 35 }) => {
     };
     animRef.current = requestAnimationFrame(go);
     return () => cancelAnimationFrame(animRef.current);
-  }, [direction, speed, testimonials.length]);
+  }, [direction, speed, testimonials.length, CARD_WIDTH]);
+
   return (
-    <div className="overflow-hidden" onMouseEnter={() => { pausedRef.current = true; }} onMouseLeave={() => { pausedRef.current = false; }}>
+    <div className="overflow-hidden touch-pan-y" onMouseEnter={() => { pausedRef.current = true; }} onMouseLeave={() => { pausedRef.current = false; }}>
       <div ref={trackRef} className="flex will-change-transform" style={{ gap: GAP, width: "max-content" }}>
         {items.map((t, idx) => (
-          <div key={idx} style={{ width: CARD_WIDTH, flexShrink: 0, boxShadow: "0 4px 24px rgba(0,0,0,0.25)" }}
-            className="relative p-6 rounded-2xl border border-white/6 bg-white/[0.025] hover:border-emerald-500/30 hover:bg-white/[0.05] transition-all duration-300 group cursor-default">
-            <div className="absolute top-4 right-5 opacity-[0.07] group-hover:opacity-[0.15] transition-opacity"><Quote className="w-9 h-9 text-emerald-400" /></div>
-            <div className="flex gap-1 mb-3">{[...Array(t.rating)].map((_, i) => <Star key={i} className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />)}</div>
-            <p className="text-sm text-white/55 leading-relaxed mb-5 italic" style={{ display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>"{t.text}"</p>
-            <div className="flex items-center gap-3">
-              <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${t.color} flex items-center justify-center flex-shrink-0 shadow-lg`}><span className="text-xs font-bold text-white">{t.avatar}</span></div>
-              <div className="flex-1 min-w-0"><p className="text-sm font-semibold text-white truncate">{t.name}</p><p className="text-xs text-white/35 truncate">{t.role}</p></div>
-              <div className="text-right flex-shrink-0"><span className="text-[11px] text-emerald-400/70 block font-medium">{t.contractType}</span><span className="text-[11px] text-white/20">{t.date}</span></div>
+          <div key={idx} style={{ width: CARD_WIDTH, flexShrink: 0 }}
+            className="relative p-4 sm:p-5 rounded-2xl border border-white/6 bg-white/[0.025] transition-colors duration-300 cursor-default"
+          >
+            {/* Quote decoration */}
+            <div className="absolute top-3 right-4 opacity-[0.07]">
+              <Quote className="w-7 h-7 sm:w-8 sm:h-8 text-emerald-400" />
+            </div>
+
+            {/* Stars */}
+            <div className="flex gap-0.5 mb-2.5">
+              {[...Array(t.rating)].map((_, i) => (
+                <Star key={i} className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-400 fill-amber-400" />
+              ))}
+            </div>
+
+            {/* Text */}
+            <p className="text-xs sm:text-sm text-white/55 leading-relaxed mb-4 italic" style={{ display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+              "{t.text}"
+            </p>
+
+            {/* Footer */}
+            <div className="flex items-center gap-2.5">
+              <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-br ${t.color} flex items-center justify-center flex-shrink-0`}>
+                <span className="text-[10px] sm:text-xs font-bold text-white">{t.avatar}</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs sm:text-sm font-semibold text-white truncate">{t.name}</p>
+                <p className="text-[10px] sm:text-xs text-white/35 truncate">{t.role}</p>
+              </div>
+              <div className="text-right flex-shrink-0 hidden sm:block">
+                <span className="text-[10px] text-emerald-400/70 block font-medium">{t.contractType}</span>
+                <span className="text-[10px] text-white/20">{t.date}</span>
+              </div>
             </div>
           </div>
         ))}
@@ -171,16 +200,17 @@ const InfiniteMarquee = ({ testimonials, direction = 1, speed = 35 }) => {
 };
 
 // ─────────────────────────────────────────────
-// PARALLAX SECTION DIVIDER  (new)
+// PARALLAX SECTION DIVIDER
 // ─────────────────────────────────────────────
 const ParallaxBanner = () => {
   const ref = useRef(null);
+  const isDesktop = typeof window !== "undefined" && window.innerWidth >= 1024;
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  const y1 = useTransform(scrollYProgress, [0, 1], [-80, 80]);
-  const y2 = useTransform(scrollYProgress, [0, 1], [80, -80]);
-  const x1 = useTransform(scrollYProgress, [0, 1], [-40, 40]);
-  const x2 = useTransform(scrollYProgress, [0, 1], [40, -40]);
-  const scale = useTransform(scrollYProgress, [0, 0.5, 1], [0.9, 1.05, 0.9]);
+  const y1 = useTransform(scrollYProgress, [0, 1], isDesktop ? [-80, 80] : [0, 0]);
+  const y2 = useTransform(scrollYProgress, [0, 1], isDesktop ? [80, -80] : [0, 0]);
+  const x1 = useTransform(scrollYProgress, [0, 1], isDesktop ? [-40, 40] : [0, 0]);
+  const x2 = useTransform(scrollYProgress, [0, 1], isDesktop ? [40, -40] : [0, 0]);
+  const scale = useTransform(scrollYProgress, [0, 0.5, 1], isDesktop ? [0.9, 1.05, 0.9] : [1, 1, 1]);
   const opacity = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0, 1, 1, 0]);
 
   return (
@@ -317,13 +347,13 @@ const Header = ({ onCreateContract }) => {
 const HeroSection = ({ onCreateContract }) => {
   const benefits = ["Juridicamente revisado", "Pronto em 2 minutos", "Pagamento via Pix"];
   const { scrollY } = useScroll();
-  // Multiple parallax layers at different speeds
-  const gridY      = useTransform(scrollY, [0, 800], [0, 200]);
-  const blob1Y     = useTransform(scrollY, [0, 800], [0, 120]);
-  const blob2Y     = useTransform(scrollY, [0, 800], [0, 80]);
-  const blob1X     = useTransform(scrollY, [0, 800], [0, -30]);
-  const blob2X     = useTransform(scrollY, [0, 800], [0, 30]);
-  const contentY   = useTransform(scrollY, [0, 600], [0, 60]);
+  const isDesktop = typeof window !== "undefined" && window.innerWidth >= 1024;
+  const gridY      = useTransform(scrollY, [0, 800], isDesktop ? [0, 200] : [0, 0]);
+  const blob1Y     = useTransform(scrollY, [0, 800], isDesktop ? [0, 120] : [0, 0]);
+  const blob2Y     = useTransform(scrollY, [0, 800], isDesktop ? [0, 80] : [0, 0]);
+  const blob1X     = useTransform(scrollY, [0, 800], isDesktop ? [0, -30] : [0, 0]);
+  const blob2X     = useTransform(scrollY, [0, 800], isDesktop ? [0, 30] : [0, 0]);
+  const contentY   = useTransform(scrollY, [0, 600], isDesktop ? [0, 60] : [0, 0]);
   const heroOpacity = useTransform(scrollY, [0, 500], [1, 0]);
 
   const [count, setCount] = useState(0);
@@ -430,24 +460,22 @@ const HowItWorksSection = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-px bg-white/5 rounded-3xl overflow-hidden border border-white/5">
           {steps.map((step, index) => (
             <motion.div key={step.number}
-              initial={{ opacity: 0, y: 50 }}
+              initial={{ opacity: 0, y: 40 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.6, delay: index * 0.15, ease: [0.16, 1, 0.3, 1] }}
-              whileHover={{ backgroundColor: "rgba(15,28,42,1)", y: -4 }}
-              className="relative bg-[#0d1520] p-8 lg:p-10 group transition-all duration-300">
+              viewport={{ once: true, margin: "-40px" }}
+              transition={{ duration: 0.5, delay: index * 0.1, ease: [0.16, 1, 0.3, 1] }}
+              className="relative bg-[#0d1520] p-8 lg:p-10 group hover:bg-[#0f1c2a] transition-colors duration-300"
+              style={{ willChange: "opacity, transform" }}>
               <div className="absolute top-6 right-6 text-6xl font-black opacity-[0.04] select-none" style={{ fontFamily: "'Syne', sans-serif" }}>{step.number}</div>
-              <motion.div whileHover={{ scale: 1.15, rotate: 5 }} className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-8 group-hover:border-emerald-500/40 group-hover:bg-emerald-500/15 transition-all duration-300">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-8 group-hover:border-emerald-500/40 group-hover:bg-emerald-500/15 transition-colors duration-300">
                 <step.icon className="w-5 h-5 text-emerald-400" />
-              </motion.div>
+              </div>
               <div className="text-xs font-bold text-emerald-500/60 mb-3 tracking-widest">{step.number}</div>
               <h3 className="text-lg font-bold text-white mb-3">{step.title}</h3>
               <p className="text-sm text-white/40 leading-relaxed">{step.description}</p>
               {index < steps.length - 1 && (
                 <div className="hidden lg:block absolute top-1/2 -right-4 z-10">
-                  <motion.div animate={{ x: [0, 4, 0] }} transition={{ duration: 1.5, repeat: Infinity }}>
-                    <ArrowRight className="w-4 h-4 text-white/15" />
-                  </motion.div>
+                  <ArrowRight className="w-4 h-4 text-white/15" />
                 </div>
               )}
             </motion.div>
@@ -463,42 +491,30 @@ const HowItWorksSection = () => {
 // ─────────────────────────────────────────────
 const BenefitCard = ({ benefit, index }) => {
   const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-80px" });
-
-  // Even index → slide from left, Odd → from right
-  const fromX = index % 2 === 0 ? -80 : 80;
+  const isInView = useInView(ref, { once: true, margin: "-60px" });
+  const fromX = index % 2 === 0 ? -60 : 60;
 
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, x: fromX, y: 20 }}
-      animate={isInView ? { opacity: 1, x: 0, y: 0 } : {}}
-      transition={{ duration: 0.7, delay: (index % 3) * 0.1, ease: [0.16, 1, 0.3, 1] }}
-      whileHover={{ y: -8, scale: 1.02 }}
-      className="group relative p-8 rounded-2xl border border-white/5 bg-white/[0.02] hover:border-emerald-500/25 hover:bg-white/[0.05] transition-all duration-300 cursor-default"
-      style={{ boxShadow: "0 0 0 0 rgba(16,185,129,0)" }}
+      initial={{ opacity: 0, x: fromX }}
+      animate={isInView ? { opacity: 1, x: 0 } : {}}
+      transition={{ duration: 0.6, delay: (index % 3) * 0.08, ease: [0.16, 1, 0.3, 1] }}
+      className="group relative p-6 md:p-8 rounded-2xl border border-white/5 bg-white/[0.02] hover:border-emerald-500/25 hover:bg-white/[0.04] transition-colors duration-300 cursor-default"
+      style={{ willChange: "opacity, transform" }}
     >
-      {/* Hover glow */}
-      <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-400 pointer-events-none" style={{ background: "radial-gradient(ellipse at 0% 0%, rgba(16,185,129,0.07) 0%, transparent 60%)" }} />
+      {/* Hover glow — CSS only, no Framer Motion, no re-render */}
+      <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" style={{ background: "radial-gradient(ellipse at 0% 0%, rgba(16,185,129,0.06) 0%, transparent 60%)" }} />
 
-      {/* Animated left border accent on hover */}
-      <motion.div
-        initial={{ scaleY: 0 }}
-        whileHover={{ scaleY: 1 }}
-        transition={{ duration: 0.3 }}
-        className="absolute left-0 top-4 bottom-4 w-0.5 rounded-full origin-top"
-        style={{ background: "linear-gradient(to bottom, #10b981, #34d399)" }}
-      />
+      {/* Left border accent — CSS only */}
+      <div className="absolute left-0 top-4 bottom-4 w-0.5 rounded-full scale-y-0 group-hover:scale-y-100 transition-transform duration-300 origin-top" style={{ background: "linear-gradient(to bottom, #10b981, #34d399)" }} />
 
       <div className="relative">
-        <motion.div
-          whileHover={{ scale: 1.2, rotate: -8 }}
-          transition={{ type: "spring", stiffness: 300 }}
-          className="w-11 h-11 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-6 group-hover:border-emerald-500/50 group-hover:bg-emerald-500/20 group-hover:shadow-lg group-hover:shadow-emerald-500/20 transition-all duration-300">
+        <div className="w-11 h-11 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-5 group-hover:border-emerald-500/50 group-hover:bg-emerald-500/20 transition-colors duration-300">
           <benefit.icon className="w-5 h-5 text-emerald-400" />
-        </motion.div>
-        <h3 className="text-base font-bold text-white mb-2.5 group-hover:text-emerald-50 transition-colors">{benefit.title}</h3>
-        <p className="text-sm text-white/40 leading-relaxed group-hover:text-white/55 transition-colors">{benefit.description}</p>
+        </div>
+        <h3 className="text-base font-bold text-white mb-2.5">{benefit.title}</h3>
+        <p className="text-sm text-white/40 leading-relaxed">{benefit.description}</p>
       </div>
     </motion.div>
   );
@@ -509,10 +525,13 @@ const BenefitCard = ({ benefit, index }) => {
 // ─────────────────────────────────────────────
 const BenefitsSection = () => {
   const sectionRef = useRef(null);
+  // Only enable scroll-linked parallax on desktop (>= 1024px)
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 1024;
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start end", "end start"] });
-  // Parallax on the background blob
-  const blobY = useTransform(scrollYProgress, [0, 1], [-60, 60]);
-  const blobX = useTransform(scrollYProgress, [0, 1], [30, -30]);
+  const blobY = useTransform(scrollYProgress, [0, 1], isMobile ? [0, 0] : [-60, 60]);
+  const blobX = useTransform(scrollYProgress, [0, 1], isMobile ? [0, 0] : [30, -30]);
+  const circleY1 = useTransform(scrollYProgress, [0, 1], isMobile ? [0, 0] : [-30, 30]);
+  const circleY2 = useTransform(scrollYProgress, [0, 1], isMobile ? [0, 0] : [30, -30]);
 
   const benefits = [
     { icon: Shield, title: "Juridicamente Revisado", description: "Todos os contratos seguem padrões legais brasileiros e são revisados por especialistas." },
@@ -530,9 +549,9 @@ const BenefitsSection = () => {
         <div className="absolute inset-0 opacity-[0.06]" style={{ background: "radial-gradient(ellipse at 100% 50%, #10b981 0%, transparent 70%)" }} />
       </motion.div>
 
-      {/* Parallax decorative circles */}
-      <motion.div style={{ y: useTransform(scrollYProgress, [0, 1], [-30, 30]) }} className="absolute -left-20 top-1/2 w-64 h-64 rounded-full border border-emerald-500/5 pointer-events-none" />
-      <motion.div style={{ y: useTransform(scrollYProgress, [0, 1], [30, -30]) }} className="absolute -right-10 bottom-20 w-48 h-48 rounded-full border border-emerald-500/8 pointer-events-none" />
+      {/* Parallax decorative circles — hidden on mobile */}
+      <motion.div style={{ y: circleY1 }} className="absolute -left-20 top-1/2 w-64 h-64 rounded-full border border-emerald-500/5 pointer-events-none hidden lg:block" />
+      <motion.div style={{ y: circleY2 }} className="absolute -right-10 bottom-20 w-48 h-48 rounded-full border border-emerald-500/8 pointer-events-none hidden lg:block" />
 
       <div className="max-w-7xl mx-auto px-6 md:px-10 relative z-10">
         <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8 mb-20">
@@ -607,10 +626,11 @@ const TestimonialsSection = () => {
 // ─────────────────────────────────────────────
 const PricingSection = ({ onCreateContract }) => {
   const ref = useRef(null);
+  const isDesktop = typeof window !== "undefined" && window.innerWidth >= 1024;
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  const decorY1 = useTransform(scrollYProgress, [0, 1], [-50, 50]);
-  const decorY2 = useTransform(scrollYProgress, [0, 1], [50, -50]);
-  const decorX1 = useTransform(scrollYProgress, [0, 1], [-20, 20]);
+  const decorY1 = useTransform(scrollYProgress, [0, 1], isDesktop ? [-50, 50] : [0, 0]);
+  const decorY2 = useTransform(scrollYProgress, [0, 1], isDesktop ? [50, -50] : [0, 0]);
+  const decorX1 = useTransform(scrollYProgress, [0, 1], isDesktop ? [-20, 20] : [0, 0]);
 
   return (
     <section ref={ref} id="precos" className="py-28 md:py-40 bg-[#0a1018] relative overflow-hidden">
@@ -722,8 +742,9 @@ const FAQSection = () => {
 // ─────────────────────────────────────────────
 const CTASection = ({ onCreateContract }) => {
   const ref = useRef(null);
+  const isDesktop = typeof window !== "undefined" && window.innerWidth >= 1024;
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  const bgY = useTransform(scrollYProgress, [0, 1], [-40, 40]);
+  const bgY = useTransform(scrollYProgress, [0, 1], isDesktop ? [-40, 40] : [0, 0]);
 
   return (
     <section ref={ref} className="py-28 md:py-40 bg-[#0a1018] relative overflow-hidden">
