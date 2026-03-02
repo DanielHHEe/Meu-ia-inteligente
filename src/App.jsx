@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import {
   motion, AnimatePresence,
-  useScroll, useTransform, useInView,
+  useScroll, useTransform, useSpring, useInView,
 } from "framer-motion";
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import * as THREE from "three";
@@ -12,12 +12,6 @@ import {
 } from "lucide-react";
 
 import Chat from "./Chat";
-
-// ─────────────────────────────────────────────
-// MOBILE DETECTION (used throughout for perf)
-// ─────────────────────────────────────────────
-const isMobileDevice = () =>
-  typeof window !== "undefined" && window.innerWidth < 1024;
 
 // ─────────────────────────────────────────────
 // SMOOTH SCROLL
@@ -34,41 +28,27 @@ const smoothScrollTo = (e, href) => {
 const FloatingParticles = () => {
   const ref = useRef(null);
   useEffect(() => {
-    // ✅ PERF: skip particles entirely on mobile — saves ~8ms/frame
-    if (isMobileDevice()) return;
-
     const canvas = ref.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     let animId;
-    const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
+    const resize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
     resize();
     window.addEventListener("resize", resize);
-
-    // ✅ PERF: reduced from 60 to 35 particles
-    const pts = Array.from({ length: 35 }, () => ({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
+    const pts = Array.from({ length: 60 }, () => ({
+      x: Math.random() * canvas.width, y: Math.random() * canvas.height,
       r: Math.random() * 1.5 + 0.3,
-      vx: (Math.random() - 0.5) * 0.3,
-      vy: (Math.random() - 0.5) * 0.3,
+      vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3,
       a: Math.random() * 0.5 + 0.1,
     }));
-
     const draw = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       pts.forEach(p => {
         p.x = (p.x + p.vx + canvas.width) % canvas.width;
         p.y = (p.y + p.vy + canvas.height) % canvas.height;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(16,185,129,${p.a})`;
-        ctx.fill();
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(16,185,129,${p.a})`; ctx.fill();
       });
-      // ✅ PERF: connection lines only on desktop
       for (let i = 0; i < pts.length; i++)
         for (let j = i + 1; j < pts.length; j++) {
           const dx = pts[i].x - pts[j].x, dy = pts[i].y - pts[j].y;
@@ -77,24 +57,19 @@ const FloatingParticles = () => {
             ctx.beginPath();
             ctx.strokeStyle = `rgba(16,185,129,${0.06 * (1 - d / 100)})`;
             ctx.lineWidth = 0.5;
-            ctx.moveTo(pts[i].x, pts[i].y);
-            ctx.lineTo(pts[j].x, pts[j].y);
-            ctx.stroke();
+            ctx.moveTo(pts[i].x, pts[i].y); ctx.lineTo(pts[j].x, pts[j].y); ctx.stroke();
           }
         }
       animId = requestAnimationFrame(draw);
     };
     draw();
-    return () => {
-      cancelAnimationFrame(animId);
-      window.removeEventListener("resize", resize);
-    };
+    return () => { cancelAnimationFrame(animId); window.removeEventListener("resize", resize); };
   }, []);
   return <canvas ref={ref} className="absolute inset-0 pointer-events-none" style={{ opacity: 0.7 }} />;
 };
 
 // ─────────────────────────────────────────────
-// 3D DOCUMENT (Three.js) — desktop only
+// 3D DOCUMENT (Three.js)
 // ─────────────────────────────────────────────
 const ThreeDDocument = () => {
   const mountRef = useRef(null);
@@ -104,8 +79,7 @@ const ThreeDDocument = () => {
     if (!mount) return;
     const w = mount.clientWidth || 460, h = mount.clientHeight || 420;
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(w, h);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(w, h); renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     mount.appendChild(renderer.domElement);
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 100);
@@ -125,7 +99,8 @@ const ThreeDDocument = () => {
     const sealMesh = new THREE.Mesh(new THREE.RingGeometry(0.25, 0.32, 32), new THREE.MeshBasicMaterial({ color: 0x10b981, transparent: true, opacity: 0.8, side: THREE.DoubleSide }));
     sealMesh.position.set(0.6, -1.0, 0.05); group.add(sealMesh);
     const sealInner = new THREE.Mesh(new THREE.CircleGeometry(0.18, 32), new THREE.MeshBasicMaterial({ color: 0x10b981, transparent: true, opacity: 0.15 }));
-    sealInner.position.set(0.6, -1.0, 0.05); group.add(sealInner);
+    sealInner.position.set(0.6, -1.0, 0.05);
+    group.add(sealInner);
     const pPos = new Float32Array(40 * 3);
     for (let i = 0; i < 40; i++) { pPos[i*3]=(Math.random()-.5)*5; pPos[i*3+1]=(Math.random()-.5)*5; pPos[i*3+2]=(Math.random()-.5)*3; }
     const pGeo = new THREE.BufferGeometry(); pGeo.setAttribute("position", new THREE.BufferAttribute(pPos, 3));
@@ -158,6 +133,7 @@ const InfiniteMarquee = ({ testimonials, direction = 1, speed = 35 }) => {
   const pausedRef = useRef(false);
   const items = [...testimonials, ...testimonials, ...testimonials];
 
+  // Responsive card width: 260px on mobile, 320px on larger screens
   const CARD_WIDTH = typeof window !== "undefined" && window.innerWidth < 640 ? 260 : 320;
   const GAP = 16;
 
@@ -165,16 +141,12 @@ const InfiniteMarquee = ({ testimonials, direction = 1, speed = 35 }) => {
     const track = trackRef.current;
     if (!track) return;
     const total = testimonials.length * (CARD_WIDTH + GAP);
-    // ✅ PERF: use CSS transform with translateZ to promote to GPU layer
-    track.style.willChange = "transform";
-    track.style.transform = "translateZ(0)";
-
     const go = () => {
       if (!pausedRef.current) {
         posRef.current += (speed / 60) * direction;
         if (posRef.current >= total) posRef.current -= total;
         if (posRef.current < 0) posRef.current += total;
-        track.style.transform = `translate3d(${-posRef.current}px, 0, 0)`;
+        track.style.transform = `translateX(${-posRef.current}px)`;
       }
       animRef.current = requestAnimationFrame(go);
     };
@@ -183,29 +155,30 @@ const InfiniteMarquee = ({ testimonials, direction = 1, speed = 35 }) => {
   }, [direction, speed, testimonials.length, CARD_WIDTH]);
 
   return (
-    <div
-      className="overflow-hidden touch-pan-y"
-      onMouseEnter={() => { pausedRef.current = true; }}
-      onMouseLeave={() => { pausedRef.current = false; }}
-    >
-      <div ref={trackRef} className="flex" style={{ gap: GAP, width: "max-content" }}>
+    <div className="overflow-hidden touch-pan-y" onMouseEnter={() => { pausedRef.current = true; }} onMouseLeave={() => { pausedRef.current = false; }}>
+      <div ref={trackRef} className="flex will-change-transform" style={{ gap: GAP, width: "max-content" }}>
         {items.map((t, idx) => (
-          <div
-            key={idx}
-            style={{ width: CARD_WIDTH, flexShrink: 0 }}
-            className="relative p-4 sm:p-5 rounded-2xl border border-white/6 bg-white/[0.025] cursor-default"
+          <div key={idx} style={{ width: CARD_WIDTH, flexShrink: 0 }}
+            className="relative p-4 sm:p-5 rounded-2xl border border-white/6 bg-white/[0.025] transition-colors duration-300 cursor-default"
           >
+            {/* Quote decoration */}
             <div className="absolute top-3 right-4 opacity-[0.07]">
               <Quote className="w-7 h-7 sm:w-8 sm:h-8 text-emerald-400" />
             </div>
+
+            {/* Stars */}
             <div className="flex gap-0.5 mb-2.5">
               {[...Array(t.rating)].map((_, i) => (
                 <Star key={i} className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-400 fill-amber-400" />
               ))}
             </div>
+
+            {/* Text */}
             <p className="text-xs sm:text-sm text-white/55 leading-relaxed mb-4 italic" style={{ display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
               "{t.text}"
             </p>
+
+            {/* Footer */}
             <div className="flex items-center gap-2.5">
               <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-br ${t.color} flex items-center justify-center flex-shrink-0`}>
                 <span className="text-[10px] sm:text-xs font-bold text-white">{t.avatar}</span>
@@ -231,24 +204,26 @@ const InfiniteMarquee = ({ testimonials, direction = 1, speed = 35 }) => {
 // ─────────────────────────────────────────────
 const ParallaxBanner = () => {
   const ref = useRef(null);
-  // ✅ PERF: disable all scroll-driven transforms on mobile
-  const isDesktop = !isMobileDevice();
+  const isDesktop = typeof window !== "undefined" && window.innerWidth >= 1024;
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  const y1    = useTransform(scrollYProgress, [0, 1], isDesktop ? [-80, 80]   : [0, 0]);
-  const y2    = useTransform(scrollYProgress, [0, 1], isDesktop ? [80, -80]   : [0, 0]);
-  const x1    = useTransform(scrollYProgress, [0, 1], isDesktop ? [-40, 40]   : [0, 0]);
-  const x2    = useTransform(scrollYProgress, [0, 1], isDesktop ? [40, -40]   : [0, 0]);
+  const y1 = useTransform(scrollYProgress, [0, 1], isDesktop ? [-80, 80] : [0, 0]);
+  const y2 = useTransform(scrollYProgress, [0, 1], isDesktop ? [80, -80] : [0, 0]);
+  const x1 = useTransform(scrollYProgress, [0, 1], isDesktop ? [-40, 40] : [0, 0]);
+  const x2 = useTransform(scrollYProgress, [0, 1], isDesktop ? [40, -40] : [0, 0]);
   const scale = useTransform(scrollYProgress, [0, 0.5, 1], isDesktop ? [0.9, 1.05, 0.9] : [1, 1, 1]);
-  const opacity = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], isDesktop ? [0, 1, 1, 0] : [1, 1, 1, 1]);
+  const opacity = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0, 1, 1, 0]);
 
   return (
     <div ref={ref} className="relative h-[320px] overflow-hidden bg-[#060c13] flex items-center justify-center">
+      {/* Parallax background layers */}
       <motion.div style={{ y: y1 }} className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full blur-[100px]" style={{ background: "radial-gradient(circle, rgba(16,185,129,0.12) 0%, transparent 70%)" }} />
       </motion.div>
       <motion.div style={{ y: y2 }} className="absolute inset-0 pointer-events-none">
         <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full blur-[100px]" style={{ background: "radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%)" }} />
       </motion.div>
+
+      {/* Floating stat chips with independent parallax */}
       <motion.div style={{ x: x1, y: y1 }} className="absolute left-[8%] top-[20%] px-5 py-3 rounded-2xl bg-white/4 border border-emerald-500/20 backdrop-blur-sm hidden md:flex items-center gap-3">
         <div className="w-8 h-8 rounded-xl bg-emerald-500/20 flex items-center justify-center"><Shield className="w-4 h-4 text-emerald-400" /></div>
         <div><p className="text-white font-bold text-sm">100% Legal</p><p className="text-white/40 text-xs">Revisado por especialistas</p></div>
@@ -261,6 +236,8 @@ const ParallaxBanner = () => {
         <div className="w-8 h-8 rounded-xl bg-blue-500/20 flex items-center justify-center"><Star className="w-4 h-4 text-blue-400 fill-blue-400" /></div>
         <div><p className="text-white font-bold text-sm">4.9 / 5</p><p className="text-white/40 text-xs">+500 avaliações</p></div>
       </motion.div>
+
+      {/* Central text with scale parallax */}
       <motion.div style={{ scale, opacity }} className="relative z-10 text-center px-6">
         <p className="text-xs font-bold text-emerald-400 uppercase tracking-[0.25em] mb-3">Simples assim</p>
         <h3 className="text-3xl md:text-5xl font-black text-white leading-tight" style={{ fontFamily: "'Syne', sans-serif" }}>
@@ -268,6 +245,8 @@ const ParallaxBanner = () => {
           <span style={{ background: "linear-gradient(135deg, #10b981, #34d399, #6ee7b7)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>por R$ 19,90.</span>
         </h3>
       </motion.div>
+
+      {/* Grid pattern */}
       <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: `linear-gradient(rgba(16,185,129,1) 1px, transparent 1px), linear-gradient(90deg, rgba(16,185,129,1) 1px, transparent 1px)`, backgroundSize: "40px 40px" }} />
     </div>
   );
@@ -280,15 +259,13 @@ const WhatsAppButton = () => {
   const phoneNumber = "5599991999125";
   const message = "Olá! Preciso de ajuda com meu contrato.";
   return (
-    <motion.a
-      href={`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`}
+    <motion.a href={`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`}
       target="_blank" rel="noopener noreferrer"
       initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
       transition={{ delay: 1.5, type: "spring", stiffness: 260, damping: 20 }}
       whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}
       className="fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 rounded-full"
-      style={{ background: "linear-gradient(135deg, #25d366, #128c7e)", boxShadow: "0 4px 24px rgba(37,211,102,0.45)" }}
-    >
+      style={{ background: "linear-gradient(135deg, #25d366, #128c7e)", boxShadow: "0 4px 24px rgba(37,211,102,0.45)" }}>
       <span className="absolute inset-0 rounded-full animate-ping" style={{ background: "rgba(37,211,102,0.3)" }} />
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" className="w-7 h-7 relative z-10" fill="white">
         <path d="M16 2C8.268 2 2 8.268 2 16c0 2.478.67 4.8 1.832 6.793L2 30l7.418-1.807A13.94 13.94 0 0 0 16 30c7.732 0 14-6.268 14-14S23.732 2 16 2zm0 25.6a11.54 11.54 0 0 1-5.885-1.608l-.422-.25-4.403 1.072 1.102-4.288-.276-.44A11.56 11.56 0 0 1 4.4 16C4.4 9.59 9.59 4.4 16 4.4S27.6 9.59 27.6 16 22.41 27.6 16 27.6zm6.34-8.62c-.347-.174-2.055-1.014-2.374-1.13-.32-.116-.552-.174-.784.174-.232.347-.9 1.13-1.103 1.362-.203.232-.406.26-.753.087-.347-.174-1.466-.54-2.792-1.722-1.032-.92-1.728-2.055-1.931-2.402-.203-.347-.022-.535.152-.708.157-.156.347-.406.52-.61.174-.203.232-.347.347-.579.116-.232.058-.435-.029-.61-.087-.174-.784-1.89-1.074-2.588-.283-.68-.57-.587-.784-.598l-.667-.012c-.232 0-.61.087-.928.435-.319.347-1.218 1.19-1.218 2.9s1.247 3.364 1.42 3.596c.174.232 2.453 3.745 5.944 5.252.831.359 1.48.573 1.985.733.834.265 1.593.228 2.193.138.669-.1 2.055-.84 2.345-1.651.29-.812.29-1.508.203-1.651-.086-.145-.318-.232-.666-.406z" />
@@ -305,22 +282,19 @@ const Header = ({ onCreateContract }) => {
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", fn, { passive: true }); // ✅ PERF: passive listener
+    window.addEventListener("scroll", fn);
     return () => window.removeEventListener("scroll", fn);
   }, []);
   const navLinks = [
     { label: "Como Funciona", href: "#como-funciona" },
-    { label: "Vantagens",     href: "#vantagens" },
-    { label: "Avaliações",    href: "#avaliacoes" },
-    { label: "Preços",        href: "#precos" },
-    { label: "FAQ",           href: "#faq" },
+    { label: "Vantagens", href: "#vantagens" },
+    { label: "Avaliações", href: "#avaliacoes" },
+    { label: "Preços", href: "#precos" },
+    { label: "FAQ", href: "#faq" },
   ];
   return (
-    <motion.header
-      initial={{ y: -100, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.6 }}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled ? "bg-[#080d14]/95 backdrop-blur-xl shadow-2xl shadow-black/30 border-b border-white/5" : "bg-transparent"}`}
-    >
+    <motion.header initial={{ y: -100, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.6 }}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled ? "bg-[#080d14]/95 backdrop-blur-xl shadow-2xl shadow-black/30 border-b border-white/5" : "bg-transparent"}`}>
       <div className="max-w-7xl mx-auto px-6 md:px-10">
         <div className="flex items-center justify-between h-20">
           <a href="#" className="flex items-center gap-3">
@@ -331,25 +305,17 @@ const Header = ({ onCreateContract }) => {
           </a>
           <nav className="hidden md:flex items-center gap-8">
             {navLinks.map((link, i) => (
-              <motion.a
-                key={link.href} href={link.href}
-                onClick={(e) => smoothScrollTo(e, link.href)}
-                initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 * i }}
-                className="text-sm font-medium text-white/60 hover:text-white transition-colors duration-200 relative group"
-              >
+              <motion.a key={link.href} href={link.href} onClick={(e) => smoothScrollTo(e, link.href)}
+                initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 * i }}
+                className="text-sm font-medium text-white/60 hover:text-white transition-colors duration-200 relative group">
                 {link.label}
                 <span className="absolute -bottom-1 left-0 w-0 h-px bg-emerald-400 group-hover:w-full transition-all duration-300" />
               </motion.a>
             ))}
           </nav>
           <div className="hidden md:block">
-            <motion.button
-              onClick={onCreateContract}
-              whileHover={{ scale: 1.03, boxShadow: "0 0 30px rgba(16,185,129,0.5)" }}
-              whileTap={{ scale: 0.97 }}
-              className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-semibold rounded-xl shadow-lg shadow-emerald-500/25 transition-all"
-            >
+            <motion.button onClick={onCreateContract} whileHover={{ scale: 1.03, boxShadow: "0 0 30px rgba(16,185,129,0.5)" }} whileTap={{ scale: 0.97 }}
+              className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-semibold rounded-xl shadow-lg shadow-emerald-500/25 transition-all">
               Criar Contrato
             </motion.button>
           </div>
@@ -359,22 +325,13 @@ const Header = ({ onCreateContract }) => {
         </div>
         <AnimatePresence>
           {isMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="md:hidden border-t border-white/10 py-4"
-            >
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="md:hidden border-t border-white/10 py-4">
               <nav className="flex flex-col gap-2">
                 {navLinks.map((link) => (
-                  <a key={link.href} href={link.href}
-                    className="text-sm font-medium text-white/60 hover:text-white px-3 py-3 rounded-lg hover:bg-white/5 transition-all"
-                    onClick={(e) => { setIsMenuOpen(false); setTimeout(() => smoothScrollTo(e, link.href), 300); }}
-                  >{link.label}</a>
+                  <a key={link.href} href={link.href} className="text-sm font-medium text-white/60 hover:text-white px-3 py-3 rounded-lg hover:bg-white/5 transition-all"
+                    onClick={(e) => { setIsMenuOpen(false); setTimeout(() => smoothScrollTo(e, link.href), 300); }}>{link.label}</a>
                 ))}
-                <button
-                  onClick={() => { setIsMenuOpen(false); onCreateContract(); }}
-                  className="mt-2 px-5 py-3 bg-emerald-500 text-white font-semibold rounded-xl"
-                >Criar Contrato</button>
+                <button onClick={() => { setIsMenuOpen(false); onCreateContract(); }} className="mt-2 px-5 py-3 bg-emerald-500 text-white font-semibold rounded-xl">Criar Contrato</button>
               </nav>
             </motion.div>
           )}
@@ -385,95 +342,56 @@ const Header = ({ onCreateContract }) => {
 };
 
 // ─────────────────────────────────────────────
-// HERO SECTION
+// HERO SECTION  (with deep parallax layers)
 // ─────────────────────────────────────────────
 const HeroSection = ({ onCreateContract }) => {
   const benefits = ["Juridicamente revisado", "Pronto em 2 minutos", "Pagamento via Pix"];
   const { scrollY } = useScroll();
-  const isDesktop = !isMobileDevice();
-
-  // ✅ PERF: all scroll-driven transforms disabled on mobile
-  const gridY       = useTransform(scrollY, [0, 800], isDesktop ? [0, 200]  : [0, 0]);
-  const blob1Y      = useTransform(scrollY, [0, 800], isDesktop ? [0, 120]  : [0, 0]);
-  const blob2Y      = useTransform(scrollY, [0, 800], isDesktop ? [0, 80]   : [0, 0]);
-  const blob1X      = useTransform(scrollY, [0, 800], isDesktop ? [0, -30]  : [0, 0]);
-  const blob2X      = useTransform(scrollY, [0, 800], isDesktop ? [0, 30]   : [0, 0]);
-  const contentY    = useTransform(scrollY, [0, 600], isDesktop ? [0, 60]   : [0, 0]);
-  const heroOpacity = useTransform(scrollY, [0, 500], isDesktop ? [1, 0]    : [1, 1]);
+  const isDesktop = typeof window !== "undefined" && window.innerWidth >= 1024;
+  const gridY      = useTransform(scrollY, [0, 800], isDesktop ? [0, 200] : [0, 0]);
+  const blob1Y     = useTransform(scrollY, [0, 800], isDesktop ? [0, 120] : [0, 0]);
+  const blob2Y     = useTransform(scrollY, [0, 800], isDesktop ? [0, 80] : [0, 0]);
+  const blob1X     = useTransform(scrollY, [0, 800], isDesktop ? [0, -30] : [0, 0]);
+  const blob2X     = useTransform(scrollY, [0, 800], isDesktop ? [0, 30] : [0, 0]);
+  const contentY   = useTransform(scrollY, [0, 600], isDesktop ? [0, 60] : [0, 0]);
+  const heroOpacity = useTransform(scrollY, [0, 500], [1, 0]);
 
   const [count, setCount] = useState(0);
   useEffect(() => {
     const target = 1100, step = Math.ceil(target / 60);
     let c = 0;
-    const iv = setInterval(() => {
-      c = Math.min(c + step, target);
-      setCount(c);
-      if (c >= target) clearInterval(iv);
-    }, 30);
+    const iv = setInterval(() => { c = Math.min(c + step, target); setCount(c); if (c >= target) clearInterval(iv); }, 30);
     return () => clearInterval(iv);
   }, []);
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#080d14]">
-      {/* Layer 1 — grid */}
+      {/* Layer 1 — grid (fastest) */}
       <motion.div style={{ y: gridY }} className="absolute inset-0 pointer-events-none">
         <div className="absolute inset-0 opacity-20" style={{ backgroundImage: `linear-gradient(rgba(16,185,129,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(16,185,129,0.15) 1px, transparent 1px)`, backgroundSize: "60px 60px" }} />
         <FloatingParticles />
       </motion.div>
 
-      {/* Layer 2 — blobs */}
-      <motion.div style={{ y: blob1Y, x: blob1X }} className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full pointer-events-none">
-        {/* ✅ PERF: no scale animation on mobile */}
-        {isDesktop ? (
-          <motion.div
-            animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.15, 0.1] }}
-            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-            className="w-full h-full rounded-full"
-            style={{ background: "radial-gradient(circle, rgba(16,185,129,0.12) 0%, transparent 70%)", filter: "blur(120px)" }}
-          />
-        ) : (
-          <div className="w-full h-full rounded-full" style={{ background: "radial-gradient(circle, rgba(16,185,129,0.08) 0%, transparent 70%)", filter: "blur(80px)" }} />
-        )}
+      {/* Layer 2 — blobs (medium speed, drift sideways too) */}
+      <motion.div style={{ y: blob1Y, x: blob1X }} className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full pointer-events-none" style2={{ background: "radial-gradient(circle, rgba(16,185,129,0.12) 0%, transparent 70%)", filter: "blur(120px)" }}>
+        <motion.div animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.15, 0.1] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }} className="w-full h-full rounded-full" style={{ background: "radial-gradient(circle, rgba(16,185,129,0.12) 0%, transparent 70%)", filter: "blur(120px)" }} />
       </motion.div>
       <motion.div style={{ y: blob2Y, x: blob2X }} className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full pointer-events-none">
-        {isDesktop ? (
-          <motion.div
-            animate={{ scale: [1, 1.15, 1], opacity: [0.1, 0.14, 0.1] }}
-            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-            className="w-full h-full rounded-full"
-            style={{ background: "radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%)", filter: "blur(120px)" }}
-          />
-        ) : (
-          <div className="w-full h-full rounded-full" style={{ background: "radial-gradient(circle, rgba(59,130,246,0.06) 0%, transparent 70%)", filter: "blur(80px)" }} />
-        )}
+        <motion.div animate={{ scale: [1, 1.15, 1], opacity: [0.1, 0.14, 0.1] }} transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 2 }} className="w-full h-full rounded-full" style={{ background: "radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%)", filter: "blur(120px)" }} />
       </motion.div>
 
-      {/* Layer 3 — content */}
+      {/* Layer 3 — content (slowest, fades out) */}
       <motion.div style={{ y: contentY, opacity: heroOpacity }} className="max-w-7xl mx-auto px-6 md:px-10 relative z-10 pt-24 w-full">
         <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
           <motion.div initial={{ opacity: 0, y: 60 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}>
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2 }}
-              className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-8"
-            >
-              {/* ✅ PERF: pulse dot only on desktop */}
-              {isDesktop ? (
-                <motion.span animate={{ scale: [1, 1.4, 1] }} transition={{ duration: 1.5, repeat: Infinity }} className="w-2 h-2 rounded-full bg-emerald-400" />
-              ) : (
-                <span className="w-2 h-2 rounded-full bg-emerald-400" />
-              )}
+            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }} className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-8">
+              <motion.span animate={{ scale: [1, 1.4, 1] }} transition={{ duration: 1.5, repeat: Infinity }} className="w-2 h-2 rounded-full bg-emerald-400" />
               <span className="text-sm font-medium text-emerald-400 tracking-wide">Gerado por Inteligência Artificial</span>
             </motion.div>
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white leading-[1.05] mb-6 tracking-tight" style={{ fontFamily: "'Syne', sans-serif" }}>
               {["Seu contrato", "profissional", "em 2 minutos."].map((line, i) => (
-                <motion.span
-                  key={i}
-                  initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.3 + i * 0.15, duration: 0.7 }}
-                  className="block"
-                  style={i === 1 ? { background: "linear-gradient(135deg, #10b981 0%, #34d399 50%, #6ee7b7 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" } : {}}
-                >
+                <motion.span key={i} initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + i * 0.15, duration: 0.7 }} className="block"
+                  style={i === 1 ? { background: "linear-gradient(135deg, #10b981 0%, #34d399 50%, #6ee7b7 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" } : {}}>
                   {line}
                 </motion.span>
               ))}
@@ -484,25 +402,16 @@ const HeroSection = ({ onCreateContract }) => {
             <div className="flex flex-wrap gap-5 mb-10">
               {benefits.map((b, i) => (
                 <motion.div key={b} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.7 + i * 0.1 }} className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center">
-                    <Check className="w-3 h-3 text-emerald-400" />
-                  </div>
+                  <div className="w-5 h-5 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center"><Check className="w-3 h-3 text-emerald-400" /></div>
                   <span className="text-sm text-white/70 font-medium">{b}</span>
                 </motion.div>
               ))}
             </div>
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.85 }}>
-              <motion.button
-                onClick={onCreateContract}
-                whileHover={{ scale: 1.05, y: -3, boxShadow: "0 0 60px rgba(16,185,129,0.5)" }}
-                whileTap={{ scale: 0.97 }}
+              <motion.button onClick={onCreateContract} whileHover={{ scale: 1.05, y: -3, boxShadow: "0 0 60px rgba(16,185,129,0.5)" }} whileTap={{ scale: 0.97 }}
                 className="group relative px-8 py-4 text-white font-semibold rounded-2xl flex items-center gap-2 overflow-hidden"
-                style={{ background: "linear-gradient(135deg, #10b981, #059669)", boxShadow: "0 0 40px rgba(16,185,129,0.35), 0 4px 20px rgba(0,0,0,0.3)" }}
-              >
-                {/* ✅ PERF: shimmer hover only on desktop */}
-                {isDesktop && (
-                  <motion.span className="absolute inset-0 bg-white/10" initial={{ x: "-100%" }} whileHover={{ x: "100%" }} transition={{ duration: 0.4 }} />
-                )}
+                style={{ background: "linear-gradient(135deg, #10b981, #059669)", boxShadow: "0 0 40px rgba(16,185,129,0.35), 0 4px 20px rgba(0,0,0,0.3)" }}>
+                <motion.span className="absolute inset-0 bg-white/10" initial={{ x: "-100%" }} whileHover={{ x: "100%" }} transition={{ duration: 0.4 }} />
                 <span className="relative">Criar Meu Contrato</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform relative" />
               </motion.button>
@@ -512,12 +421,8 @@ const HeroSection = ({ onCreateContract }) => {
             </motion.p>
           </motion.div>
 
-          {/* 3D Document — desktop only */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            className="relative hidden lg:block h-[480px]"
-          >
+          {/* 3D Document */}
+          <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1, delay: 0.4, ease: [0.16, 1, 0.3, 1] }} className="relative hidden lg:block h-[480px]">
             <ThreeDDocument />
             <motion.div animate={{ y: [0, -6, 0] }} transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }} className="absolute top-6 -left-6 px-4 py-2.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl flex items-center gap-2" style={{ boxShadow: "0 8px 32px rgba(0,0,0,0.3)" }}>
               <Shield className="w-4 h-4 text-emerald-400" /><span className="text-xs font-semibold text-white">Juridicamente revisado</span>
@@ -539,10 +444,10 @@ const HeroSection = ({ onCreateContract }) => {
 // ─────────────────────────────────────────────
 const HowItWorksSection = () => {
   const steps = [
-    { icon: FileEdit,  number: "01", title: "Preencha os dados",    description: "Responda perguntas simples sobre o tipo de contrato e as partes envolvidas." },
-    { icon: Sparkles,  number: "02", title: "IA gera o rascunho",   description: "Nossa inteligência artificial cria um contrato personalizado e juridicamente revisado." },
-    { icon: CreditCard,number: "03", title: "Pague via Pix",        description: "Pagamento rápido e seguro. Sem cartão, sem complicação." },
-    { icon: Download,  number: "04", title: "Baixe seu contrato",   description: "Receba seu contrato em PDF pronto para assinatura em segundos." },
+    { icon: FileEdit, number: "01", title: "Preencha os dados", description: "Responda perguntas simples sobre o tipo de contrato e as partes envolvidas." },
+    { icon: Sparkles, number: "02", title: "IA gera o rascunho", description: "Nossa inteligência artificial cria um contrato personalizado e juridicamente revisado." },
+    { icon: CreditCard, number: "03", title: "Pague via Pix", description: "Pagamento rápido e seguro. Sem cartão, sem complicação." },
+    { icon: Download, number: "04", title: "Baixe seu contrato", description: "Receba seu contrato em PDF pronto para assinatura em segundos." },
   ];
   return (
     <section id="como-funciona" className="py-28 md:py-40 bg-[#080d14] relative overflow-hidden">
@@ -554,15 +459,13 @@ const HowItWorksSection = () => {
         </motion.div>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-px bg-white/5 rounded-3xl overflow-hidden border border-white/5">
           {steps.map((step, index) => (
-            <motion.div
-              key={step.number}
+            <motion.div key={step.number}
               initial={{ opacity: 0, y: 40 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-40px" }}
               transition={{ duration: 0.5, delay: index * 0.1, ease: [0.16, 1, 0.3, 1] }}
               className="relative bg-[#0d1520] p-8 lg:p-10 group hover:bg-[#0f1c2a] transition-colors duration-300"
-              style={{ willChange: "opacity, transform" }}
-            >
+              style={{ willChange: "opacity, transform" }}>
               <div className="absolute top-6 right-6 text-6xl font-black opacity-[0.04] select-none" style={{ fontFamily: "'Syne', sans-serif" }}>{step.number}</div>
               <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-8 group-hover:border-emerald-500/40 group-hover:bg-emerald-500/15 transition-colors duration-300">
                 <step.icon className="w-5 h-5 text-emerald-400" />
@@ -584,14 +487,12 @@ const HowItWorksSection = () => {
 };
 
 // ─────────────────────────────────────────────
-// BENEFIT CARD
+// BENEFIT CARD  (slides in from left or right)
 // ─────────────────────────────────────────────
 const BenefitCard = ({ benefit, index }) => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-60px" });
-  const isDesktop = !isMobileDevice();
-  // ✅ PERF: no horizontal slide on mobile — just fade in
-  const fromX = isDesktop ? (index % 2 === 0 ? -60 : 60) : 0;
+  const fromX = index % 2 === 0 ? -60 : 60;
 
   return (
     <motion.div
@@ -602,8 +503,12 @@ const BenefitCard = ({ benefit, index }) => {
       className="group relative p-6 md:p-8 rounded-2xl border border-white/5 bg-white/[0.02] hover:border-emerald-500/25 hover:bg-white/[0.04] transition-colors duration-300 cursor-default"
       style={{ willChange: "opacity, transform" }}
     >
+      {/* Hover glow — CSS only, no Framer Motion, no re-render */}
       <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" style={{ background: "radial-gradient(ellipse at 0% 0%, rgba(16,185,129,0.06) 0%, transparent 60%)" }} />
+
+      {/* Left border accent — CSS only */}
       <div className="absolute left-0 top-4 bottom-4 w-0.5 rounded-full scale-y-0 group-hover:scale-y-100 transition-transform duration-300 origin-top" style={{ background: "linear-gradient(to bottom, #10b981, #34d399)" }} />
+
       <div className="relative">
         <div className="w-11 h-11 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-5 group-hover:border-emerald-500/50 group-hover:bg-emerald-500/20 transition-colors duration-300">
           <benefit.icon className="w-5 h-5 text-emerald-400" />
@@ -620,29 +525,34 @@ const BenefitCard = ({ benefit, index }) => {
 // ─────────────────────────────────────────────
 const BenefitsSection = () => {
   const sectionRef = useRef(null);
-  const isDesktop = !isMobileDevice();
+  // Only enable scroll-linked parallax on desktop (>= 1024px)
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 1024;
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start end", "end start"] });
-  const blobY    = useTransform(scrollYProgress, [0, 1], isDesktop ? [-60,  60] : [0, 0]);
-  const blobX    = useTransform(scrollYProgress, [0, 1], isDesktop ? [ 30, -30] : [0, 0]);
-  const circleY1 = useTransform(scrollYProgress, [0, 1], isDesktop ? [-30,  30] : [0, 0]);
-  const circleY2 = useTransform(scrollYProgress, [0, 1], isDesktop ? [ 30, -30] : [0, 0]);
+  const blobY = useTransform(scrollYProgress, [0, 1], isMobile ? [0, 0] : [-60, 60]);
+  const blobX = useTransform(scrollYProgress, [0, 1], isMobile ? [0, 0] : [30, -30]);
+  const circleY1 = useTransform(scrollYProgress, [0, 1], isMobile ? [0, 0] : [-30, 30]);
+  const circleY2 = useTransform(scrollYProgress, [0, 1], isMobile ? [0, 0] : [30, -30]);
 
   const benefits = [
-    { icon: Shield,     title: "Juridicamente Revisado",  description: "Todos os contratos seguem padrões legais brasileiros e são revisados por especialistas." },
-    { icon: PiggyBank,  title: "Economia de até 90%",     description: "Pague uma fração do valor cobrado por advogados tradicionais." },
-    { icon: Clock,      title: "Disponível 24h",          description: "Gere seu contrato a qualquer hora, qualquer dia. Sem espera, sem agendamento." },
-    { icon: Zap,        title: "Pronto em Minutos",       description: "Tecnologia de IA avançada que gera contratos personalizados em tempo recorde." },
-    { icon: Smartphone, title: "100% Online",             description: "Acesse de qualquer dispositivo. Sem downloads, sem instalações." },
-    { icon: Scale,      title: "Vários Tipos de Contratos", description: "Prestação de serviços, aluguel, parceria e muito mais." },
+    { icon: Shield, title: "Juridicamente Revisado", description: "Todos os contratos seguem padrões legais brasileiros e são revisados por especialistas." },
+    { icon: PiggyBank, title: "Economia de até 90%", description: "Pague uma fração do valor cobrado por advogados tradicionais." },
+    { icon: Clock, title: "Disponível 24h", description: "Gere seu contrato a qualquer hora, qualquer dia. Sem espera, sem agendamento." },
+    { icon: Zap, title: "Pronto em Minutos", description: "Tecnologia de IA avançada que gera contratos personalizados em tempo recorde." },
+    { icon: Smartphone, title: "100% Online", description: "Acesse de qualquer dispositivo. Sem downloads, sem instalações." },
+    { icon: Scale, title: "Vários Tipos de Contratos", description: "Prestação de serviços, aluguel, parceria e muito mais." },
   ];
 
   return (
     <section ref={sectionRef} id="vantagens" className="py-28 md:py-40 bg-[#0a1018] relative overflow-hidden">
+      {/* Parallax background blob */}
       <motion.div style={{ y: blobY, x: blobX }} className="absolute right-0 top-0 w-2/3 h-full pointer-events-none">
         <div className="absolute inset-0 opacity-[0.06]" style={{ background: "radial-gradient(ellipse at 100% 50%, #10b981 0%, transparent 70%)" }} />
       </motion.div>
+
+      {/* Parallax decorative circles — hidden on mobile */}
       <motion.div style={{ y: circleY1 }} className="absolute -left-20 top-1/2 w-64 h-64 rounded-full border border-emerald-500/5 pointer-events-none hidden lg:block" />
       <motion.div style={{ y: circleY2 }} className="absolute -right-10 bottom-20 w-48 h-48 rounded-full border border-emerald-500/8 pointer-events-none hidden lg:block" />
+
       <div className="max-w-7xl mx-auto px-6 md:px-10 relative z-10">
         <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8 mb-20">
           <motion.div initial={{ opacity: 0, x: -40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}>
@@ -656,6 +566,7 @@ const BenefitsSection = () => {
             A forma mais inteligente de criar contratos profissionais sem complicação.
           </motion.p>
         </div>
+
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {benefits.map((benefit, index) => (
             <BenefitCard key={benefit.title} benefit={benefit} index={index} />
@@ -667,18 +578,18 @@ const BenefitsSection = () => {
 };
 
 // ─────────────────────────────────────────────
-// TESTIMONIALS
+// TESTIMONIALS — DUAL INFINITE MARQUEE
 // ─────────────────────────────────────────────
 const TestimonialsSection = () => {
   const testimonials = [
-    { name: "Mariana Costa",      role: "Designer Freelancer",      avatar: "MC", rating: 5, text: "Incrível! Precisava de um contrato para um cliente grande e em menos de 3 minutos já tinha tudo pronto. Economizei muito comparado a contratar um advogado.",       contractType: "Prestação de Serviços", date: "há 2 dias",    color: "from-purple-500 to-pink-500"  },
-    { name: "Rafael Mendonça",    role: "Desenvolvedor Web",        avatar: "RM", rating: 5, text: "Uso o Contrate-me todo mês para novos projetos. Simplesmente perfeito. O contrato é profissional e os clientes ficam impressionados com a qualidade.",             contractType: "Contrato de TI",        date: "há 5 dias",    color: "from-blue-500 to-cyan-500"    },
-    { name: "Juliana Ferreira",   role: "Consultora de Marketing",  avatar: "JF", rating: 5, text: "Finalmente um serviço que realmente funciona! O processo é super intuitivo, o pagamento via Pix é instantâneo e o PDF ficou impecável. Super recomendo!",          contractType: "Consultoria",           date: "há 1 semana",  color: "from-emerald-500 to-teal-500" },
-    { name: "Carlos Albuquerque", role: "Fotógrafo Profissional",   avatar: "CA", rating: 5, text: "Já tive problemas com clientes que não pagavam por falta de contrato. Com o Contrate-me isso acabou. Rápido, barato e juridicamente sólido!",                     contractType: "Fotografia",            date: "há 2 semanas", color: "from-orange-500 to-red-500"   },
-    { name: "Fernanda Lima",      role: "Arquiteta",                avatar: "FL", rating: 5, text: "Minha advogada cobrava R$500 por contrato básico. Aqui paguei R$19,90 e recebi algo ainda mais completo e personalizado. Não tem como não usar!",                  contractType: "Projeto Arquitetônico", date: "há 3 semanas", color: "from-violet-500 to-purple-500"},
-    { name: "Thiago Nunes",       role: "Professor Particular",     avatar: "TN", rating: 5, text: "Precisava formalizar meus contratos com alunos e pais. O Contrate-me gerou algo perfeito, com todas as cláusulas que eu precisava. Ótimo serviço!",               contractType: "Contrato Educacional",  date: "há 1 mês",     color: "from-amber-500 to-orange-500" },
-    { name: "Beatriz Rocha",      role: "Nutricionista",            avatar: "BR", rating: 5, text: "Prático demais! Gerei contratos para minha clínica em minutos. A linguagem jurídica é clara e os pacientes ficam mais tranquilos assinando.",                     contractType: "Atendimento Clínico",   date: "há 1 mês",     color: "from-rose-500 to-pink-500"    },
-    { name: "Lucas Pimentel",     role: "Social Media",             avatar: "LP", rating: 5, text: "Comecei a usar e não largo mais. Para quem é freelancer como eu, ter um contrato profissional rápido e barato é essencial. Melhor custo-benefício!",               contractType: "Gestão de Redes",       date: "há 2 meses",   color: "from-sky-500 to-blue-500"     },
+    { name: "Mariana Costa", role: "Designer Freelancer", avatar: "MC", rating: 5, text: "Incrível! Precisava de um contrato para um cliente grande e em menos de 3 minutos já tinha tudo pronto. Economizei muito comparado a contratar um advogado.", contractType: "Prestação de Serviços", date: "há 2 dias", color: "from-purple-500 to-pink-500" },
+    { name: "Rafael Mendonça", role: "Desenvolvedor Web", avatar: "RM", rating: 5, text: "Uso o Contrate-me todo mês para novos projetos. Simplesmente perfeito. O contrato é profissional e os clientes ficam impressionados com a qualidade.", contractType: "Contrato de TI", date: "há 5 dias", color: "from-blue-500 to-cyan-500" },
+    { name: "Juliana Ferreira", role: "Consultora de Marketing", avatar: "JF", rating: 5, text: "Finalmente um serviço que realmente funciona! O processo é super intuitivo, o pagamento via Pix é instantâneo e o PDF ficou impecável. Super recomendo!", contractType: "Consultoria", date: "há 1 semana", color: "from-emerald-500 to-teal-500" },
+    { name: "Carlos Albuquerque", role: "Fotógrafo Profissional", avatar: "CA", rating: 5, text: "Já tive problemas com clientes que não pagavam por falta de contrato. Com o Contrate-me isso acabou. Rápido, barato e juridicamente sólido!", contractType: "Fotografia", date: "há 2 semanas", color: "from-orange-500 to-red-500" },
+    { name: "Fernanda Lima", role: "Arquiteta", avatar: "FL", rating: 5, text: "Minha advogada cobrava R$500 por contrato básico. Aqui paguei R$19,90 e recebi algo ainda mais completo e personalizado. Não tem como não usar!", contractType: "Projeto Arquitetônico", date: "há 3 semanas", color: "from-violet-500 to-purple-500" },
+    { name: "Thiago Nunes", role: "Professor Particular", avatar: "TN", rating: 5, text: "Precisava formalizar meus contratos com alunos e pais. O Contrate-me gerou algo perfeito, com todas as cláusulas que eu precisava. Ótimo serviço!", contractType: "Contrato Educacional", date: "há 1 mês", color: "from-amber-500 to-orange-500" },
+    { name: "Beatriz Rocha", role: "Nutricionista", avatar: "BR", rating: 5, text: "Prático demais! Gerei contratos para minha clínica em minutos. A linguagem jurídica é clara e os pacientes ficam mais tranquilos assinando.", contractType: "Atendimento Clínico", date: "há 1 mês", color: "from-rose-500 to-pink-500" },
+    { name: "Lucas Pimentel", role: "Social Media", avatar: "LP", rating: 5, text: "Comecei a usar e não largo mais. Para quem é freelancer como eu, ter um contrato profissional rápido e barato é essencial. Melhor custo-benefício!", contractType: "Gestão de Redes", date: "há 2 meses", color: "from-sky-500 to-blue-500" },
   ];
   const row1 = testimonials.slice(0, 4);
   const row2 = testimonials.slice(4);
@@ -704,29 +615,32 @@ const TestimonialsSection = () => {
           </div>
         </motion.div>
       </div>
-      <div className="mb-4"><InfiniteMarquee testimonials={row1} direction={1}  speed={32} /></div>
-      <InfiniteMarquee                        testimonials={row2} direction={-1} speed={28} />
+      <div className="mb-4"><InfiniteMarquee testimonials={row1} direction={1} speed={32} /></div>
+      <InfiniteMarquee testimonials={row2} direction={-1} speed={28} />
     </section>
   );
 };
 
 // ─────────────────────────────────────────────
-// PRICING
+// PRICING  (with parallax decorations)
 // ─────────────────────────────────────────────
 const PricingSection = ({ onCreateContract }) => {
   const ref = useRef(null);
-  const isDesktop = !isMobileDevice();
+  const isDesktop = typeof window !== "undefined" && window.innerWidth >= 1024;
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  const decorY1 = useTransform(scrollYProgress, [0, 1], isDesktop ? [-50,  50] : [0, 0]);
-  const decorY2 = useTransform(scrollYProgress, [0, 1], isDesktop ? [ 50, -50] : [0, 0]);
-  const decorX1 = useTransform(scrollYProgress, [0, 1], isDesktop ? [-20,  20] : [0, 0]);
+  const decorY1 = useTransform(scrollYProgress, [0, 1], isDesktop ? [-50, 50] : [0, 0]);
+  const decorY2 = useTransform(scrollYProgress, [0, 1], isDesktop ? [50, -50] : [0, 0]);
+  const decorX1 = useTransform(scrollYProgress, [0, 1], isDesktop ? [-20, 20] : [0, 0]);
 
   return (
     <section ref={ref} id="precos" className="py-28 md:py-40 bg-[#0a1018] relative overflow-hidden">
       <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(16,185,129,0.06) 0%, transparent 60%)" }} />
+
+      {/* Parallax floating orbs */}
       <motion.div style={{ y: decorY1, x: decorX1 }} className="absolute top-20 left-10 w-32 h-32 rounded-full border border-emerald-500/10 pointer-events-none" />
-      <motion.div style={{ y: decorY2 }}              className="absolute bottom-20 right-10 w-48 h-48 rounded-full border border-emerald-500/8 pointer-events-none" />
-      <motion.div style={{ y: decorY1 }}              className="absolute top-1/2 right-20 w-20 h-20 rounded-full bg-emerald-500/5 blur-xl pointer-events-none" />
+      <motion.div style={{ y: decorY2 }} className="absolute bottom-20 right-10 w-48 h-48 rounded-full border border-emerald-500/8 pointer-events-none" />
+      <motion.div style={{ y: decorY1 }} className="absolute top-1/2 right-20 w-20 h-20 rounded-full bg-emerald-500/5 blur-xl pointer-events-none" />
+
       <div className="max-w-7xl mx-auto px-6 md:px-10 relative z-10">
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-20">
           <span className="inline-block text-xs font-bold text-emerald-400 uppercase tracking-[0.2em] mb-4">Preços Transparentes</span>
@@ -735,17 +649,10 @@ const PricingSection = ({ onCreateContract }) => {
         </motion.div>
         <div className="max-w-sm mx-auto">
           <motion.div initial={{ opacity: 0, y: 30, scale: 0.95 }} whileInView={{ opacity: 1, y: 0, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.5 }}>
-            <motion.div
-              whileHover={{ boxShadow: "0 0 80px rgba(16,185,129,0.2)" }}
-              className="relative rounded-3xl p-8 border border-emerald-500/40 bg-emerald-500/5 transition-all duration-300"
-              style={{ boxShadow: "0 0 60px rgba(16,185,129,0.12), inset 0 1px 0 rgba(255,255,255,0.05)" }}
-            >
+            <motion.div whileHover={{ boxShadow: "0 0 80px rgba(16,185,129,0.2)" }} className="relative rounded-3xl p-8 border border-emerald-500/40 bg-emerald-500/5 transition-all duration-300" style={{ boxShadow: "0 0 60px rgba(16,185,129,0.12), inset 0 1px 0 rgba(255,255,255,0.05)" }}>
               <div className="absolute inset-0 rounded-3xl pointer-events-none" style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(16,185,129,0.08) 0%, transparent 60%)" }} />
               <div className="relative">
-                <div className="mb-8 pt-3">
-                  <h3 className="text-lg font-bold text-white mb-1">Contrato Único</h3>
-                  <p className="text-sm text-white/40">Ideal para uma necessidade pontual</p>
-                </div>
+                <div className="mb-8 pt-3"><h3 className="text-lg font-bold text-white mb-1">Contrato Único</h3><p className="text-sm text-white/40">Ideal para uma necessidade pontual</p></div>
                 <div className="mb-8">
                   <div className="flex items-baseline gap-1">
                     <span className="text-sm text-white/40 font-medium">R$</span>
@@ -756,23 +663,15 @@ const PricingSection = ({ onCreateContract }) => {
                 <ul className="space-y-3 mb-8">
                   {["1 contrato personalizado", "Gerado por IA avançada", "Revisão jurídica incluída", "Download imediato em PDF", "Suporte por e-mail", "Suporte por whatsapp"].map((f, i) => (
                     <motion.li key={f} initial={{ opacity: 0, x: -10 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.07 }} className="flex items-start gap-3">
-                      <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 bg-emerald-500/20 border border-emerald-500/30">
-                        <Check className="w-2.5 h-2.5 text-emerald-400" />
-                      </div>
+                      <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 bg-emerald-500/20 border border-emerald-500/30"><Check className="w-2.5 h-2.5 text-emerald-400" /></div>
                       <span className="text-sm text-white/60">{f}</span>
                     </motion.li>
                   ))}
                 </ul>
-                <motion.button
-                  onClick={onCreateContract}
-                  whileHover={{ scale: 1.03, y: -2, boxShadow: "0 8px 40px rgba(16,185,129,0.5)" }}
-                  whileTap={{ scale: 0.98 }}
+                <motion.button onClick={onCreateContract} whileHover={{ scale: 1.03, y: -2, boxShadow: "0 8px 40px rgba(16,185,129,0.5)" }} whileTap={{ scale: 0.98 }}
                   className="w-full py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 overflow-hidden relative"
-                  style={{ background: "linear-gradient(135deg, #10b981, #059669)", color: "white", boxShadow: "0 4px 24px rgba(16,185,129,0.3)" }}
-                >
-                  {isDesktop && (
-                    <motion.span className="absolute inset-0 bg-white/10" initial={{ x: "-100%" }} whileHover={{ x: "100%" }} transition={{ duration: 0.4 }} />
-                  )}
+                  style={{ background: "linear-gradient(135deg, #10b981, #059669)", color: "white", boxShadow: "0 4px 24px rgba(16,185,129,0.3)" }}>
+                  <motion.span className="absolute inset-0 bg-white/10" initial={{ x: "-100%" }} whileHover={{ x: "100%" }} transition={{ duration: 0.4 }} />
                   <Sparkles className="w-4 h-4 relative" /><span className="relative">Criar Contrato</span>
                 </motion.button>
               </div>
@@ -798,12 +697,12 @@ const PricingSection = ({ onCreateContract }) => {
 const FAQSection = () => {
   const [openItem, setOpenItem] = useState(null);
   const faqs = [
-    { question: "Os contratos são válidos juridicamente?",   answer: "Sim! Todos os nossos contratos são elaborados seguindo as normas do Código Civil Brasileiro e são revisados por especialistas jurídicos. Eles possuem validade legal para uso em acordos formais entre partes." },
-    { question: "Como funciona o pagamento via Pix?",        answer: "Após preencher os dados do seu contrato, você receberá um QR Code ou código Pix para pagamento. A aprovação é instantânea e, assim que confirmado, seu contrato estará disponível para download imediatamente." },
-    { question: "Quais tipos de contratos posso gerar?",     answer: "Oferecemos diversos modelos: Prestação de Serviços, Contrato de Aluguel, Acordo de Parceria, Contrato de Trabalho Freelancer, Termo de Confidencialidade (NDA), entre outros. Novos modelos são adicionados frequentemente." },
+    { question: "Os contratos são válidos juridicamente?", answer: "Sim! Todos os nossos contratos são elaborados seguindo as normas do Código Civil Brasileiro e são revisados por especialistas jurídicos. Eles possuem validade legal para uso em acordos formais entre partes." },
+    { question: "Como funciona o pagamento via Pix?", answer: "Após preencher os dados do seu contrato, você receberá um QR Code ou código Pix para pagamento. A aprovação é instantânea e, assim que confirmado, seu contrato estará disponível para download imediatamente." },
+    { question: "Quais tipos de contratos posso gerar?", answer: "Oferecemos diversos modelos: Prestação de Serviços, Contrato de Aluguel, Acordo de Parceria, Contrato de Trabalho Freelancer, Termo de Confidencialidade (NDA), entre outros. Novos modelos são adicionados frequentemente." },
     { question: "Posso editar o contrato depois de gerado?", answer: "Sim! O contrato é entregue em formato PDF editável. Você pode fazer ajustes menores diretamente no documento. Para alterações mais significativas, recomendamos gerar um novo contrato com as informações atualizadas." },
     { question: "E se eu precisar de ajuda com meu contrato?", answer: "Nossa equipe de suporte está disponível por e-mail e por whatsapp para tirar dúvidas sobre o uso da plataforma e dos contratos gerados." },
-    { question: "Existe limite de contratos por mês?",       answer: "Não! Você pode gerar quantos contratos precisar. Cada contrato é cobrado individualmente, ou você pode aproveitar nossos packs com desconto para múltiplos contratos." },
+    { question: "Existe limite de contratos por mês?", answer: "Não! Você pode gerar quantos contratos precisar. Cada contrato é cobrado individualmente, ou você pode aproveitar nossos packs com desconto para múltiplos contratos." },
   ];
   return (
     <section id="faq" className="py-28 md:py-40 bg-[#080d14] relative">
@@ -815,14 +714,8 @@ const FAQSection = () => {
           </motion.div>
           <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="flex-1 space-y-3">
             {faqs.map((faq, index) => (
-              <motion.div
-                key={index} whileHover={{ x: 2 }}
-                className={`rounded-2xl border transition-all duration-300 overflow-hidden ${openItem === index ? "border-emerald-500/25 bg-emerald-500/5" : "border-white/6 bg-white/[0.02] hover:border-white/12"}`}
-              >
-                <button
-                  onClick={() => setOpenItem(openItem === index ? null : index)}
-                  className="w-full flex items-center justify-between p-6 text-left font-semibold text-white/80 hover:text-white transition-colors"
-                >
+              <motion.div key={index} whileHover={{ x: 2 }} className={`rounded-2xl border transition-all duration-300 overflow-hidden ${openItem === index ? "border-emerald-500/25 bg-emerald-500/5" : "border-white/6 bg-white/[0.02] hover:border-white/12"}`}>
+                <button onClick={() => setOpenItem(openItem === index ? null : index)} className="w-full flex items-center justify-between p-6 text-left font-semibold text-white/80 hover:text-white transition-colors">
                   <span className="text-sm leading-relaxed pr-4">{faq.question}</span>
                   <motion.div animate={{ rotate: openItem === index ? 180 : 0 }} className={`w-7 h-7 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors duration-300 ${openItem === index ? "bg-emerald-500/20" : "bg-white/5"}`}>
                     <ChevronDown className={`w-4 h-4 ${openItem === index ? "text-emerald-400" : "text-white/40"}`} />
@@ -849,7 +742,7 @@ const FAQSection = () => {
 // ─────────────────────────────────────────────
 const CTASection = ({ onCreateContract }) => {
   const ref = useRef(null);
-  const isDesktop = !isMobileDevice();
+  const isDesktop = typeof window !== "undefined" && window.innerWidth >= 1024;
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
   const bgY = useTransform(scrollYProgress, [0, 1], isDesktop ? [-40, 40] : [0, 0]);
 
@@ -872,23 +765,15 @@ const CTASection = ({ onCreateContract }) => {
           <div className="flex flex-wrap justify-center gap-6 mb-12">
             {[{ icon: Shield, label: "100% Seguro" }, { icon: Clock, label: "Pronto em 2 minutos" }].map(({ icon: Icon, label }) => (
               <motion.div key={label} whileHover={{ y: -3 }} className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center">
-                  <Icon className="w-4 h-4 text-emerald-400" />
-                </div>
+                <div className="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center"><Icon className="w-4 h-4 text-emerald-400" /></div>
                 <span className="text-sm text-white/60 font-medium">{label}</span>
               </motion.div>
             ))}
           </div>
-          <motion.button
-            onClick={onCreateContract}
-            whileHover={{ scale: 1.05, y: -4, boxShadow: "0 0 80px rgba(16,185,129,0.5)" }}
-            whileTap={{ scale: 0.97 }}
+          <motion.button onClick={onCreateContract} whileHover={{ scale: 1.05, y: -4, boxShadow: "0 0 80px rgba(16,185,129,0.5)" }} whileTap={{ scale: 0.97 }}
             className="group px-10 py-5 text-white font-bold rounded-2xl flex items-center justify-center mx-auto gap-2 text-base overflow-hidden relative"
-            style={{ background: "linear-gradient(135deg, #10b981, #059669)", boxShadow: "0 0 60px rgba(16,185,129,0.35), 0 4px 20px rgba(0,0,0,0.3)" }}
-          >
-            {isDesktop && (
-              <motion.span className="absolute inset-0 bg-white/10" initial={{ x: "-100%" }} whileHover={{ x: "100%" }} transition={{ duration: 0.4 }} />
-            )}
+            style={{ background: "linear-gradient(135deg, #10b981, #059669)", boxShadow: "0 0 60px rgba(16,185,129,0.35), 0 4px 20px rgba(0,0,0,0.3)" }}>
+            <motion.span className="absolute inset-0 bg-white/10" initial={{ x: "-100%" }} whileHover={{ x: "100%" }} transition={{ duration: 0.4 }} />
             <span className="relative">Criar Meu Contrato Agora</span>
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform relative" />
           </motion.button>
@@ -905,9 +790,9 @@ const CTASection = ({ onCreateContract }) => {
 const Footer = () => {
   const currentYear = new Date().getFullYear();
   const links = {
-    produto:  [{ label: "Como Funciona", href: "#como-funciona" }, { label: "Preços", href: "#precos" }, { label: "FAQ", href: "#faq" }],
-    legal:    [{ label: "Termos de Uso", href: "#" }, { label: "Política de Privacidade", href: "#" }, { label: "LGPD", href: "#" }],
-    contato:  [{ label: "contato@contrate-me.com.br", href: "mailto:contato@contrate-me.com.br" }],
+    produto: [{ label: "Como Funciona", href: "#como-funciona" }, { label: "Preços", href: "#precos" }, { label: "FAQ", href: "#faq" }],
+    legal: [{ label: "Termos de Uso", href: "#" }, { label: "Política de Privacidade", href: "#" }, { label: "LGPD", href: "#" }],
+    contato: [{ label: "contato@contrate-me.com.br", href: "mailto:contato@contrate-me.com.br" }],
   };
   return (
     <footer className="bg-[#060b11] border-t border-white/5">
@@ -944,35 +829,10 @@ const Footer = () => {
 };
 
 // ─────────────────────────────────────────────
-// APP — meta theme-color dark fix
+// APP
 // ─────────────────────────────────────────────
 const LandingPage = () => {
   const navigate = useNavigate();
-
-  // ✅ FIX: force dark theme-color on landing page too
-  useEffect(() => {
-    let meta = document.querySelector('meta[name="theme-color"]');
-    if (!meta) {
-      meta = document.createElement("meta");
-      meta.name = "theme-color";
-      document.head.appendChild(meta);
-    }
-    meta.content = "#080d14";
-
-    // iOS Safari status bar
-    let metaApple = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
-    if (!metaApple) {
-      metaApple = document.createElement("meta");
-      metaApple.name = "apple-mobile-web-app-status-bar-style";
-      document.head.appendChild(metaApple);
-    }
-    metaApple.content = "black-translucent";
-
-    // Ensure html/body are dark (landing page safe areas)
-    document.documentElement.style.backgroundColor = "#080d14";
-    document.body.style.backgroundColor = "#080d14";
-  }, []);
-
   const handleCreateContract = () => navigate("/chat");
   return (
     <div className="min-h-screen bg-[#080d14]">
@@ -996,7 +856,7 @@ const LandingPage = () => {
 const App = () => (
   <BrowserRouter>
     <Routes>
-      <Route path="/"     element={<LandingPage />} />
+      <Route path="/" element={<LandingPage />} />
       <Route path="/chat" element={<Chat />} />
     </Routes>
   </BrowserRouter>
