@@ -2,7 +2,7 @@ import { useState, useEffect } from "react"
 import { useAuth } from "./AuthContext"
 
 //////////////////////////////
-// 1. SISTEMA DE TOASTS (NOVO)
+// 1. SISTEMA DE TOASTS
 //////////////////////////////
 
 const Toast = ({ toast, onRemove }) => {
@@ -66,7 +66,7 @@ const ToastContainer = ({ toasts, removeToast }) => {
 }
 
 //////////////////////////////
-// 2. COMPONENTE DE INPUT (MODERNIZADO)
+// 2. COMPONENTE DE INPUT (CORRIGIDO PARA MOBILE)
 //////////////////////////////
 
 const InputField = ({
@@ -89,15 +89,17 @@ const InputField = ({
         onChange={onChange}
         placeholder={placeholder}
         required={required}
-        className="w-full px-4 py-3.5 rounded-lg bg-slate-800/50 border border-slate-700 text-slate-100 text-sm placeholder:text-slate-500 outline-none transition-all duration-200
-        focus:border-emerald-500/50 focus:bg-slate-800 focus:ring-2 focus:ring-emerald-500/20 focus:shadow-[0_0_20px_rgba(16,185,129,0.1)]"
+        className="w-full px-4 py-3.5 rounded-lg bg-slate-800/50 border border-slate-700 text-base text-slate-100 placeholder:text-slate-500 outline-none transition-all duration-200
+        focus:border-emerald-500/50 focus:bg-slate-800 focus:ring-2 focus:ring-emerald-500/20 focus:shadow-[0_0_20px_rgba(16,185,129,0.1)]
+        [@media(max-width:768px)]:text-base [@media(max-width:768px)]:text-slate-100"
+        style={{ fontSize: '16px' }}
       />
     </div>
   )
 }
 
 //////////////////////////////
-// 3. AUTH MODAL (REDESIGN)
+// 3. AUTH MODAL
 //////////////////////////////
 
 const AuthModal = ({
