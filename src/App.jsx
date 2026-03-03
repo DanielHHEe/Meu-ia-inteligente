@@ -3,15 +3,17 @@ import {
   motion, AnimatePresence,
   useScroll, useTransform, useSpring, useInView,
 } from "framer-motion";
-import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useNavigate, Navigate } from "react-router-dom";
 import * as THREE from "three";
 import {
   Menu, X, ArrowRight, Sparkles, FileEdit, CreditCard, Download,
   Shield, Clock, PiggyBank, Smartphone, Scale, Zap, Check, Star,
-  ChevronDown, Quote,
+  ChevronDown, Quote, LogIn, LogOut, User, ChevronRight,
 } from "lucide-react";
 
 import Chat from "./Chat";
+import { AuthProvider, useAuth } from "./config/AuthContext";
+import AuthModal from "./config/AuthModal";
 
 // ─────────────────────────────────────────────
 // SMOOTH SCROLL
@@ -99,8 +101,7 @@ const ThreeDDocument = () => {
     const sealMesh = new THREE.Mesh(new THREE.RingGeometry(0.25, 0.32, 32), new THREE.MeshBasicMaterial({ color: 0x10b981, transparent: true, opacity: 0.8, side: THREE.DoubleSide }));
     sealMesh.position.set(0.6, -1.0, 0.05); group.add(sealMesh);
     const sealInner = new THREE.Mesh(new THREE.CircleGeometry(0.18, 32), new THREE.MeshBasicMaterial({ color: 0x10b981, transparent: true, opacity: 0.15 }));
-    sealInner.position.set(0.6, -1.0, 0.05);
-    group.add(sealInner);
+    sealInner.position.set(0.6, -1.0, 0.05); group.add(sealInner);
     const pPos = new Float32Array(40 * 3);
     for (let i = 0; i < 40; i++) { pPos[i*3]=(Math.random()-.5)*5; pPos[i*3+1]=(Math.random()-.5)*5; pPos[i*3+2]=(Math.random()-.5)*3; }
     const pGeo = new THREE.BufferGeometry(); pGeo.setAttribute("position", new THREE.BufferAttribute(pPos, 3));
@@ -132,11 +133,8 @@ const InfiniteMarquee = ({ testimonials, direction = 1, speed = 35 }) => {
   const posRef = useRef(0);
   const pausedRef = useRef(false);
   const items = [...testimonials, ...testimonials, ...testimonials];
-
-  // Responsive card width: 260px on mobile, 320px on larger screens
   const CARD_WIDTH = typeof window !== "undefined" && window.innerWidth < 640 ? 260 : 320;
   const GAP = 16;
-
   useEffect(() => {
     const track = trackRef.current;
     if (!track) return;
@@ -153,44 +151,18 @@ const InfiniteMarquee = ({ testimonials, direction = 1, speed = 35 }) => {
     animRef.current = requestAnimationFrame(go);
     return () => cancelAnimationFrame(animRef.current);
   }, [direction, speed, testimonials.length, CARD_WIDTH]);
-
   return (
     <div className="overflow-hidden touch-pan-y" onMouseEnter={() => { pausedRef.current = true; }} onMouseLeave={() => { pausedRef.current = false; }}>
       <div ref={trackRef} className="flex will-change-transform" style={{ gap: GAP, width: "max-content" }}>
         {items.map((t, idx) => (
-          <div key={idx} style={{ width: CARD_WIDTH, flexShrink: 0 }}
-            className="relative p-4 sm:p-5 rounded-2xl border border-white/6 bg-white/[0.025] transition-colors duration-300 cursor-default"
-          >
-            {/* Quote decoration */}
-            <div className="absolute top-3 right-4 opacity-[0.07]">
-              <Quote className="w-7 h-7 sm:w-8 sm:h-8 text-emerald-400" />
-            </div>
-
-            {/* Stars */}
-            <div className="flex gap-0.5 mb-2.5">
-              {[...Array(t.rating)].map((_, i) => (
-                <Star key={i} className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-400 fill-amber-400" />
-              ))}
-            </div>
-
-            {/* Text */}
-            <p className="text-xs sm:text-sm text-white/55 leading-relaxed mb-4 italic" style={{ display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-              "{t.text}"
-            </p>
-
-            {/* Footer */}
+          <div key={idx} style={{ width: CARD_WIDTH, flexShrink: 0 }} className="relative p-4 sm:p-5 rounded-2xl border border-white/6 bg-white/[0.025] transition-colors duration-300 cursor-default">
+            <div className="absolute top-3 right-4 opacity-[0.07]"><Quote className="w-7 h-7 sm:w-8 sm:h-8 text-emerald-400" /></div>
+            <div className="flex gap-0.5 mb-2.5">{[...Array(t.rating)].map((_, i) => <Star key={i} className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-400 fill-amber-400" />)}</div>
+            <p className="text-xs sm:text-sm text-white/55 leading-relaxed mb-4 italic" style={{ display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>"{t.text}"</p>
             <div className="flex items-center gap-2.5">
-              <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-br ${t.color} flex items-center justify-center flex-shrink-0`}>
-                <span className="text-[10px] sm:text-xs font-bold text-white">{t.avatar}</span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs sm:text-sm font-semibold text-white truncate">{t.name}</p>
-                <p className="text-[10px] sm:text-xs text-white/35 truncate">{t.role}</p>
-              </div>
-              <div className="text-right flex-shrink-0 hidden sm:block">
-                <span className="text-[10px] text-emerald-400/70 block font-medium">{t.contractType}</span>
-                <span className="text-[10px] text-white/20">{t.date}</span>
-              </div>
+              <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-br ${t.color} flex items-center justify-center flex-shrink-0`}><span className="text-[10px] sm:text-xs font-bold text-white">{t.avatar}</span></div>
+              <div className="flex-1 min-w-0"><p className="text-xs sm:text-sm font-semibold text-white truncate">{t.name}</p><p className="text-[10px] sm:text-xs text-white/35 truncate">{t.role}</p></div>
+              <div className="text-right flex-shrink-0 hidden sm:block"><span className="text-[10px] text-emerald-400/70 block font-medium">{t.contractType}</span><span className="text-[10px] text-white/20">{t.date}</span></div>
             </div>
           </div>
         ))}
@@ -212,18 +184,14 @@ const ParallaxBanner = () => {
   const x2 = useTransform(scrollYProgress, [0, 1], isDesktop ? [40, -40] : [0, 0]);
   const scale = useTransform(scrollYProgress, [0, 0.5, 1], isDesktop ? [0.9, 1.05, 0.9] : [1, 1, 1]);
   const opacity = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0, 1, 1, 0]);
-
   return (
     <div ref={ref} className="relative h-[320px] overflow-hidden bg-[#060c13] flex items-center justify-center">
-      {/* Parallax background layers */}
       <motion.div style={{ y: y1 }} className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full blur-[100px]" style={{ background: "radial-gradient(circle, rgba(16,185,129,0.12) 0%, transparent 70%)" }} />
       </motion.div>
       <motion.div style={{ y: y2 }} className="absolute inset-0 pointer-events-none">
         <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full blur-[100px]" style={{ background: "radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%)" }} />
       </motion.div>
-
-      {/* Floating stat chips with independent parallax */}
       <motion.div style={{ x: x1, y: y1 }} className="absolute left-[8%] top-[20%] px-5 py-3 rounded-2xl bg-white/4 border border-emerald-500/20 backdrop-blur-sm hidden md:flex items-center gap-3">
         <div className="w-8 h-8 rounded-xl bg-emerald-500/20 flex items-center justify-center"><Shield className="w-4 h-4 text-emerald-400" /></div>
         <div><p className="text-white font-bold text-sm">100% Legal</p><p className="text-white/40 text-xs">Revisado por especialistas</p></div>
@@ -236,8 +204,6 @@ const ParallaxBanner = () => {
         <div className="w-8 h-8 rounded-xl bg-blue-500/20 flex items-center justify-center"><Star className="w-4 h-4 text-blue-400 fill-blue-400" /></div>
         <div><p className="text-white font-bold text-sm">4.9 / 5</p><p className="text-white/40 text-xs">+500 avaliações</p></div>
       </motion.div>
-
-      {/* Central text with scale parallax */}
       <motion.div style={{ scale, opacity }} className="relative z-10 text-center px-6">
         <p className="text-xs font-bold text-emerald-400 uppercase tracking-[0.25em] mb-3">Simples assim</p>
         <h3 className="text-3xl md:text-5xl font-black text-white leading-tight" style={{ fontFamily: "'Syne', sans-serif" }}>
@@ -245,8 +211,6 @@ const ParallaxBanner = () => {
           <span style={{ background: "linear-gradient(135deg, #10b981, #34d399, #6ee7b7)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>por R$ 19,90.</span>
         </h3>
       </motion.div>
-
-      {/* Grid pattern */}
       <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: `linear-gradient(rgba(16,185,129,1) 1px, transparent 1px), linear-gradient(90deg, rgba(16,185,129,1) 1px, transparent 1px)`, backgroundSize: "40px 40px" }} />
     </div>
   );
@@ -275,16 +239,99 @@ const WhatsAppButton = () => {
 };
 
 // ─────────────────────────────────────────────
-// HEADER
+// USER MENU (dropdown quando logado)
 // ─────────────────────────────────────────────
-const Header = ({ onCreateContract }) => {
+const UserMenu = () => {
+  const { user, signOut } = useAuth();
+  const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+  const ref = useRef(null);
+
+  // Fecha ao clicar fora
+  useEffect(() => {
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const name = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Usuário";
+  const initials = name.split(" ").slice(0, 2).map(n => n[0]).join("").toUpperCase();
+
+  const handleSignOut = async () => {
+    await signOut();
+    setOpen(false);
+    navigate("/");
+  };
+
+  return (
+    <div ref={ref} className="relative">
+      <motion.button
+        onClick={() => setOpen(o => !o)}
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.97 }}
+        className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-white/5 border border-white/8 hover:border-emerald-500/30 hover:bg-white/8 transition-all"
+      >
+        <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center">
+          <span className="text-xs font-bold text-white">{initials}</span>
+        </div>
+        <span className="text-sm text-white/70 hidden sm:block max-w-[100px] truncate">{name}</span>
+        <ChevronDown className={`w-3.5 h-3.5 text-white/40 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+      </motion.button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: 8, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 8, scale: 0.95 }}
+            transition={{ duration: 0.15 }}
+            className="absolute right-0 top-full mt-2 w-52 rounded-2xl border border-white/8 overflow-hidden z-50"
+            style={{ background: "linear-gradient(135deg, #0d1520, #080d14)", boxShadow: "0 16px 48px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)" }}
+          >
+            {/* Info do usuário */}
+            <div className="px-4 py-3 border-b border-white/6">
+              <p className="text-xs font-semibold text-white truncate">{name}</p>
+              <p className="text-xs text-white/35 truncate mt-0.5">{user?.email}</p>
+            </div>
+
+            {/* Ir para o chat */}
+            <button
+              onClick={() => { setOpen(false); navigate("/chat"); }}
+              className="w-full flex items-center gap-3 px-4 py-3 text-sm text-white/60 hover:text-white hover:bg-white/5 transition-all"
+            >
+              <FileEdit className="w-4 h-4 text-emerald-400" />
+              Criar contrato
+            </button>
+
+            {/* Logout */}
+            <button
+              onClick={handleSignOut}
+              className="w-full flex items-center gap-3 px-4 py-3 text-sm text-white/60 hover:text-red-400 hover:bg-red-500/5 transition-all border-t border-white/5"
+            >
+              <LogOut className="w-4 h-4" />
+              Sair da conta
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+// ─────────────────────────────────────────────
+// HEADER (com auth) - ALTERADO CONFORME SOLICITADO
+// ─────────────────────────────────────────────
+const Header = ({ onCreateContract, onOpenAuth }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { isAuthenticated, loading, user } = useAuth();
+
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", fn);
     return () => window.removeEventListener("scroll", fn);
   }, []);
+
   const navLinks = [
     { label: "Como Funciona", href: "#como-funciona" },
     { label: "Vantagens", href: "#vantagens" },
@@ -292,6 +339,14 @@ const Header = ({ onCreateContract }) => {
     { label: "Preços", href: "#precos" },
     { label: "FAQ", href: "#faq" },
   ];
+
+  // Função para gerar iniciais do usuário para o avatar
+  const getUserInitials = () => {
+    if (!user) return "";
+    const name = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Usuário";
+    return name.split(" ").slice(0, 2).map(n => n[0]).join("").toUpperCase();
+  };
+
   return (
     <motion.header initial={{ y: -100, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.6 }}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled ? "bg-[#080d14]/95 backdrop-blur-xl shadow-2xl shadow-black/30 border-b border-white/5" : "bg-transparent"}`}>
@@ -303,6 +358,7 @@ const Header = ({ onCreateContract }) => {
             </motion.div>
             <span className="text-lg font-semibold text-white tracking-tight">Contrate<span className="text-emerald-400">-me</span></span>
           </a>
+
           <nav className="hidden md:flex items-center gap-8">
             {navLinks.map((link, i) => (
               <motion.a key={link.href} href={link.href} onClick={(e) => smoothScrollTo(e, link.href)}
@@ -313,16 +369,58 @@ const Header = ({ onCreateContract }) => {
               </motion.a>
             ))}
           </nav>
-          <div className="hidden md:block">
-            <motion.button onClick={onCreateContract} whileHover={{ scale: 1.03, boxShadow: "0 0 30px rgba(16,185,129,0.5)" }} whileTap={{ scale: 0.97 }}
-              className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-semibold rounded-xl shadow-lg shadow-emerald-500/25 transition-all">
-              Criar Contrato
-            </motion.button>
+
+          {/* Auth area desktop - AGORA COM BOTÃO "LOGIN" IGUAL AO MOBILE */}
+          <div className="hidden md:flex items-center gap-3">
+            {!loading && (
+              isAuthenticated ? (
+                // Usuário logado → mostra menu
+                <UserMenu />
+              ) : (
+                // Não logado → botão "Login" no estilo mobile
+                <>
+                  <motion.button
+                    onClick={() => onOpenAuth("login")}
+                    whileHover={{ scale: 1.02 }} 
+                    whileTap={{ scale: 0.97 }}
+                    className="px-4 py-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg text-emerald-400 text-sm font-medium hover:bg-emerald-500/20 transition-all"
+                  >
+                    Login
+                  </motion.button>
+                  
+                </>
+              )
+            )}
           </div>
-          <button className="md:hidden p-2 text-white/80" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-            {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
+
+          {/* Mobile area: agora com botão "Entrar" no estilo desktop */}
+          <div className="flex items-center gap-2 md:hidden">
+            {!loading && (
+              isAuthenticated ? (
+                // Avatar quando logado
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/30">
+                  <span className="text-xs font-bold text-white">{getUserInitials()}</span>
+                </div>
+              ) : (
+                // Botão "Entrar" no estilo desktop
+                <motion.button
+                  onClick={() => onOpenAuth("login")}
+                  whileHover={{ scale: 1.02 }} 
+                  whileTap={{ scale: 0.97 }}
+                  className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white/60 hover:text-white border border-white/8 hover:border-white/20 rounded-xl transition-all"
+                >
+                  <LogIn className="w-4 h-4" />
+                  Entrar
+                </motion.button>
+              )
+            )}
+            <button className="p-2 text-white/80" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+              {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
         </div>
+
+        {/* Mobile menu - BOTÃO "Criar Contrato" REMOVIDO conforme solicitado */}
         <AnimatePresence>
           {isMenuOpen && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="md:hidden border-t border-white/10 py-4">
@@ -331,7 +429,15 @@ const Header = ({ onCreateContract }) => {
                   <a key={link.href} href={link.href} className="text-sm font-medium text-white/60 hover:text-white px-3 py-3 rounded-lg hover:bg-white/5 transition-all"
                     onClick={(e) => { setIsMenuOpen(false); setTimeout(() => smoothScrollTo(e, link.href), 300); }}>{link.label}</a>
                 ))}
-                <button onClick={() => { setIsMenuOpen(false); onCreateContract(); }} className="mt-2 px-5 py-3 bg-emerald-500 text-white font-semibold rounded-xl">Criar Contrato</button>
+                {!loading && isAuthenticated && (
+                  <button
+                    onClick={() => { setIsMenuOpen(false); }}
+                    className="mt-2 px-5 py-3 bg-white/5 border border-white/10 text-white/70 font-semibold rounded-xl text-left flex items-center gap-2"
+                  >
+                    <User className="w-4 h-4 text-emerald-400" />
+                    Minha conta
+                  </button>
+                )}
               </nav>
             </motion.div>
           )}
@@ -342,7 +448,7 @@ const Header = ({ onCreateContract }) => {
 };
 
 // ─────────────────────────────────────────────
-// HERO SECTION  (with deep parallax layers)
+// HERO SECTION
 // ─────────────────────────────────────────────
 const HeroSection = ({ onCreateContract }) => {
   const benefits = ["Juridicamente revisado", "Pronto em 2 minutos", "Pagamento via Pix"];
@@ -366,21 +472,16 @@ const HeroSection = ({ onCreateContract }) => {
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#080d14]">
-      {/* Layer 1 — grid (fastest) */}
       <motion.div style={{ y: gridY }} className="absolute inset-0 pointer-events-none">
         <div className="absolute inset-0 opacity-20" style={{ backgroundImage: `linear-gradient(rgba(16,185,129,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(16,185,129,0.15) 1px, transparent 1px)`, backgroundSize: "60px 60px" }} />
         <FloatingParticles />
       </motion.div>
-
-      {/* Layer 2 — blobs (medium speed, drift sideways too) */}
-      <motion.div style={{ y: blob1Y, x: blob1X }} className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full pointer-events-none" style2={{ background: "radial-gradient(circle, rgba(16,185,129,0.12) 0%, transparent 70%)", filter: "blur(120px)" }}>
+      <motion.div style={{ y: blob1Y, x: blob1X }} className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full pointer-events-none">
         <motion.div animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.15, 0.1] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }} className="w-full h-full rounded-full" style={{ background: "radial-gradient(circle, rgba(16,185,129,0.12) 0%, transparent 70%)", filter: "blur(120px)" }} />
       </motion.div>
       <motion.div style={{ y: blob2Y, x: blob2X }} className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full pointer-events-none">
         <motion.div animate={{ scale: [1, 1.15, 1], opacity: [0.1, 0.14, 0.1] }} transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 2 }} className="w-full h-full rounded-full" style={{ background: "radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%)", filter: "blur(120px)" }} />
       </motion.div>
-
-      {/* Layer 3 — content (slowest, fades out) */}
       <motion.div style={{ y: contentY, opacity: heroOpacity }} className="max-w-7xl mx-auto px-6 md:px-10 relative z-10 pt-24 w-full">
         <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
           <motion.div initial={{ opacity: 0, y: 60 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}>
@@ -420,8 +521,6 @@ const HeroSection = ({ onCreateContract }) => {
               <span className="text-emerald-400 font-semibold">Já temos +{count} contratos</span> gerados com sucesso
             </motion.p>
           </motion.div>
-
-          {/* 3D Document */}
           <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1, delay: 0.4, ease: [0.16, 1, 0.3, 1] }} className="relative hidden lg:block h-[480px]">
             <ThreeDDocument />
             <motion.div animate={{ y: [0, -6, 0] }} transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }} className="absolute top-6 -left-6 px-4 py-2.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl flex items-center gap-2" style={{ boxShadow: "0 8px 32px rgba(0,0,0,0.3)" }}>
@@ -460,8 +559,7 @@ const HowItWorksSection = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-px bg-white/5 rounded-3xl overflow-hidden border border-white/5">
           {steps.map((step, index) => (
             <motion.div key={step.number}
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-40px" }}
               transition={{ duration: 0.5, delay: index * 0.1, ease: [0.16, 1, 0.3, 1] }}
               className="relative bg-[#0d1520] p-8 lg:p-10 group hover:bg-[#0f1c2a] transition-colors duration-300"
@@ -487,28 +585,21 @@ const HowItWorksSection = () => {
 };
 
 // ─────────────────────────────────────────────
-// BENEFIT CARD  (slides in from left or right)
+// BENEFIT CARD
 // ─────────────────────────────────────────────
 const BenefitCard = ({ benefit, index }) => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-60px" });
   const fromX = index % 2 === 0 ? -60 : 60;
-
   return (
-    <motion.div
-      ref={ref}
+    <motion.div ref={ref}
       initial={{ opacity: 0, x: fromX }}
       animate={isInView ? { opacity: 1, x: 0 } : {}}
       transition={{ duration: 0.6, delay: (index % 3) * 0.08, ease: [0.16, 1, 0.3, 1] }}
       className="group relative p-6 md:p-8 rounded-2xl border border-white/5 bg-white/[0.02] hover:border-emerald-500/25 hover:bg-white/[0.04] transition-colors duration-300 cursor-default"
-      style={{ willChange: "opacity, transform" }}
-    >
-      {/* Hover glow — CSS only, no Framer Motion, no re-render */}
+      style={{ willChange: "opacity, transform" }}>
       <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" style={{ background: "radial-gradient(ellipse at 0% 0%, rgba(16,185,129,0.06) 0%, transparent 60%)" }} />
-
-      {/* Left border accent — CSS only */}
       <div className="absolute left-0 top-4 bottom-4 w-0.5 rounded-full scale-y-0 group-hover:scale-y-100 transition-transform duration-300 origin-top" style={{ background: "linear-gradient(to bottom, #10b981, #34d399)" }} />
-
       <div className="relative">
         <div className="w-11 h-11 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-5 group-hover:border-emerald-500/50 group-hover:bg-emerald-500/20 transition-colors duration-300">
           <benefit.icon className="w-5 h-5 text-emerald-400" />
@@ -525,14 +616,12 @@ const BenefitCard = ({ benefit, index }) => {
 // ─────────────────────────────────────────────
 const BenefitsSection = () => {
   const sectionRef = useRef(null);
-  // Only enable scroll-linked parallax on desktop (>= 1024px)
   const isMobile = typeof window !== "undefined" && window.innerWidth < 1024;
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start end", "end start"] });
   const blobY = useTransform(scrollYProgress, [0, 1], isMobile ? [0, 0] : [-60, 60]);
   const blobX = useTransform(scrollYProgress, [0, 1], isMobile ? [0, 0] : [30, -30]);
   const circleY1 = useTransform(scrollYProgress, [0, 1], isMobile ? [0, 0] : [-30, 30]);
   const circleY2 = useTransform(scrollYProgress, [0, 1], isMobile ? [0, 0] : [30, -30]);
-
   const benefits = [
     { icon: Shield, title: "Juridicamente Revisado", description: "Todos os contratos seguem padrões legais brasileiros e são revisados por especialistas." },
     { icon: PiggyBank, title: "Economia de até 90%", description: "Pague uma fração do valor cobrado por advogados tradicionais." },
@@ -541,18 +630,13 @@ const BenefitsSection = () => {
     { icon: Smartphone, title: "100% Online", description: "Acesse de qualquer dispositivo. Sem downloads, sem instalações." },
     { icon: Scale, title: "Vários Tipos de Contratos", description: "Prestação de serviços, aluguel, parceria e muito mais." },
   ];
-
   return (
     <section ref={sectionRef} id="vantagens" className="py-28 md:py-40 bg-[#0a1018] relative overflow-hidden">
-      {/* Parallax background blob */}
       <motion.div style={{ y: blobY, x: blobX }} className="absolute right-0 top-0 w-2/3 h-full pointer-events-none">
         <div className="absolute inset-0 opacity-[0.06]" style={{ background: "radial-gradient(ellipse at 100% 50%, #10b981 0%, transparent 70%)" }} />
       </motion.div>
-
-      {/* Parallax decorative circles — hidden on mobile */}
       <motion.div style={{ y: circleY1 }} className="absolute -left-20 top-1/2 w-64 h-64 rounded-full border border-emerald-500/5 pointer-events-none hidden lg:block" />
       <motion.div style={{ y: circleY2 }} className="absolute -right-10 bottom-20 w-48 h-48 rounded-full border border-emerald-500/8 pointer-events-none hidden lg:block" />
-
       <div className="max-w-7xl mx-auto px-6 md:px-10 relative z-10">
         <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8 mb-20">
           <motion.div initial={{ opacity: 0, x: -40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}>
@@ -566,11 +650,8 @@ const BenefitsSection = () => {
             A forma mais inteligente de criar contratos profissionais sem complicação.
           </motion.p>
         </div>
-
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {benefits.map((benefit, index) => (
-            <BenefitCard key={benefit.title} benefit={benefit} index={index} />
-          ))}
+          {benefits.map((benefit, index) => <BenefitCard key={benefit.title} benefit={benefit} index={index} />)}
         </div>
       </div>
     </section>
@@ -578,7 +659,7 @@ const BenefitsSection = () => {
 };
 
 // ─────────────────────────────────────────────
-// TESTIMONIALS — DUAL INFINITE MARQUEE
+// TESTIMONIALS
 // ─────────────────────────────────────────────
 const TestimonialsSection = () => {
   const testimonials = [
@@ -622,7 +703,7 @@ const TestimonialsSection = () => {
 };
 
 // ─────────────────────────────────────────────
-// PRICING  (with parallax decorations)
+// PRICING
 // ─────────────────────────────────────────────
 const PricingSection = ({ onCreateContract }) => {
   const ref = useRef(null);
@@ -631,16 +712,12 @@ const PricingSection = ({ onCreateContract }) => {
   const decorY1 = useTransform(scrollYProgress, [0, 1], isDesktop ? [-50, 50] : [0, 0]);
   const decorY2 = useTransform(scrollYProgress, [0, 1], isDesktop ? [50, -50] : [0, 0]);
   const decorX1 = useTransform(scrollYProgress, [0, 1], isDesktop ? [-20, 20] : [0, 0]);
-
   return (
     <section ref={ref} id="precos" className="py-28 md:py-40 bg-[#0a1018] relative overflow-hidden">
       <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(16,185,129,0.06) 0%, transparent 60%)" }} />
-
-      {/* Parallax floating orbs */}
       <motion.div style={{ y: decorY1, x: decorX1 }} className="absolute top-20 left-10 w-32 h-32 rounded-full border border-emerald-500/10 pointer-events-none" />
       <motion.div style={{ y: decorY2 }} className="absolute bottom-20 right-10 w-48 h-48 rounded-full border border-emerald-500/8 pointer-events-none" />
       <motion.div style={{ y: decorY1 }} className="absolute top-1/2 right-20 w-20 h-20 rounded-full bg-emerald-500/5 blur-xl pointer-events-none" />
-
       <div className="max-w-7xl mx-auto px-6 md:px-10 relative z-10">
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-20">
           <span className="inline-block text-xs font-bold text-emerald-400 uppercase tracking-[0.2em] mb-4">Preços Transparentes</span>
@@ -745,7 +822,6 @@ const CTASection = ({ onCreateContract }) => {
   const isDesktop = typeof window !== "undefined" && window.innerWidth >= 1024;
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
   const bgY = useTransform(scrollYProgress, [0, 1], isDesktop ? [-40, 40] : [0, 0]);
-
   return (
     <section ref={ref} className="py-28 md:py-40 bg-[#0a1018] relative overflow-hidden">
       <motion.div style={{ y: bgY }} className="absolute inset-0 pointer-events-none">
@@ -829,14 +905,50 @@ const Footer = () => {
 };
 
 // ─────────────────────────────────────────────
-// APP
+// PROTECTED ROUTE
 // ─────────────────────────────────────────────
-const LandingPage = () => {
+const ProtectedRoute = ({ children, onOpenAuth }) => {
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#080d14] flex items-center justify-center">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          className="w-8 h-8 border-2 border-white/10 border-t-emerald-500 rounded-full"
+        />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    // Abre o modal de login e redireciona para home
+    onOpenAuth("login");
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+};
+
+// ─────────────────────────────────────────────
+// LANDING PAGE
+// ─────────────────────────────────────────────
+const LandingPage = ({ onOpenAuth }) => {
   const navigate = useNavigate();
-  const handleCreateContract = () => navigate("/chat");
+  const { isAuthenticated } = useAuth();
+
+  const handleCreateContract = () => {
+    if (isAuthenticated) {
+      navigate("/chat");
+    } else {
+      onOpenAuth("signup");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#080d14]">
-      <Header onCreateContract={handleCreateContract} />
+      <Header onCreateContract={handleCreateContract} onOpenAuth={onOpenAuth} />
       <main>
         <HeroSection onCreateContract={handleCreateContract} />
         <HowItWorksSection />
@@ -853,12 +965,44 @@ const LandingPage = () => {
   );
 };
 
+// ─────────────────────────────────────────────
+// APP ROOT (com AuthProvider + modal global)
+// ─────────────────────────────────────────────
+const AppContent = () => {
+  const [authModal, setAuthModal] = useState({ open: false, mode: "login" });
+
+  const openAuth = (mode = "login") => setAuthModal({ open: true, mode });
+  const closeAuth = () => setAuthModal(s => ({ ...s, open: false }));
+
+  return (
+    <>
+      <Routes>
+        <Route path="/" element={<LandingPage onOpenAuth={openAuth} />} />
+        <Route
+          path="/chat"
+          element={
+            <ProtectedRoute onOpenAuth={openAuth}>
+              <Chat />
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
+
+      <AuthModal
+        isOpen={authModal.open}
+        onClose={closeAuth}
+        initialMode={authModal.mode}
+        onSuccess={closeAuth}
+      />
+    </>
+  );
+};
+
 const App = () => (
   <BrowserRouter>
-    <Routes>
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/chat" element={<Chat />} />
-    </Routes>
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   </BrowserRouter>
 );
 
