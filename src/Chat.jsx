@@ -7,6 +7,7 @@ import {
   X, Copy, Check, RefreshCw, Download, Lock,
 } from "lucide-react";
 import { ChatService } from './chatService';
+import { useAuth } from "./config/AuthContext";
 
 // ==================== TYPING ====================
 const TypingText = ({ text, onComplete, speed = 15 }) => {
@@ -536,6 +537,53 @@ const PaymentModal = ({ isOpen, onClose, onPaymentConfirmed, contractType }) => 
   );
 };
 
+// ==================== USER AVATAR (Chat) ====================
+const ChatUserAvatar = () => {
+  const { user } = useAuth();
+  if (!user) return null;
+
+  const name = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Usuário";
+  const initials = name.split(" ").slice(0, 2).map(n => n[0]).join("").toUpperCase();
+
+  return (
+    <div style={{
+      display: 'flex',
+      justifyContent: 'flex-end',
+      padding: '16px 20px 0',
+      maxWidth: '900px',
+      margin: '0 auto',
+      width: '100%',
+    }}>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        padding: '6px 12px 6px 8px',
+        borderRadius: '12px',
+        backgroundColor: 'rgba(255,255,255,0.04)',
+        border: '1px solid rgba(255,255,255,0.07)',
+      }}>
+        <div style={{
+          width: '28px',
+          height: '28px',
+          borderRadius: '8px',
+          background: 'linear-gradient(135deg, #10b981, #059669)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
+          boxShadow: '0 0 10px rgba(16,185,129,0.25)',
+        }}>
+          <span style={{ fontSize: '11px', fontWeight: '700', color: 'white' }}>{initials}</span>
+        </div>
+        <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', fontWeight: '500', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {name}
+        </span>
+      </div>
+    </div>
+  );
+};
+
 // ==================== CONTRACT TYPE SELECTOR ====================
 const ContractTypeSelector = ({ onSelect }) => (
   <motion.div
@@ -769,7 +817,6 @@ const ChatInput = ({ value, onChange, onSend, disabled }) => {
   }, [value]);
 
   return (
-    // ✅ FIX MOBILE: padding inferior respeita a safe-area do browser bar
     <div style={{
       padding: '10px 16px 14px',
       paddingBottom: 'calc(14px + env(safe-area-inset-bottom, 0px))',
@@ -779,7 +826,6 @@ const ChatInput = ({ value, onChange, onSend, disabled }) => {
         <div style={{
           display: 'flex', alignItems: 'flex-end', gap: '10px',
           backgroundColor: 'rgba(255,255,255,0.05)',
-          // ✅ FIX: border-radius mais arredondado
           borderRadius: '28px',
           padding: '8px 8px 8px 18px',
           border: focused ? '1.5px solid rgba(16,185,129,0.5)' : '1.5px solid rgba(255,255,255,0.08)',
@@ -790,7 +836,6 @@ const ChatInput = ({ value, onChange, onSend, disabled }) => {
             ref={textareaRef} value={value} onChange={e => onChange(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); onSend(); } }}
             onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
-            // ✅ FIX: placeholder mais claro via style inline (reforçado pelo CSS global)
             placeholder="Digite sua resposta..." disabled={disabled} rows={1}
             style={{
               flex: 1, backgroundColor: 'transparent', padding: '6px 0',
@@ -802,7 +847,6 @@ const ChatInput = ({ value, onChange, onSend, disabled }) => {
           />
           <button onClick={onSend} disabled={disabled || !value.trim()} style={{
             flexShrink: 0, width: '36px', height: '36px',
-            // ✅ FIX: botão também mais arredondado para combinar
             borderRadius: '18px',
             background: !disabled && value.trim() ? 'linear-gradient(135deg, #059669, #10b981)' : 'rgba(255,255,255,0.07)',
             color: !disabled && value.trim() ? 'white' : 'rgba(255,255,255,0.25)',
@@ -914,7 +958,6 @@ const Chat = () => {
       @keyframes bounce { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-5px); } }
       * { box-sizing: border-box; margin: 0; padding: 0; }
 
-      /* ✅ FIX MOBILE: garante fundo escuro em html/body, eliminando o verde nas safe areas */
       html, body {
         font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
         overflow: hidden;
@@ -926,14 +969,12 @@ const Chat = () => {
       ::-webkit-scrollbar-track { background: transparent; }
       ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
 
-      /* ✅ FIX: placeholder mais visível (era 0.25, agora 0.5) */
       ::placeholder { color: rgba(255,255,255,0.5) !important; }
       ::-webkit-input-placeholder { color: rgba(255,255,255,0.5) !important; }
       ::-moz-placeholder { color: rgba(255,255,255,0.5) !important; }
     `;
     document.head.appendChild(style);
 
-    // ✅ FIX MOBILE: define theme-color escuro para a barra de status do browser
     let metaTheme = document.querySelector('meta[name="theme-color"]');
     if (!metaTheme) {
       metaTheme = document.createElement('meta');
@@ -942,7 +983,6 @@ const Chat = () => {
     }
     metaTheme.content = '#080d14';
 
-    // ✅ FIX iOS: status bar escura para Safari
     let metaApple = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
     if (!metaApple) {
       metaApple = document.createElement('meta');
@@ -1091,8 +1131,6 @@ const Chat = () => {
   const isDesktop = windowWidth >= 1024;
 
   return (
-    // ✅ FIX MOBILE: safe-area-inset para top e bottom evita que o conteúdo
-    // fique sob a status bar ou a barra do browser com fundo errado
     <div style={{
       height: 'calc(var(--vh, 1vh) * 100)',
       display: 'flex',
@@ -1108,10 +1146,13 @@ const Chat = () => {
 
         {currentStep === 1 && (
           <div style={{
-            flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', paddingTop: '20px',
+            flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch',
+            paddingTop: '0',
             backgroundImage: `linear-gradient(rgba(16,185,129,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(16,185,129,0.04) 1px, transparent 1px)`,
             backgroundSize: '50px 50px',
           }}>
+            {/* Avatar do usuário no topo da página de seleção de contratos */}
+            <ChatUserAvatar />
             <ContractTypeSelector onSelect={handleSelectContract} />
           </div>
         )}

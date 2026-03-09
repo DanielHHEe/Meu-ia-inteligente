@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
 import { useAuth } from "./AuthContext"
+import { useNavigate } from "react-router-dom"
 
 //////////////////////////////
 // 1. SISTEMA DE TOASTS
@@ -66,7 +67,7 @@ const ToastContainer = ({ toasts, removeToast }) => {
 }
 
 //////////////////////////////
-// 2. COMPONENTE DE INPUT (CORRIGIDO PARA MOBILE)
+// 2. COMPONENTE DE INPUT
 //////////////////////////////
 
 const InputField = ({
@@ -109,6 +110,7 @@ const AuthModal = ({
   onSuccess,
 }) => {
   const { signIn, signUp } = useAuth()
+  const navigate = useNavigate()
 
   const [mode, setMode] = useState(initialMode)
   const [email, setEmail] = useState("")
@@ -167,10 +169,10 @@ const AuthModal = ({
         "success"
       )
 
-      // Delay para o usuário ver o toast antes de fechar
+      // Delay para o usuário ver o toast antes de redirecionar
       setTimeout(() => {
-        onSuccess?.()
-        onClose()
+        onSuccess?.() // Fecha o modal
+        navigate("/chat") // Redireciona para o chat
       }, 1500)
 
     } catch (err) {

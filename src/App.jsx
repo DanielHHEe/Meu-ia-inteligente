@@ -263,59 +263,7 @@ const UserMenu = () => {
     navigate("/");
   };
 
-  return (
-    <div ref={ref} className="relative">
-      <motion.button
-        onClick={() => setOpen(o => !o)}
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.97 }}
-        className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-white/5 border border-white/8 hover:border-emerald-500/30 hover:bg-white/8 transition-all"
-      >
-        <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center">
-          <span className="text-xs font-bold text-white">{initials}</span>
-        </div>
-        <span className="text-sm text-white/70 hidden sm:block max-w-[100px] truncate">{name}</span>
-        <ChevronDown className={`w-3.5 h-3.5 text-white/40 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
-      </motion.button>
-
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ opacity: 0, y: 8, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 8, scale: 0.95 }}
-            transition={{ duration: 0.15 }}
-            className="absolute right-0 top-full mt-2 w-52 rounded-2xl border border-white/8 overflow-hidden z-50"
-            style={{ background: "linear-gradient(135deg, #0d1520, #080d14)", boxShadow: "0 16px 48px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)" }}
-          >
-            {/* Info do usuário */}
-            <div className="px-4 py-3 border-b border-white/6">
-              <p className="text-xs font-semibold text-white truncate">{name}</p>
-              <p className="text-xs text-white/35 truncate mt-0.5">{user?.email}</p>
-            </div>
-
-            {/* Ir para o chat */}
-            <button
-              onClick={() => { setOpen(false); navigate("/chat"); }}
-              className="w-full flex items-center gap-3 px-4 py-3 text-sm text-white/60 hover:text-white hover:bg-white/5 transition-all"
-            >
-              <FileEdit className="w-4 h-4 text-emerald-400" />
-              Criar contrato
-            </button>
-
-            {/* Logout */}
-            <button
-              onClick={handleSignOut}
-              className="w-full flex items-center gap-3 px-4 py-3 text-sm text-white/60 hover:text-red-400 hover:bg-red-500/5 transition-all border-t border-white/5"
-            >
-              <LogOut className="w-4 h-4" />
-              Sair da conta
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
+ 
 };
 
 // ─────────────────────────────────────────────
@@ -692,7 +640,7 @@ const TestimonialsSection = () => {
                 <Star className="w-5 h-5 text-amber-400 fill-amber-400" />
               </motion.div>
             ))}
-            <span className="text-white/40 text-sm ml-2">4.9/5 · +1.200 avaliações</span>
+            <span className="text-white/40 text-sm ml-2">4.9/5 · +600 avaliações</span>
           </div>
         </motion.div>
       </div>
