@@ -4,10 +4,11 @@ import {
   FileText, Send, Bot, User, Sparkles, Loader2,
   FileCheck, Building2, Users, Briefcase, Home, Shield,
   FileSignature, ChevronRight, CheckCircle2, Clock,
-  X, Copy, Check, RefreshCw, Download, Lock,
+  X, Copy, Check, RefreshCw, Download, Lock, LogOut,
 } from "lucide-react";
 import { ChatService } from './chatService';
 import { useAuth } from "./config/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 // ==================== TYPING ====================
 const TypingText = ({ text, onComplete, speed = 15 }) => {
@@ -537,48 +538,135 @@ const PaymentModal = ({ isOpen, onClose, onPaymentConfirmed, contractType }) => 
   );
 };
 
-// ==================== USER AVATAR (Chat) ====================
-const ChatUserAvatar = () => {
-  const { user } = useAuth();
+// ==================== USER AVATAR (Chat) com Menu ====================
+const ChatUserAvatar = ({ showInChat }) => {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
+
+  // Fecha o menu ao clicar fora
+  useEffect(() => {
+    const handler = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
   if (!user) return null;
 
   const name = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Usuário";
   const initials = name.split(" ").slice(0, 2).map(n => n[0]).join("").toUpperCase();
 
+  const handleSignOut = async () => {
+    await signOut();
+    localStorage.removeItem("token");
+    setMenuOpen(false);
+    navigate("/");
+  };
+
   return (
-    <div style={{
+    <div ref={menuRef} style={{
       display: 'flex',
       justifyContent: 'flex-end',
-      padding: '16px 20px 0',
+      padding: showInChat ? '0' : '16px 20px 0',
       maxWidth: '900px',
       margin: '0 auto',
       width: '100%',
+      position: 'relative',
     }}>
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
-        padding: '6px 12px 6px 8px',
-        borderRadius: '12px',
-        backgroundColor: 'rgba(255,255,255,0.04)',
-        border: '1px solid rgba(255,255,255,0.07)',
-      }}>
-        <div style={{
-          width: '28px',
-          height: '28px',
-          borderRadius: '8px',
-          background: 'linear-gradient(135deg, #10b981, #059669)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexShrink: 0,
-          boxShadow: '0 0 10px rgba(16,185,129,0.25)',
-        }}>
-          <span style={{ fontSize: '11px', fontWeight: '700', color: 'white' }}>{initials}</span>
-        </div>
-        <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', fontWeight: '500', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {name}
-        </span>
+      <div style={{ position: 'relative' }}>
+        <button
+          onClick={() => setMenuOpen(!menuOpen)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '6px 12px 6px 8px',
+            borderRadius: '12px',
+            backgroundColor: menuOpen ? 'rgba(16,185,129,0.1)' : 'rgba(255,255,255,0.04)',
+            border: `1px solid ${menuOpen ? 'rgba(16,185,129,0.3)' : 'rgba(255,255,255,0.07)'}`,
+            cursor: 'pointer',
+            transition: 'all 0.2s',
+            outline: 'none',
+          }}
+        >
+          <div style={{
+            width: '28px',
+            height: '28px',
+            borderRadius: '8px',
+            background: 'linear-gradient(135deg, #10b981, #059669)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+            boxShadow: '0 0 10px rgba(16,185,129,0.25)',
+          }}>
+            <span style={{ fontSize: '11px', fontWeight: '700', color: 'white' }}>{initials}</span>
+          </div>
+          <span style={{ 
+            fontSize: '12px', 
+            color: menuOpen ? 'white' : 'rgba(255,255,255,0.7)', 
+            fontWeight: '500', 
+            maxWidth: '120px', 
+            overflow: 'hidden', 
+            textOverflow: 'ellipsis', 
+            whiteSpace: 'nowrap' 
+          }}>
+            {name}
+          </span>
+        </button>
+
+        {/* Menu dropdown */}
+        <AnimatePresence>
+          {menuOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -10, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -10, scale: 0.95 }}
+              transition={{ duration: 0.15 }}
+              style={{
+                position: 'absolute',
+                top: 'calc(100% + 8px)',
+                right: 0,
+                width: '180px',
+                backgroundColor: '#0d1520',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '12px',
+                overflow: 'hidden',
+                boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+                zIndex: 100,
+              }}
+            >
+              <button
+                onClick={handleSignOut}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  color: '#ef4444',
+                  fontSize: '13px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s',
+                  textAlign: 'left',
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.1)'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              >
+                <LogOut size={14} />
+                Sair da conta
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
@@ -1151,8 +1239,8 @@ const Chat = () => {
             backgroundImage: `linear-gradient(rgba(16,185,129,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(16,185,129,0.04) 1px, transparent 1px)`,
             backgroundSize: '50px 50px',
           }}>
-            {/* Avatar do usuário no topo da página de seleção de contratos */}
-            <ChatUserAvatar />
+            {/* Avatar do usuário aparece APENAS na tela de seleção de contratos */}
+            <ChatUserAvatar showInChat={false} />
             <ContractTypeSelector onSelect={handleSelectContract} />
           </div>
         )}
@@ -1171,6 +1259,7 @@ const Chat = () => {
                 <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10b981', boxShadow: '0 0 6px rgba(16,185,129,0.6)' }} />
                 <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.3)', fontWeight: '500' }}>IA ativa</span>
               </div>
+              {/* Avatar do usuário NÃO aparece durante a criação do contrato */}
             </div>
 
             {/* Messages */}

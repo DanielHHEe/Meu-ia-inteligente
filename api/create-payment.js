@@ -28,7 +28,7 @@ export default async function handler(req, res) {
       `contrato-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
     const body = {
-      transaction_amount: 19.90,
+      transaction_amount: 29.90,
       description: `Contrato: ${contractType || 'Documento'}`,
       payment_method_id: 'pix',
       payer: {
