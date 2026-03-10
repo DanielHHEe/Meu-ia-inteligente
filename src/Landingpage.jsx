@@ -819,6 +819,7 @@ const Footer = () => {
 
 // ─────────────────────────────────────────────
 // LANDING PAGE (composição final)
+//testeeeee
 // ─────────────────────────────────────────────
 const LandingPage = ({ onOpenAuth }) => {
   const navigate = useNavigate();
