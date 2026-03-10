@@ -4,7 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Chat from "./Chat";
 import { AuthProvider, useAuth } from "./config/AuthContext";
-
+import AuthModal from "./config/AuthModal";
 import LandingPage from "./Landingpage";
 
 
