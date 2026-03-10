@@ -6,7 +6,7 @@ import Chat from "./Chat";
 import { AuthProvider, useAuth } from "./config/AuthContext";
 import AuthModal from "./config/AuthModal";
 import LandingPage from "./Landingpage";
-import SubscriptionModal from "./SubscriptionModal";
+
 
 // ─────────────────────────────────────────────
 // PROTECTED ROUTE
