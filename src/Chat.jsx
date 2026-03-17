@@ -369,7 +369,7 @@ const PaymentModal = ({ isOpen, onClose, onPaymentConfirmed, contractType }) => 
                       Valor a pagar
                     </p>
                     <p style={{ fontSize: '34px', fontWeight: '800', color: 'white', margin: 0, letterSpacing: '-0.02em', lineHeight: 1 }}>
-                      R$ 19<span style={{ fontSize: '20px' }}>,90</span>
+                      R$ 29<span style={{ fontSize: '20px' }}>,90</span>
                     </p>
                   </div>
 
