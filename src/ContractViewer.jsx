@@ -14,6 +14,14 @@ const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
   const [showPayment, setShowPayment] = useState(false);
   const paperRef = useRef(null);
 
+  // Gera string de data e hora no momento da renderização
+  const getDateTimeString = () => {
+    const now = new Date();
+    const data = now.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
+    const hora = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    return `${data} às ${hora}`;
+  };
+
   // Dispara o download real em PDF
   const triggerDownload = async () => {
     if (downloading) return;
@@ -26,7 +34,7 @@ const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
           margin: [15, 15, 15, 15],
           filename: `${contractType?.name || 'contrato'}.pdf`,
           image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: { scale: 2, useCORS: true },
+          html2canvas: { scale: 2, useCORS: true, letterRendering: true },
           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
         };
         await html2pdf().set(opt).from(paperRef.current).save();
@@ -149,23 +157,36 @@ const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
         @media (min-width: 640px) { .cv-signatures { padding: 32px 48px 40px; } }
         @media (min-width: 768px) { .cv-signatures { padding: 40px 64px 48px; } }
         .cv-date { text-align: center; font-size: 14px; color: #6b7280; font-style: italic; margin-bottom: 32px; }
-        .cv-sig-grid { display: grid; grid-template-columns: 1fr; gap: 32px; margin-bottom: 32px; }
-        @media (min-width: 640px) { .cv-sig-grid { grid-template-columns: 1fr 1fr; gap: 48px; } }
-        .cv-sig-block { text-align: center; }
+        .cv-sig-grid {
+          display: grid; grid-template-columns: 1fr 1fr;
+          gap: 48px; margin-bottom: 32px;
+        }
+        .cv-sig-block { text-align: center; width: 100%; }
         .cv-sig-label { font-weight: 700; font-size: 13px; letter-spacing: 0.05em; color: #374151; margin-bottom: 12px; }
-        .cv-sig-line { height: 1px; background: linear-gradient(to right, #d1fae5, #6ee7b7, #d1fae5); margin-bottom: 6px; }
+        .cv-sig-line {
+          height: 1px; width: 100%; display: block;
+          background: linear-gradient(to right, #d1fae5, #6ee7b7, #d1fae5);
+          margin-bottom: 6px;
+        }
         .cv-sig-sublabel { font-size: 12px; color: #9ca3af; }
         .cv-witnesses { border-top: 1px dashed #e5e7eb; padding-top: 24px; }
         .cv-witnesses-title { font-weight: 700; font-size: 13px; letter-spacing: 0.05em; color: #374151; margin-bottom: 16px; }
-        .cv-witness-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
-        @media (min-width: 640px) { .cv-witness-grid { grid-template-columns: 1fr 1fr; gap: 32px; } }
+        .cv-witness-grid {
+          display: grid; grid-template-columns: 1fr 1fr;
+          gap: 32px;
+        }
         .cv-witness-item { display: flex; align-items: flex-start; gap: 12px; }
         .cv-witness-num {
           width: 28px; height: 28px; min-width: 28px; border-radius: 50%;
           background: #ecfdf5; display: flex; align-items: center; justify-content: center;
           font-size: 12px; font-weight: 600; color: #059669;
         }
-        .cv-witness-fields { font-size: 13px; color: #4b5563; line-height: 1.8; }
+        .cv-witness-fields { font-size: 13px; color: #4b5563; line-height: 1.8; width: 100%; }
+        .cv-witness-fields div {
+          border-bottom: 1px solid #d1d5db;
+          padding-bottom: 2px;
+          margin-bottom: 6px;
+        }
         .cv-back { text-align: center; padding-bottom: 32px; }
         .cv-back-btn {
           display: inline-flex; align-items: center; gap: 8px;
@@ -175,6 +196,12 @@ const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
         }
         .cv-back-btn:hover { background: #fff; border-color: #059669; color: #059669; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @media print {
+          .cv-sig-grid { display: grid !important; grid-template-columns: 1fr 1fr !important; }
+          .cv-witness-grid { display: grid !important; grid-template-columns: 1fr 1fr !important; }
+          .cv-sig-line { width: 100% !important; display: block !important; }
+          .cv-witness-fields div { border-bottom: 1px solid #d1d5db !important; }
+        }
       `}</style>
 
       <div className="cv-container">
@@ -282,8 +309,9 @@ const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
 
             {/* Assinaturas e testemunhas */}
             <div className="cv-signatures">
+              {/* Data e hora da geração do contrato */}
               <div className="cv-date">
-                {new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                {getDateTimeString()}
               </div>
 
               <div className="cv-sig-grid">
