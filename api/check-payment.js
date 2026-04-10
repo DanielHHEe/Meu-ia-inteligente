@@ -1,5 +1,6 @@
 // api/check-payment.js
-// Frontend chama esta rota a cada 3s para saber se o pagamento foi aprovado
+// Verifica se um pagamento foi aprovado consultando diretamente o Mercado Pago
+// Sem dependência de KV/Redis — funciona sempre
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -15,26 +16,15 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Referência não informada' });
   }
 
+  if (!process.env.MP_ACCESS_TOKEN) {
+    console.error('❌ MP_ACCESS_TOKEN não configurado');
+    return res.status(500).json({ paid: false, error: 'MP_ACCESS_TOKEN ausente' });
+  }
+
   try {
-    // Estratégia 1: verifica no Vercel KV (mais rápido, salvo pelo webhook)
-    if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
-      const kvResponse = await fetch(`${process.env.KV_REST_API_URL}/get/paid:${ref}`, {
-        headers: {
-          'Authorization': `Bearer ${process.env.KV_REST_API_TOKEN}`,
-        },
-      });
-
-      const kvData = await kvResponse.json();
-
-      if (kvData.result === '1') {
-        return res.status(200).json({ paid: true, method: 'kv' });
-      }
-    }
-
-    // Estratégia 2: consulta diretamente na API do Mercado Pago como fallback
-    // Busca pagamentos por external_reference
-    const searchResponse = await fetch(
-      `https://api.mercadopago.com/v1/payments/search?external_reference=${encodeURIComponent(ref)}&limit=1`,
+    // Consulta pagamentos pelo external_reference no Mercado Pago
+    const response = await fetch(
+      `https://api.mercadopago.com/v1/payments/search?external_reference=${encodeURIComponent(ref)}&limit=5`,
       {
         headers: {
           'Authorization': `Bearer ${process.env.MP_ACCESS_TOKEN}`,
@@ -42,15 +32,24 @@ export default async function handler(req, res) {
       }
     );
 
-    const searchData = await searchResponse.json();
-    const payments = searchData.results || [];
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Erro na busca MP:', errorData);
+      return res.status(200).json({ paid: false, error: 'Erro ao consultar Mercado Pago' });
+    }
 
+    const data = await response.json();
+    const payments = data.results || [];
+
+    // Considera pago se qualquer pagamento com essa referência foi aprovado
     const approved = payments.some(p => p.status === 'approved');
 
-    return res.status(200).json({ paid: approved, method: 'api' });
+    console.log(`Check payment ref=${ref} → ${approved ? '✅ aprovado' : '⏳ pendente'} (${payments.length} pagamento(s) encontrado(s))`);
+
+    return res.status(200).json({ paid: approved });
 
   } catch (error) {
     console.error('Check payment error:', error);
-    return res.status(500).json({ paid: false, error: 'Erro ao verificar pagamento' });
+    return res.status(500).json({ paid: false, error: 'Erro interno ao verificar pagamento' });
   }
 }
