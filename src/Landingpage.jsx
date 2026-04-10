@@ -22,11 +22,18 @@ const smoothScrollTo = (e, href) => {
 };
 
 // ─────────────────────────────────────────────
-// FLOATING PARTICLES (canvas)
+// DETECT MOBILE
+// ─────────────────────────────────────────────
+const isMobileDevice = () =>
+  typeof window !== "undefined" && window.innerWidth < 768;
+
+// ─────────────────────────────────────────────
+// FLOATING PARTICLES (canvas) — desabilitado no mobile
 // ─────────────────────────────────────────────
 const FloatingParticles = () => {
   const ref = useRef(null);
   useEffect(() => {
+    if (isMobileDevice()) return; // skip no mobile
     const canvas = ref.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
@@ -333,7 +340,7 @@ const HeroSection = ({ onCreateContract }) => {
   const blob1X     = useTransform(scrollY, [0, 800], isDesktop ? [0, -30] : [0, 0]);
   const blob2X     = useTransform(scrollY, [0, 800], isDesktop ? [0, 30] : [0, 0]);
   const contentY   = useTransform(scrollY, [0, 600], isDesktop ? [0, 60] : [0, 0]);
-  const heroOpacity = useTransform(scrollY, [0, 500], [1, 0]);
+  const heroOpacity = useTransform(scrollY, [0, 500], [1, isDesktop ? 0 : 1]);
 
   const [count, setCount] = useState(0);
   useEffect(() => {
@@ -347,24 +354,25 @@ const HeroSection = ({ onCreateContract }) => {
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#080d14]">
       <motion.div style={{ y: gridY }} className="absolute inset-0 pointer-events-none">
         <div className="absolute inset-0 opacity-20" style={{ backgroundImage: `linear-gradient(rgba(16,185,129,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(16,185,129,0.15) 1px, transparent 1px)`, backgroundSize: "60px 60px" }} />
-        <FloatingParticles />
+        {/* Partículas só no desktop */}
+        {!isMobileDevice() && <FloatingParticles />}
       </motion.div>
       <motion.div style={{ y: blob1Y, x: blob1X }} className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full pointer-events-none">
-        <motion.div animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.15, 0.1] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }} className="w-full h-full rounded-full" style={{ background: "radial-gradient(circle, rgba(16,185,129,0.12) 0%, transparent 70%)", filter: "blur(120px)" }} />
+        <div className="w-full h-full rounded-full" style={{ background: "radial-gradient(circle, rgba(16,185,129,0.12) 0%, transparent 70%)", filter: "blur(120px)" }} />
       </motion.div>
       <motion.div style={{ y: blob2Y, x: blob2X }} className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full pointer-events-none">
-        <motion.div animate={{ scale: [1, 1.15, 1], opacity: [0.1, 0.14, 0.1] }} transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 2 }} className="w-full h-full rounded-full" style={{ background: "radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%)", filter: "blur(120px)" }} />
+        <div className="w-full h-full rounded-full" style={{ background: "radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%)", filter: "blur(120px)" }} />
       </motion.div>
       <motion.div style={{ y: contentY, opacity: heroOpacity }} className="max-w-7xl mx-auto px-6 md:px-10 relative z-10 pt-24 w-full">
         <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
-          <motion.div initial={{ opacity: 0, y: 60 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}>
+          <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}>
             <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }} className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-8">
               <motion.span animate={{ scale: [1, 1.4, 1] }} transition={{ duration: 1.5, repeat: Infinity }} className="w-2 h-2 rounded-full bg-emerald-400" />
               <span className="text-sm font-medium text-emerald-400 tracking-wide">Gerado por Inteligência Artificial</span>
             </motion.div>
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white leading-[1.05] mb-6 tracking-tight" style={{ fontFamily: "'Syne', sans-serif" }}>
               {["Seu contrato", "profissional", "em 2 minutos."].map((line, i) => (
-                <motion.span key={i} initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + i * 0.15, duration: 0.7 }} className="block"
+                <motion.span key={i} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + i * 0.12, duration: 0.6 }} className="block"
                   style={i === 1 ? { background: "linear-gradient(135deg, #10b981 0%, #34d399 50%, #6ee7b7 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" } : {}}>
                   {line}
                 </motion.span>
@@ -375,7 +383,7 @@ const HeroSection = ({ onCreateContract }) => {
             </motion.p>
             <div className="flex flex-wrap gap-5 mb-10">
               {benefits.map((b, i) => (
-                <motion.div key={b} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.7 + i * 0.1 }} className="flex items-center gap-2">
+                <motion.div key={b} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.7 + i * 0.08 }} className="flex items-center gap-2">
                   <div className="w-5 h-5 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center"><Check className="w-3 h-3 text-emerald-400" /></div>
                   <span className="text-sm text-white/70 font-medium">{b}</span>
                 </motion.div>
@@ -432,9 +440,9 @@ const HowItWorksSection = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-px bg-white/5 rounded-3xl overflow-hidden border border-white/5">
           {steps.map((step, index) => (
             <motion.div key={step.number}
-              initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-40px" }}
-              transition={{ duration: 0.5, delay: index * 0.1, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.5, delay: index * 0.08, ease: [0.16, 1, 0.3, 1] }}
               className="relative bg-[#0d1520] p-8 lg:p-10 group hover:bg-[#0f1c2a] transition-colors duration-300"
               style={{ willChange: "opacity, transform" }}>
               <div className="absolute top-6 right-6 text-6xl font-black opacity-[0.04] select-none" style={{ fontFamily: "'Syne', sans-serif" }}>{step.number}</div>
@@ -458,17 +466,27 @@ const HowItWorksSection = () => {
 };
 
 // ─────────────────────────────────────────────
-// BENEFIT CARD
+// BENEFIT CARD — sem animação lateral no mobile
 // ─────────────────────────────────────────────
 const BenefitCard = ({ benefit, index }) => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-60px" });
-  const fromX = index % 2 === 0 ? -60 : 60;
+  const mobile = isMobileDevice();
+
+  // No mobile: apenas fade simples (sem deslocamento lateral)
+  const initial = mobile
+    ? { opacity: 0 }
+    : { opacity: 0, x: index % 2 === 0 ? -60 : 60 };
+
+  const animate = isInView
+    ? { opacity: 1, x: 0 }
+    : {};
+
   return (
     <motion.div ref={ref}
-      initial={{ opacity: 0, x: fromX }}
-      animate={isInView ? { opacity: 1, x: 0 } : {}}
-      transition={{ duration: 0.6, delay: (index % 3) * 0.08, ease: [0.16, 1, 0.3, 1] }}
+      initial={initial}
+      animate={animate}
+      transition={{ duration: mobile ? 0.4 : 0.6, delay: mobile ? (index % 3) * 0.05 : (index % 3) * 0.08, ease: [0.16, 1, 0.3, 1] }}
       className="group relative p-6 md:p-8 rounded-2xl border border-white/5 bg-white/[0.02] hover:border-emerald-500/25 hover:bg-white/[0.04] transition-colors duration-300 cursor-default"
       style={{ willChange: "opacity, transform" }}>
       <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" style={{ background: "radial-gradient(ellipse at 0% 0%, rgba(16,185,129,0.06) 0%, transparent 60%)" }} />
@@ -512,14 +530,14 @@ const BenefitsSection = () => {
       <motion.div style={{ y: circleY2 }} className="absolute -right-10 bottom-20 w-48 h-48 rounded-full border border-emerald-500/8 pointer-events-none hidden lg:block" />
       <div className="max-w-7xl mx-auto px-6 md:px-10 relative z-10">
         <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8 mb-20">
-          <motion.div initial={{ opacity: 0, x: -40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}>
+          <motion.div initial={{ opacity: 0, x: isMobile ? 0 : -40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}>
             <span className="inline-block text-xs font-bold text-emerald-400 uppercase tracking-[0.2em] mb-4">Por que escolher</span>
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight" style={{ fontFamily: "'Syne', sans-serif" }}>
               Vantagens do<br />
               <span style={{ background: "linear-gradient(135deg, #10b981, #34d399)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>Contrate-me</span>
             </h2>
           </motion.div>
-          <motion.p initial={{ opacity: 0, x: 40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.7, delay: 0.1 }} className="text-white/40 max-w-xs leading-relaxed text-sm lg:text-right">
+          <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.7, delay: 0.1 }} className="text-white/40 max-w-xs leading-relaxed text-sm lg:text-right">
             A forma mais inteligente de criar contratos profissionais sem complicação.
           </motion.p>
         </div>
@@ -610,7 +628,6 @@ const PricingSection = ({ onCreateContract, onOpenAuth }) => {
           <p className="text-white/40 max-w-lg mx-auto">Sem mensalidades. Sem surpresas. Pague apenas pelo que usar.</p>
         </motion.div>
         <div className="flex justify-center max-w-md mx-auto">
-          {/* Contrato Único - Centralizado */}
           <motion.div initial={{ opacity: 0, y: 30, scale: 0.95 }} whileInView={{ opacity: 1, y: 0, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.5 }} className="w-full">
             <motion.div whileHover={{ boxShadow: "0 0 80px rgba(16,185,129,0.2)" }} className="relative rounded-3xl p-8 border border-emerald-500/40 bg-emerald-500/5 transition-all duration-300 h-full" style={{ boxShadow: "0 0 60px rgba(16,185,129,0.12), inset 0 1px 0 rgba(255,255,255,0.05)" }}>
               <div className="absolute inset-0 rounded-3xl pointer-events-none" style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(16,185,129,0.08) 0%, transparent 60%)" }} />
@@ -819,7 +836,6 @@ const Footer = () => {
 
 // ─────────────────────────────────────────────
 // LANDING PAGE (composição final)
-//testeeeee
 // ─────────────────────────────────────────────
 const LandingPage = ({ onOpenAuth }) => {
   const navigate = useNavigate();
