@@ -471,7 +471,7 @@ const PaymentModal = ({ isOpen, onClose, onPaymentConfirmed, contractType }) => 
                   }}>
                     <Sparkles size={13} color="#10b981" />
                     <span style={{ fontSize: '12px', color: '#10b981', fontWeight: '600' }}>
-                      R$ 19,90 recebido via Pix
+                      R$ 29,90 recebido via Pix
                     </span>
                   </div>
                 </div>
@@ -824,7 +824,7 @@ const PdfCard = ({ contractType, isPaid, onOpenPayment, onDownload }) => (
               {contractType?.name || 'Contrato'}.pdf
             </p>
             <p style={{ fontSize: '11px', color: isPaid ? '#10b981' : 'rgba(255,255,255,0.35)', margin: '2px 0 0', fontWeight: isPaid ? '600' : '400' }}>
-              {isPaid ? 'Download liberado — clique para baixar' : 'Pagar R$ 19,90 via Pix para baixar'}
+              {isPaid ? 'Download liberado — clique para baixar' : 'Pagar R$ 29,90 via Pix para baixar'}
             </p>
           </div>
           <div style={{

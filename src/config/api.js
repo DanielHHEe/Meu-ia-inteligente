@@ -13,9 +13,13 @@ export const CONTRACT_TEMPLATES = {
     template: `
       CONTRATANTE: {contratante_nome}
       CPF/CNPJ: {contratante_cpf_cnpj}
+      TELEFONE: {contratante_telefone}
+      EMAIL: {contratante_email}
 
       CONTRATADO: {contratado_nome}
       CPF/CNPJ: {contratado_cpf_cnpj}
+      TELEFONE: {contratado_telefone}
+      EMAIL: {contratado_email}
 
       OBJETO: {descricao_servico}
 
@@ -36,9 +40,13 @@ export const CONTRACT_TEMPLATES = {
     template: `
       LOCADOR: {locador_nome}
       CPF/CNPJ: {locador_cpf_cnpj}
+      TELEFONE: {locador_telefone}
+      EMAIL: {locador_email}
 
       LOCATÁRIO: {locatario_nome}
       CPF/CNPJ: {locatario_cpf_cnpj}
+      TELEFONE: {locatario_telefone}
+      EMAIL: {locatario_email}
 
       IMÓVEL: {descricao_imovel}
       ENDEREÇO: {endereco_imovel}
@@ -62,9 +70,13 @@ export const CONTRACT_TEMPLATES = {
     template: `
       PARTE A: {parte_a_nome}
       CPF/CNPJ: {parte_a_cpf_cnpj}
+      TELEFONE: {parte_a_telefone}
+      EMAIL: {parte_a_email}
 
       PARTE B: {parte_b_nome}
       CPF/CNPJ: {parte_b_cpf_cnpj}
+      TELEFONE: {parte_b_telefone}
+      EMAIL: {parte_b_email}
 
       OBJETO DA PARCERIA: {objeto_parceria}
 
@@ -86,9 +98,13 @@ export const CONTRACT_TEMPLATES = {
     template: `
       PARTE REVELADORA: {revelador_nome}
       CPF/CNPJ: {revelador_cpf_cnpj}
+      TELEFONE: {revelador_telefone}
+      EMAIL: {revelador_email}
 
       PARTE RECEPTORA: {receptor_nome}
       CPF/CNPJ: {receptor_cpf_cnpj}
+      TELEFONE: {receptor_telefone}
+      EMAIL: {receptor_email}
 
       INFORMAÇÕES CONFIDENCIAIS: {informacoes_confidenciais}
       PRAZO DE CONFIDENCIALIDADE: {prazo_confidencialidade}
@@ -105,9 +121,13 @@ export const CONTRACT_TEMPLATES = {
     template: `
       CONTRATANTE: {contratante_nome}
       CPF/CNPJ: {contratante_cpf_cnpj}
+      TELEFONE: {contratante_telefone}
+      EMAIL: {contratante_email}
 
       FREELANCER: {freelancer_nome}
       CPF: {freelancer_cpf}
+      TELEFONE: {freelancer_telefone}
+      EMAIL: {freelancer_email}
 
       ESCOPO DO TRABALHO: {escopo_trabalho}
 
@@ -128,9 +148,13 @@ export const CONTRACT_TEMPLATES = {
     template: `
       VENDEDOR: {vendedor_nome}
       CPF/CNPJ: {vendedor_cpf_cnpj}
+      TELEFONE: {vendedor_telefone}
+      EMAIL: {vendedor_email}
 
       COMPRADOR: {comprador_nome}
       CPF/CNPJ: {comprador_cpf_cnpj}
+      TELEFONE: {comprador_telefone}
+      EMAIL: {comprador_email}
 
       BEM: {descricao_bem}
 
@@ -148,49 +172,49 @@ export const CONTRACT_TEMPLATES = {
 };
 
 // ============================================================
-// CAMPOS OBRIGATÓRIOS POR CONTRATO
+// CAMPOS OBRIGATÓRIOS POR CONTRATO — inclui telefone e email
 // ============================================================
 export const FIELD_ORDER_BY_CONTRACT = {
   'prestacao-servicos': [
-    'contratante_nome', 'contratante_cpf_cnpj',
-    'contratado_nome', 'contratado_cpf_cnpj',
+    'contratante_nome', 'contratante_telefone', 'contratante_email', 'contratante_cpf_cnpj',
+    'contratado_nome', 'contratado_telefone', 'contratado_email', 'contratado_cpf_cnpj',
     'descricao_servico', 'valor_total', 'forma_pagamento', 'prazo_execucao',
     'multa_atraso_contratado', 'multa_limite', 'multa_rescisao',
     'cidade', 'estado'
   ],
   'aluguel': [
-    'locador_nome', 'locador_cpf_cnpj',
-    'locatario_nome', 'locatario_cpf_cnpj',
+    'locador_nome', 'locador_telefone', 'locador_email', 'locador_cpf_cnpj',
+    'locatario_nome', 'locatario_telefone', 'locatario_email', 'locatario_cpf_cnpj',
     'descricao_imovel', 'endereco_imovel',
     'valor_aluguel', 'dia_vencimento', 'data_inicio', 'prazo_locacao',
     'multa_atraso', 'juros_atraso', 'correcao_monetaria', 'prazo_tolerancia',
     'cidade', 'estado'
   ],
   'parceria': [
-    'parte_a_nome', 'parte_a_cpf_cnpj',
-    'parte_b_nome', 'parte_b_cpf_cnpj',
+    'parte_a_nome', 'parte_a_telefone', 'parte_a_email', 'parte_a_cpf_cnpj',
+    'parte_b_nome', 'parte_b_telefone', 'parte_b_email', 'parte_b_cpf_cnpj',
     'objeto_parceria', 'contribuicao_a', 'contribuicao_b',
     'participacao_resultados', 'prazo_parceria',
     'multa_descumprimento', 'multa_rescisao',
     'cidade', 'estado'
   ],
   'confidencialidade': [
-    'revelador_nome', 'revelador_cpf_cnpj',
-    'receptor_nome', 'receptor_cpf_cnpj',
+    'revelador_nome', 'revelador_telefone', 'revelador_email', 'revelador_cpf_cnpj',
+    'receptor_nome', 'receptor_telefone', 'receptor_email', 'receptor_cpf_cnpj',
     'informacoes_confidenciais', 'prazo_confidencialidade',
     'multa_violacao', 'perdas_danos',
     'cidade', 'estado'
   ],
   'trabalho-freelancer': [
-    'contratante_nome', 'contratante_cpf_cnpj',
-    'freelancer_nome', 'freelancer_cpf',
+    'contratante_nome', 'contratante_telefone', 'contratante_email', 'contratante_cpf_cnpj',
+    'freelancer_nome', 'freelancer_telefone', 'freelancer_email', 'freelancer_cpf',
     'escopo_trabalho', 'valor_projeto', 'forma_pagamento', 'prazo_entrega',
     'multa_atraso_entrega', 'multa_atraso_pagamento', 'multa_rescisao',
     'cidade', 'estado'
   ],
   'compra-venda': [
-    'vendedor_nome', 'vendedor_cpf_cnpj',
-    'comprador_nome', 'comprador_cpf_cnpj',
+    'vendedor_nome', 'vendedor_telefone', 'vendedor_email', 'vendedor_cpf_cnpj',
+    'comprador_nome', 'comprador_telefone', 'comprador_email', 'comprador_cpf_cnpj',
     'descricao_bem', 'valor_venda', 'forma_pagamento', 'prazo_entrega_bem',
     'multa_atraso_pagamento', 'multa_desistencia',
     'cidade', 'estado'
@@ -204,103 +228,125 @@ const REQUIRED_FIELDS_INSTRUCTION = {
   'prestacao-servicos': `
 CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 1. Nome completo do CONTRATANTE (quem paga pelo serviço)
-2. CPF ou CNPJ do CONTRATANTE
-3. Nome completo do CONTRATADO (quem presta o serviço)
-4. CPF ou CNPJ do CONTRATADO
-5. Descrição detalhada do serviço a ser prestado
-6. Valor total do serviço (ex: R$ 5.000,00)
-7. Forma de pagamento (ex: PIX, boleto, transferência, parcelado)
-8. Prazo de execução (ex: 30 dias, 3 meses)
-9. Percentual de multa por atraso na entrega pelo CONTRATADO, por dia (ex: 0,5% ao dia)
-10. Limite máximo da multa por atraso (ex: 10% do valor total)
-11. Percentual de multa por rescisão antecipada (ex: 20% do valor total)
-12. Cidade onde o contrato será assinado
-13. Estado (UF)`,
+2. Número de telefone do CONTRATANTE
+3. Email do CONTRATANTE
+4. CPF ou CNPJ do CONTRATANTE
+5. Nome completo do CONTRATADO (quem presta o serviço)
+6. Número de telefone do CONTRATADO
+7. Email do CONTRATADO
+8. CPF ou CNPJ do CONTRATADO
+9. Descrição detalhada do serviço a ser prestado
+10. Valor total do serviço (ex: R$ 5.000,00)
+11. Forma de pagamento (ex: PIX, boleto, transferência, parcelado)
+12. Prazo de execução (ex: 30 dias, 3 meses)
+13. Percentual de multa por atraso na entrega pelo CONTRATADO, por dia (ex: 0,5% ao dia)
+14. Limite máximo da multa por atraso (ex: 10% do valor total)
+15. Percentual de multa por rescisão antecipada (ex: 20% do valor total)
+16. Cidade onde o contrato será assinado
+17. Estado (UF)`,
 
   'aluguel': `
 CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 1. Nome completo do LOCADOR (proprietário)
-2. CPF ou CNPJ do LOCADOR
-3. Nome completo do LOCATÁRIO (inquilino)
-4. CPF ou CNPJ do LOCATÁRIO
-5. Descrição do imóvel (tipo, características)
-6. Endereço completo do imóvel
-7. Valor mensal do aluguel
-8. Dia do mês para vencimento (ex: dia 10)
-9. Data de início da locação
-10. Prazo da locação em meses
-11. Percentual de multa por atraso no pagamento (ex: 10%)
-12. Percentual de juros ao mês por atraso (ex: 1% ao mês)
-13. Índice de correção monetária anual (ex: IGPM, IPCA)
-14. Prazo de tolerância para pagamento em dias (ex: 5 dias)
-15. Cidade onde o contrato será assinado
-16. Estado (UF)`,
+2. Número de telefone do LOCADOR
+3. Email do LOCADOR
+4. CPF ou CNPJ do LOCADOR
+5. Nome completo do LOCATÁRIO (inquilino)
+6. Número de telefone do LOCATÁRIO
+7. Email do LOCATÁRIO
+8. CPF ou CNPJ do LOCATÁRIO
+9. Descrição do imóvel (tipo, características)
+10. Endereço completo do imóvel
+11. Valor mensal do aluguel
+12. Dia do mês para vencimento (ex: dia 10)
+13. Data de início da locação
+14. Prazo da locação em meses
+15. Percentual de multa por atraso no pagamento (ex: 10%)
+16. Percentual de juros ao mês por atraso (ex: 1% ao mês)
+17. Índice de correção monetária anual (ex: IGPM, IPCA)
+18. Prazo de tolerância para pagamento em dias (ex: 5 dias)
+19. Cidade onde o contrato será assinado
+20. Estado (UF)`,
 
   'parceria': `
 CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 1. Nome completo da PARTE A
-2. CPF/CNPJ da PARTE A
-3. Nome completo da PARTE B
-4. CPF/CNPJ da PARTE B
-5. Objeto da parceria (o que será feito em conjunto)
-6. Contribuição da PARTE A (o que ela entra com)
-7. Contribuição da PARTE B (o que ela entra com)
-8. Divisão dos resultados (ex: 50%/50%)
-9. Prazo da parceria (ex: 12 meses, 2 anos, indeterminado)
-10. Percentual de multa por descumprimento das obrigações (ex: 10%)
-11. Percentual de multa por rescisão antecipada (ex: 15%)
-12. Cidade onde o contrato será assinado
-13. Estado (UF)`,
+2. Número de telefone da PARTE A
+3. Email da PARTE A
+4. CPF/CNPJ da PARTE A
+5. Nome completo da PARTE B
+6. Número de telefone da PARTE B
+7. Email da PARTE B
+8. CPF/CNPJ da PARTE B
+9. Objeto da parceria (o que será feito em conjunto)
+10. Contribuição da PARTE A (o que ela entra com)
+11. Contribuição da PARTE B (o que ela entra com)
+12. Divisão dos resultados (ex: 50%/50%)
+13. Prazo da parceria (ex: 12 meses, 2 anos, indeterminado)
+14. Percentual de multa por descumprimento das obrigações (ex: 10%)
+15. Percentual de multa por rescisão antecipada (ex: 15%)
+16. Cidade onde o contrato será assinado
+17. Estado (UF)`,
 
   'confidencialidade': `
 CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 1. Nome completo da parte REVELADORA
-2. CPF/CNPJ da parte REVELADORA
-3. Nome completo da parte RECEPTORA
-4. CPF/CNPJ da parte RECEPTORA
-5. Descrição das informações confidenciais que serão compartilhadas
-6. Prazo de confidencialidade (ex: 2 anos, 5 anos)
-7. Valor da multa por violação da confidencialidade (ex: R$ 50.000,00)
-8. As perdas e danos também serão cobradas além da multa? (sim ou não)
-9. Cidade onde o contrato será assinado
-10. Estado (UF)`,
+2. Número de telefone da parte REVELADORA
+3. Email da parte REVELADORA
+4. CPF/CNPJ da parte REVELADORA
+5. Nome completo da parte RECEPTORA
+6. Número de telefone da parte RECEPTORA
+7. Email da parte RECEPTORA
+8. CPF/CNPJ da parte RECEPTORA
+9. Descrição das informações confidenciais que serão compartilhadas
+10. Prazo de confidencialidade (ex: 2 anos, 5 anos)
+11. Valor da multa por violação da confidencialidade (ex: R$ 50.000,00)
+12. As perdas e danos também serão cobradas além da multa? (sim ou não)
+13. Cidade onde o contrato será assinado
+14. Estado (UF)`,
 
   'trabalho-freelancer': `
 CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 1. Nome completo do CONTRATANTE (cliente)
-2. CPF/CNPJ do CONTRATANTE
-3. Nome completo do FREELANCER
-4. CPF do FREELANCER
-5. Escopo detalhado do trabalho (o que será entregue)
-6. Valor do projeto (ex: R$ 3.000,00)
-7. Forma de pagamento (ex: 50% na assinatura e 50% na entrega)
-8. Prazo de entrega (ex: 30 dias após assinatura)
-9. Percentual de multa por atraso na entrega, por dia (ex: 0,5% ao dia)
-10. Percentual de multa por atraso no pagamento pelo contratante, por dia (ex: 0,5% ao dia)
-11. Percentual de multa por rescisão antecipada (ex: 20%)
-12. Cidade onde o contrato será assinado
-13. Estado (UF)`,
+2. Número de telefone do CONTRATANTE
+3. Email do CONTRATANTE
+4. CPF/CNPJ do CONTRATANTE
+5. Nome completo do FREELANCER
+6. Número de telefone do FREELANCER
+7. Email do FREELANCER
+8. CPF do FREELANCER
+9. Escopo detalhado do trabalho (o que será entregue)
+10. Valor do projeto (ex: R$ 3.000,00)
+11. Forma de pagamento (ex: 50% na assinatura e 50% na entrega)
+12. Prazo de entrega (ex: 30 dias após assinatura)
+13. Percentual de multa por atraso na entrega, por dia (ex: 0,5% ao dia)
+14. Percentual de multa por atraso no pagamento pelo contratante, por dia (ex: 0,5% ao dia)
+15. Percentual de multa por rescisão antecipada (ex: 20%)
+16. Cidade onde o contrato será assinado
+17. Estado (UF)`,
 
   'compra-venda': `
 CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 1. Nome completo do VENDEDOR
-2. CPF/CNPJ do VENDEDOR
-3. Nome completo do COMPRADOR
-4. CPF/CNPJ do COMPRADOR
-5. Descrição detalhada do bem (o que está sendo vendido)
-6. Valor total da venda
-7. Forma de pagamento
-8. Prazo para entrega do bem (ex: na assinatura, 7 dias, 30 dias)
-9. Percentual de multa por atraso no pagamento, por dia (ex: 0,5% ao dia)
-10. Percentual de multa por desistência/rescisão (ex: 20% do valor)
-11. Cidade onde o contrato será assinado
-12. Estado (UF)`
+2. Número de telefone do VENDEDOR
+3. Email do VENDEDOR
+4. CPF/CNPJ do VENDEDOR
+5. Nome completo do COMPRADOR
+6. Número de telefone do COMPRADOR
+7. Email do COMPRADOR
+8. CPF/CNPJ do COMPRADOR
+9. Descrição detalhada do bem (o que está sendo vendido)
+10. Valor total da venda
+11. Forma de pagamento
+12. Prazo para entrega do bem (ex: na assinatura, 7 dias, 30 dias)
+13. Percentual de multa por atraso no pagamento, por dia (ex: 0,5% ao dia)
+14. Percentual de multa por desistência/rescisão (ex: 20% do valor)
+15. Cidade onde o contrato será assinado
+16. Estado (UF)`
 };
 
 // ============================================================
 // CLÁUSULAS PROFISSIONAIS POR CONTRATO
-// Nível escritório de advocacia sênior — inclui LGPD,
-// Anticorrupção, PI, Força Maior e Assinatura Digital
 // ============================================================
 const CONTRACT_CLAUSES = {
   'prestacao-servicos': [
@@ -316,9 +362,8 @@ const CONTRACT_CLAUSES = {
     'CLÁUSULA 10ª — DA ANTICORRUPÇÃO E DA CONFORMIDADE LEGAL (Lei 12.846/2013)',
     'CLÁUSULA 11ª — DO CASO FORTUITO E DA FORÇA MAIOR',
     'CLÁUSULA 12ª — DA RESCISÃO E DO DISTRATO',
-    'CLÁUSULA 13ª — DA VALIDADE DA ASSINATURA DIGITAL (MP 2.200-2/2001)',
-    'CLÁUSULA 14ª — DAS DISPOSIÇÕES GERAIS E DA INDEPENDÊNCIA DAS CLÁUSULAS',
-    'CLÁUSULA 15ª — DO FORO DE ELEIÇÃO'
+    'CLÁUSULA 13ª — DAS DISPOSIÇÕES GERAIS E DA INDEPENDÊNCIA DAS CLÁUSULAS',
+    'CLÁUSULA 14ª — DO FORO DE ELEIÇÃO'
   ],
   'aluguel': [
     'CLÁUSULA 1ª — DO OBJETO E DA IDENTIFICAÇÃO DO IMÓVEL',
@@ -333,9 +378,8 @@ const CONTRACT_CLAUSES = {
     'CLÁUSULA 10ª — DO CASO FORTUITO E DA FORÇA MAIOR',
     'CLÁUSULA 11ª — DA RESCISÃO ANTECIPADA E DO AVISO PRÉVIO',
     'CLÁUSULA 12ª — DA VISTORIA E DA RESTITUIÇÃO DO IMÓVEL',
-    'CLÁUSULA 13ª — DA VALIDADE DA ASSINATURA DIGITAL (MP 2.200-2/2001)',
-    'CLÁUSULA 14ª — DAS DISPOSIÇÕES GERAIS',
-    'CLÁUSULA 15ª — DO FORO DE ELEIÇÃO'
+    'CLÁUSULA 13ª — DAS DISPOSIÇÕES GERAIS',
+    'CLÁUSULA 14ª — DO FORO DE ELEIÇÃO'
   ],
   'parceria': [
     'CLÁUSULA 1ª — DO OBJETO E DA NATUREZA DA PARCERIA',
@@ -350,9 +394,8 @@ const CONTRACT_CLAUSES = {
     'CLÁUSULA 10ª — DA ANTICORRUPÇÃO E DA CONFORMIDADE LEGAL (Lei 12.846/2013)',
     'CLÁUSULA 11ª — DO CASO FORTUITO E DA FORÇA MAIOR',
     'CLÁUSULA 12ª — DA RESCISÃO, DO DISTRATO E DA LIQUIDAÇÃO',
-    'CLÁUSULA 13ª — DA VALIDADE DA ASSINATURA DIGITAL (MP 2.200-2/2001)',
-    'CLÁUSULA 14ª — DAS DISPOSIÇÕES GERAIS',
-    'CLÁUSULA 15ª — DO FORO DE ELEIÇÃO'
+    'CLÁUSULA 13ª — DAS DISPOSIÇÕES GERAIS',
+    'CLÁUSULA 14ª — DO FORO DE ELEIÇÃO'
   ],
   'confidencialidade': [
     'CLÁUSULA 1ª — DO OBJETO E DA FINALIDADE DO ACORDO',
@@ -364,9 +407,8 @@ const CONTRACT_CLAUSES = {
     'CLÁUSULA 7ª — DA PROTEÇÃO DE DADOS PESSOAIS (LGPD — Lei 13.709/2018)',
     'CLÁUSULA 8ª — DA ANTICORRUPÇÃO E DA CONFORMIDADE LEGAL (Lei 12.846/2013)',
     'CLÁUSULA 9ª — DO CASO FORTUITO E DA FORÇA MAIOR',
-    'CLÁUSULA 10ª — DA VALIDADE DA ASSINATURA DIGITAL (MP 2.200-2/2001)',
-    'CLÁUSULA 11ª — DAS DISPOSIÇÕES GERAIS',
-    'CLÁUSULA 12ª — DO FORO DE ELEIÇÃO'
+    'CLÁUSULA 10ª — DAS DISPOSIÇÕES GERAIS',
+    'CLÁUSULA 11ª — DO FORO DE ELEIÇÃO'
   ],
   'trabalho-freelancer': [
     'CLÁUSULA 1ª — DO OBJETO E DO ESCOPO DO TRABALHO',
@@ -382,9 +424,8 @@ const CONTRACT_CLAUSES = {
     'CLÁUSULA 11ª — DA AUSÊNCIA DE VÍNCULO EMPREGATÍCIO',
     'CLÁUSULA 12ª — DO CASO FORTUITO E DA FORÇA MAIOR',
     'CLÁUSULA 13ª — DA RESCISÃO E DO DISTRATO',
-    'CLÁUSULA 14ª — DA VALIDADE DA ASSINATURA DIGITAL (MP 2.200-2/2001)',
-    'CLÁUSULA 15ª — DAS DISPOSIÇÕES GERAIS',
-    'CLÁUSULA 16ª — DO FORO DE ELEIÇÃO'
+    'CLÁUSULA 14ª — DAS DISPOSIÇÕES GERAIS',
+    'CLÁUSULA 15ª — DO FORO DE ELEIÇÃO'
   ],
   'compra-venda': [
     'CLÁUSULA 1ª — DO OBJETO E DA DESCRIÇÃO DO BEM',
@@ -397,9 +438,8 @@ const CONTRACT_CLAUSES = {
     'CLÁUSULA 8ª — DA ANTICORRUPÇÃO E DA CONFORMIDADE LEGAL (Lei 12.846/2013)',
     'CLÁUSULA 9ª — DO CASO FORTUITO E DA FORÇA MAIOR',
     'CLÁUSULA 10ª — DA RESCISÃO E DO VENCIMENTO ANTECIPADO',
-    'CLÁUSULA 11ª — DA VALIDADE DA ASSINATURA DIGITAL (MP 2.200-2/2001)',
-    'CLÁUSULA 12ª — DAS DISPOSIÇÕES GERAIS',
-    'CLÁUSULA 13ª — DO FORO DE ELEIÇÃO'
+    'CLÁUSULA 11ª — DAS DISPOSIÇÕES GERAIS',
+    'CLÁUSULA 12ª — DO FORO DE ELEIÇÃO'
   ]
 };
 
@@ -426,13 +466,13 @@ REGRAS ABSOLUTAS DE FORMATAÇÃO — NUNCA VIOLE:
 
 REGRAS ABSOLUTAS DE CONDUÇÃO — NUNCA VIOLE:
 1. Faça APENAS UMA pergunta por vez, de forma clara e direta
-2. Siga RIGOROSAMENTE a lista de campos obrigatórios fornecida — não pule NENHUM campo
+2. Siga RIGOROSAMENTE a lista de campos obrigatórios fornecida — não pule NENHUM campo, incluindo telefone e email
 3. NÃO gere o contrato durante a entrevista
 4. NÃO antecipe respostas nem invente valores
 5. Somente após coletar TODOS os campos da lista, pergunte: "Deseja adicionar algo a mais para por no contrato ?"
 6. Aguarde a resposta. Se o usuário disser "não" ou "nada", responda EXATAMENTE: "Perfeito! Vou gerar seu contrato agora."
 7. Se o usuário quiser adicionar informações, colete-as e repita a pergunta do passo 5
-8. NUNCA encerre sem ter coletado todos os campos da lista`;
+8. NUNCA encerre sem ter coletado todos os campos da lista, incluindo telefone e email de todas as partes`;
 
 // ============================================================
 // PROMPT INICIAL — sem markdown
@@ -493,7 +533,7 @@ export const sendMessageToIA = async (messages, contractType) => {
 
   let progressNote = '';
   if (userResponses >= totalFields - 1) {
-    progressNote = `\n\n⚠️ ATENÇÃO: Você já recebeu ${userResponses} respostas. O total de campos é ${totalFields}. Verifique se TODOS foram coletados antes de perguntar sobre informações adicionais. NÃO encerre antes de coletar todos.`;
+    progressNote = `\n\n⚠️ ATENÇÃO: Você já recebeu ${userResponses} respostas. O total de campos é ${totalFields}. Verifique se TODOS foram coletados antes de perguntar sobre informações adicionais. NÃO encerre antes de coletar todos, incluindo telefone e email de cada parte.`;
   }
 
   try {
@@ -523,7 +563,6 @@ export const sendMessageToIA = async (messages, contractType) => {
     }
 
     const data = await response.json();
-    // Garante remoção de markdown mesmo se o modelo ignorar a instrução
     return stripMarkdown(data.choices[0].message.content);
   } catch (error) {
     console.error('Erro na IA:', error);
@@ -532,7 +571,7 @@ export const sendMessageToIA = async (messages, contractType) => {
 };
 
 // ============================================================
-// EXTRAÇÃO DE DADOS VIA IA (JSON estruturado) — lógica preservada
+// EXTRAÇÃO DE DADOS VIA IA (JSON estruturado)
 // ============================================================
 export const extractAnswersFromConversation = async (messages, contractType) => {
   const fieldOrder = FIELD_ORDER_BY_CONTRACT[contractType] || [];
@@ -557,6 +596,7 @@ REGRAS ABSOLUTAS:
 3. Se um campo não foi respondido, use string vazia ""
 4. NÃO invente valores — use apenas exatamente o que o usuário disse
 5. Os campos "cidade" e "estado" são SOMENTE para eleição de foro — não confunda com endereço do imóvel ou outros campos
+6. Os campos de telefone e email devem ser extraídos corretamente para cada parte (contratante, contratado, locador, locatário, etc.)
 
 Formato de saída esperado (exemplo):
 {"campo1":"valor respondido","campo2":"outro valor","campo3":""}`;
@@ -573,7 +613,7 @@ Formato de saída esperado (exemplo):
         messages: [
           {
             role: 'system',
-            content: 'Você é um extrator de dados preciso. Leia conversas e extraia valores para campos específicos. Retorne APENAS JSON válido, sem nenhum texto adicional, sem markdown.'
+            content: 'Você é um extrator de dados preciso. Leia conversas e extraia valores para campos específicos, incluindo telefone e email de cada parte. Retorne APENAS JSON válido, sem nenhum texto adicional, sem markdown.'
           },
           { role: 'user', content: extractionPrompt }
         ],
@@ -651,27 +691,25 @@ INSTRUÇÕES OBRIGATÓRIAS DE REDAÇÃO
 3. NUNCA coloque CPF/CNPJ no campo de nome, nem endereço no campo de cidade
 4. "cidade" e "estado" destinam-se EXCLUSIVAMENTE à cláusula de eleição de foro
 5. As cláusulas de penalidades DEVEM refletir com precisão os valores de multa informados
-6. CADA CLÁUSULA deve ser redigida de forma EXTENSA e DETALHADA, com:
+6. No PREÂMBULO, inclua telefone e email de cada parte na qualificação completa
+7. CADA CLÁUSULA deve ser redigida de forma EXTENSA e DETALHADA, com:
    - Cabeçalho em NEGRITO e CAIXA ALTA (ex: **CLÁUSULA 1ª — DO OBJETO**)
    - Corpo jurídico completo com parágrafos numerados (§1º, §2º, §3º...)
    - Uso de terminologia técnica: "mora", "vencimento antecipado", "caráter irretratável",
      "sub-rogação", "solidariedade", "notificação extrajudicial", "ato ilícito", "perdas e danos"
    - Referência explícita aos dispositivos legais aplicáveis (artigos do CC, leis específicas)
 
-7. CLÁUSULA DE LGPD: deve conter obrigações de controlador/operador, finalidade do tratamento,
+8. CLÁUSULA DE LGPD: deve conter obrigações de controlador/operador, finalidade do tratamento,
    base legal (art. 7º Lei 13.709/18), direitos dos titulares e medidas de segurança adotadas
 
-8. CLÁUSULA DE ANTICORRUPÇÃO: deve referenciar a Lei 12.846/2013, proibir atos de corrupção,
+9. CLÁUSULA DE ANTICORRUPÇÃO: deve referenciar a Lei 12.846/2013, proibir atos de corrupção,
    suborno, pagamentos indevidos a agentes públicos e prever rescisão imediata em caso de violação
 
-9. CLÁUSULA DE FORÇA MAIOR: deve definir hipóteses (pandemias, desastres naturais, atos de guerra,
-   decisões governamentais), estabelecer prazo de comunicação (máximo 5 dias úteis) e consequências
-
-10. CLÁUSULA DE ASSINATURA DIGITAL: deve reconhecer validade jurídica nos termos da MP 2.200-2/2001,
-    ICP-Brasil e demais padrões aceitos pelas partes, com força de instrumento particular
+10. CLÁUSULA DE FORÇA MAIOR: deve definir hipóteses (pandemias, desastres naturais, atos de guerra,
+    decisões governamentais), estabelecer prazo de comunicação (máximo 5 dias úteis) e consequências
 
 11. Inicie o documento com o PREÂMBULO completo identificando as partes, qualificação completa
-    (nome, CPF/CNPJ, estado civil se pessoa física, sede se jurídica) e a declaração de livre vontade
+    (nome, CPF/CNPJ, telefone, email, estado civil se pessoa física, sede se jurídica) e a declaração de livre vontade
 
 12. NÃO inclua seção de assinaturas ou testemunhas (adicionada separadamente pelo sistema)
 

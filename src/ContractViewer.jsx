@@ -7,6 +7,85 @@ import { Download, FileText, CheckCircle, ArrowLeft, Loader2, Sparkles, Lock } f
 import html2pdf from 'html2pdf.js';
 import PaymentModal from './PaymentModal';
 
+// ============================================================
+// Formata o texto do contrato em HTML com negritos e parágrafos
+// ============================================================
+const formatContractText = (text) => {
+  if (!text) return '';
+
+  const lines = text.split('\n');
+  let html = '';
+
+  for (let i = 0; i < lines.length; i++) {
+    let line = lines[i];
+    const trimmed = line.trim();
+
+    if (!trimmed) {
+      html += '<div style="height:10px"></div>';
+      continue;
+    }
+
+    // Título principal do contrato (ex: CONTRATO DE PRESTAÇÃO DE SERVIÇOS)
+    if (
+      /^(CONTRATO|TERMO|ACORDO|INSTRUMENTO)\s+DE\s+/i.test(trimmed) &&
+      trimmed === trimmed.toUpperCase()
+    ) {
+      html += `<p style="text-align:center;font-weight:700;font-size:15px;margin:0 0 16px 0;letter-spacing:0.04em;">${trimmed}</p>`;
+      continue;
+    }
+
+    // PREÂMBULO
+    if (/^PREÂMBULO$/i.test(trimmed)) {
+      html += `<p style="text-align:center;font-weight:700;font-size:13px;margin:16px 0 10px 0;letter-spacing:0.05em;">${trimmed}</p>`;
+      continue;
+    }
+
+    // Cabeçalho de cláusula: CLÁUSULA Xª — ...
+    if (/^CLÁUSULA\s+\d|^CLAUSULA\s+\d|^CL[ÁA]USULA\s+[IVXLC]+/i.test(trimmed)) {
+      // Remove markdown ** se vier da IA
+      const clean = trimmed.replace(/\*\*/g, '');
+      html += `<p style="font-weight:700;font-size:13px;margin:20px 0 8px 0;letter-spacing:0.02em;">${clean}</p>`;
+      continue;
+    }
+
+    // Parágrafos numerados: 1.1., 2.3., §1º, §2º
+    if (/^(\d+\.\d+\.?|§\d+[º°]?)\s/.test(trimmed)) {
+      const clean = trimmed.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      html += `<p style="text-align:justify;margin:0 0 8px 0;padding-left:0;font-size:13px;line-height:1.85;">${clean}</p>`;
+      continue;
+    }
+
+    // Campos de qualificação (CONTRATANTE:, CPF:, TELEFONE:, EMAIL: etc.)
+    if (/^(CONTRATANTE|CONTRATADO|LOCADOR|LOCATÁRIO|PARTE [AB]|REVELADORA|RECEPTORA|VENDEDOR|COMPRADOR|FREELANCER)\s*:/i.test(trimmed) ||
+        /^(CPF|CNPJ|CPF\/CNPJ|TELEFONE|EMAIL|E-MAIL|ENDEREÇO|OBJETO|VALOR|FORMA DE PAGAMENTO|PRAZO|MULTA|CIDADE|ESTADO|IMÓVEL|BEM)\s*:/i.test(trimmed)) {
+      const colonIdx = trimmed.indexOf(':');
+      const label = trimmed.substring(0, colonIdx);
+      const value = trimmed.substring(colonIdx + 1).trim();
+      html += `<p style="margin:0 0 4px 0;font-size:13px;line-height:1.7;"><strong>${label}:</strong> ${value}</p>`;
+      continue;
+    }
+
+    // Linha de local e data / assinatura
+    if (/^(local e data|e, por estarem|assim justas|em 2 \(duas\))/i.test(trimmed)) {
+      const clean = trimmed.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      html += `<p style="text-align:center;margin:16px 0 8px 0;font-size:13px;line-height:1.7;">${clean}</p>`;
+      continue;
+    }
+
+    // Linha de assinatura ___
+    if (/^_{3,}/.test(trimmed) || /^_{3,}/.test(trimmed)) {
+      html += `<p style="text-align:center;margin:8px 0;font-size:13px;">${trimmed}</p>`;
+      continue;
+    }
+
+    // Parágrafo normal — aplica negrito inline se vier ** da IA
+    const clean = trimmed.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    html += `<p style="text-align:justify;margin:0 0 8px 0;font-size:13px;line-height:1.85;">${clean}</p>`;
+  }
+
+  return html;
+};
+
 const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
   const [downloading, setDownloading] = useState(false);
   const [downloaded, setDownloaded] = useState(false);
@@ -14,7 +93,6 @@ const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
   const [showPayment, setShowPayment] = useState(false);
   const paperRef = useRef(null);
 
-  // Gera string de data e hora no momento da renderização
   const getDateTimeString = () => {
     const now = new Date();
     const data = now.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -22,7 +100,6 @@ const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
     return `${data} às ${hora}`;
   };
 
-  // Dispara o download real em PDF
   const triggerDownload = async () => {
     if (downloading) return;
     setDownloading(true);
@@ -46,24 +123,21 @@ const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
     }
   };
 
-  // Botão de download clicado
   const handleDownloadClick = () => {
     if (isPaid) {
-      // Já pagou — baixa direto
       triggerDownload();
     } else {
-      // Ainda não pagou — abre modal de pagamento
       setShowPayment(true);
     }
   };
 
-  // Chamado pelo PaymentModal quando pagamento é confirmado
   const handlePaymentConfirmed = () => {
     setIsPaid(true);
     setShowPayment(false);
-    // Inicia o download automaticamente após pagamento
     setTimeout(() => triggerDownload(), 300);
   };
+
+  const formattedHTML = formatContractText(contract);
 
   return (
     <div className="contract-viewer" style={{ minHeight: '100vh', background: '#f8faf9' }}>
@@ -73,8 +147,16 @@ const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
         .contract-title { font-family: 'Playfair Display', Georgia, serif; }
         .contract-body {
           font-family: 'Georgia', 'Times New Roman', serif;
-          line-height: 1.85; color: #1a1a1a;
-          white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word;
+          color: #1a1a1a;
+          word-wrap: break-word;
+          overflow-wrap: break-word;
+          width: 100%;
+        }
+        .contract-body p {
+          width: 100%;
+          word-break: break-word;
+          overflow-wrap: break-word;
+          hyphens: auto;
         }
         .download-btn {
           position: relative; overflow: hidden;
@@ -121,7 +203,6 @@ const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
         }
         .cv-success-text { font-size: 13px; color: #065f46; line-height: 1.5; margin: 0; }
         .cv-success-text strong { display: block; margin-bottom: 2px; }
-        /* Banner de pagamento */
         .cv-payment-banner {
           display: flex; align-items: center; justify-content: space-between;
           gap: 12px; flex-wrap: wrap;
@@ -138,7 +219,6 @@ const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
           box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 6px 20px rgba(0,0,0,0.05);
           margin-bottom: 20px;
         }
-        /* Preview bloqueado com blur */
         .cv-paper.locked .cv-paper-body { position: relative; }
         .cv-paper.locked .cv-paper-body::after {
           content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 160px;
@@ -302,14 +382,14 @@ const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
           {/* paperRef cobre tudo que entra no PDF */}
           <div ref={paperRef}>
             <div className="cv-paper-body">
-              <div className="contract-body">
-                {contract}
-              </div>
+              <div
+                className="contract-body"
+                dangerouslySetInnerHTML={{ __html: formattedHTML }}
+              />
             </div>
 
             {/* Assinaturas e testemunhas */}
             <div className="cv-signatures">
-              {/* Data e hora da geração do contrato */}
               <div className="cv-date">
                 {getDateTimeString()}
               </div>
