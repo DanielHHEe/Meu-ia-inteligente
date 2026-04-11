@@ -236,17 +236,23 @@ const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
         .cv-signatures { padding: 24px 20px 32px; border-top: 1px solid #e5e7eb; }
         @media (min-width: 640px) { .cv-signatures { padding: 32px 48px 40px; } }
         @media (min-width: 768px) { .cv-signatures { padding: 40px 64px 48px; } }
-        .cv-date { text-align: center; font-size: 14px; color: #6b7280; font-style: italic; margin-bottom: 32px; }
+        .cv-date { text-align: center; font-size: 14px; color: #6b7280; font-style: italic; margin-bottom: 48px; }
+
+        /* ─── CORREÇÃO: grid de assinaturas sempre lado a lado ─── */
         .cv-sig-grid {
-          display: grid; grid-template-columns: 1fr 1fr;
-          gap: 120px; margin-bottom: 32px;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 80px;
+          margin-bottom: 48px;
         }
+        /* ─────────────────────────────────────────────────────── */
+
         .cv-sig-block { text-align: center; width: 100%; }
-        .cv-sig-label { font-weight: 700; font-size: 13px; letter-spacing: 0.05em; color: #374151; margin-bottom: 12px; }
+        .cv-sig-label { font-weight: 700; font-size: 13px; letter-spacing: 0.05em; color: #374151; margin-bottom: 40px; }
         .cv-sig-line {
           height: 1px; width: 100%; display: block;
           background: linear-gradient(to right, #d1fae5, #6ee7b7, #d1fae5);
-          margin-bottom: 6px;
+          margin-bottom: 8px;
         }
         .cv-sig-sublabel { font-size: 12px; color: #9ca3af; }
         .cv-witnesses { border-top: 1px dashed #e5e7eb; padding-top: 24px; }
@@ -277,7 +283,7 @@ const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
         .cv-back-btn:hover { background: #fff; border-color: #059669; color: #059669; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @media print {
-          .cv-sig-grid { display: grid !important; grid-template-columns: 1fr 1fr !important; }
+          .cv-sig-grid { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 80px !important; }
           .cv-witness-grid { display: grid !important; grid-template-columns: 1fr 1fr !important; }
           .cv-sig-line { width: 100% !important; display: block !important; }
           .cv-witness-fields div { border-bottom: 1px solid #d1d5db !important; }
