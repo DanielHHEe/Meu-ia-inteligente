@@ -239,7 +239,7 @@ const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
         .cv-date { text-align: center; font-size: 14px; color: #6b7280; font-style: italic; margin-bottom: 32px; }
         .cv-sig-grid {
           display: grid; grid-template-columns: 1fr 1fr;
-          gap: 48px; margin-bottom: 32px;
+          gap: 120px; margin-bottom: 32px;
         }
         .cv-sig-block { text-align: center; width: 100%; }
         .cv-sig-label { font-weight: 700; font-size: 13px; letter-spacing: 0.05em; color: #374151; margin-bottom: 12px; }

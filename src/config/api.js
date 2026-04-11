@@ -22,6 +22,8 @@ export const CONTRACT_TEMPLATES = {
       EMAIL: {contratado_email}
 
       OBJETO: {descricao_servico}
+      LOCAL DE PRESTAÇÃO: {local_prestacao}
+      NÚMERO DE REVISÕES: {numero_revisoes}
 
       VALOR TOTAL: R$ {valor_total}
       FORMA DE PAGAMENTO: {forma_pagamento}
@@ -29,7 +31,6 @@ export const CONTRACT_TEMPLATES = {
 
       MULTA POR ATRASO (CONTRATADO): {multa_atraso_contratado}% ao dia, limitado a {multa_limite}%
       MULTA POR RESCISÃO: {multa_rescisao}%
-      REAJUSTE ANUAL: {reajuste_anual}
 
       CIDADE: {cidade}
       ESTADO: {estado}
@@ -55,6 +56,12 @@ export const CONTRACT_TEMPLATES = {
       DIA DE VENCIMENTO: {dia_vencimento}
       DATA DE INÍCIO: {data_inicio}
       PRAZO DA LOCAÇÃO: {prazo_locacao} meses
+
+      GARANTIA LOCATÍCIA: {tipo_garantia}
+      RESPONSÁVEL PELO IPTU: {responsavel_iptu}
+      RESPONSÁVEL PELO CONDOMÍNIO: {responsavel_condominio}
+      PERMITE SUBLOCAÇÃO: {permite_sublocacao}
+      PERMITE ANIMAIS: {permite_animais}
 
       MULTA POR ATRASO: {multa_atraso}%
       JUROS POR ATRASO: {juros_atraso}% ao mês
@@ -85,6 +92,8 @@ export const CONTRACT_TEMPLATES = {
 
       PARTICIPAÇÃO NOS RESULTADOS: {participacao_resultados}
       PRAZO DA PARCERIA: {prazo_parceria}
+      CLÁUSULA DE NÃO-CONCORRÊNCIA: {nao_concorrencia}
+      CONTA BANCÁRIA CONJUNTA: {conta_conjunta}
 
       MULTA POR DESCUMPRIMENTO: {multa_descumprimento}%
       MULTA POR RESCISÃO ANTECIPADA: {multa_rescisao}%
@@ -106,6 +115,7 @@ export const CONTRACT_TEMPLATES = {
       TELEFONE: {receptor_telefone}
       EMAIL: {receptor_email}
 
+      FINALIDADE DO COMPARTILHAMENTO: {finalidade_compartilhamento}
       INFORMAÇÕES CONFIDENCIAIS: {informacoes_confidenciais}
       PRAZO DE CONFIDENCIALIDADE: {prazo_confidencialidade}
 
@@ -130,6 +140,8 @@ export const CONTRACT_TEMPLATES = {
       EMAIL: {freelancer_email}
 
       ESCOPO DO TRABALHO: {escopo_trabalho}
+      NÚMERO DE REVISÕES INCLUSAS: {numero_revisoes}
+      DIREITOS EM CASO DE CANCELAMENTO: {direitos_cancelamento}
 
       VALOR DO PROJETO: R$ {valor_projeto}
       FORMA DE PAGAMENTO: {forma_pagamento}
@@ -157,6 +169,8 @@ export const CONTRACT_TEMPLATES = {
       EMAIL: {comprador_email}
 
       BEM: {descricao_bem}
+      ESTADO DE CONSERVAÇÃO: {estado_conservacao}
+      DEFEITOS CONHECIDOS: {defeitos_conhecidos}
 
       VALOR DA VENDA: R$ {valor_venda}
       FORMA DE PAGAMENTO: {forma_pagamento}
@@ -172,13 +186,14 @@ export const CONTRACT_TEMPLATES = {
 };
 
 // ============================================================
-// CAMPOS OBRIGATÓRIOS POR CONTRATO — inclui telefone e email
+// CAMPOS OBRIGATÓRIOS POR CONTRATO
 // ============================================================
 export const FIELD_ORDER_BY_CONTRACT = {
   'prestacao-servicos': [
     'contratante_nome', 'contratante_telefone', 'contratante_email', 'contratante_cpf_cnpj',
     'contratado_nome', 'contratado_telefone', 'contratado_email', 'contratado_cpf_cnpj',
-    'descricao_servico', 'valor_total', 'forma_pagamento', 'prazo_execucao',
+    'descricao_servico', 'local_prestacao', 'numero_revisoes',
+    'valor_total', 'forma_pagamento', 'prazo_execucao',
     'multa_atraso_contratado', 'multa_limite', 'multa_rescisao',
     'cidade', 'estado'
   ],
@@ -187,6 +202,8 @@ export const FIELD_ORDER_BY_CONTRACT = {
     'locatario_nome', 'locatario_telefone', 'locatario_email', 'locatario_cpf_cnpj',
     'descricao_imovel', 'endereco_imovel',
     'valor_aluguel', 'dia_vencimento', 'data_inicio', 'prazo_locacao',
+    'tipo_garantia', 'responsavel_iptu', 'responsavel_condominio',
+    'permite_sublocacao', 'permite_animais',
     'multa_atraso', 'juros_atraso', 'correcao_monetaria', 'prazo_tolerancia',
     'cidade', 'estado'
   ],
@@ -195,27 +212,30 @@ export const FIELD_ORDER_BY_CONTRACT = {
     'parte_b_nome', 'parte_b_telefone', 'parte_b_email', 'parte_b_cpf_cnpj',
     'objeto_parceria', 'contribuicao_a', 'contribuicao_b',
     'participacao_resultados', 'prazo_parceria',
+    'nao_concorrencia', 'conta_conjunta',
     'multa_descumprimento', 'multa_rescisao',
     'cidade', 'estado'
   ],
   'confidencialidade': [
     'revelador_nome', 'revelador_telefone', 'revelador_email', 'revelador_cpf_cnpj',
     'receptor_nome', 'receptor_telefone', 'receptor_email', 'receptor_cpf_cnpj',
-    'informacoes_confidenciais', 'prazo_confidencialidade',
+    'finalidade_compartilhamento', 'informacoes_confidenciais', 'prazo_confidencialidade',
     'multa_violacao', 'perdas_danos',
     'cidade', 'estado'
   ],
   'trabalho-freelancer': [
     'contratante_nome', 'contratante_telefone', 'contratante_email', 'contratante_cpf_cnpj',
     'freelancer_nome', 'freelancer_telefone', 'freelancer_email', 'freelancer_cpf',
-    'escopo_trabalho', 'valor_projeto', 'forma_pagamento', 'prazo_entrega',
+    'escopo_trabalho', 'numero_revisoes', 'direitos_cancelamento',
+    'valor_projeto', 'forma_pagamento', 'prazo_entrega',
     'multa_atraso_entrega', 'multa_atraso_pagamento', 'multa_rescisao',
     'cidade', 'estado'
   ],
   'compra-venda': [
     'vendedor_nome', 'vendedor_telefone', 'vendedor_email', 'vendedor_cpf_cnpj',
     'comprador_nome', 'comprador_telefone', 'comprador_email', 'comprador_cpf_cnpj',
-    'descricao_bem', 'valor_venda', 'forma_pagamento', 'prazo_entrega_bem',
+    'descricao_bem', 'estado_conservacao', 'defeitos_conhecidos',
+    'valor_venda', 'forma_pagamento', 'prazo_entrega_bem',
     'multa_atraso_pagamento', 'multa_desistencia',
     'cidade', 'estado'
   ]
@@ -236,14 +256,16 @@ CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 7. Email do CONTRATADO
 8. CPF ou CNPJ do CONTRATADO
 9. Descrição detalhada do serviço a ser prestado
-10. Valor total do serviço (ex: R$ 5.000,00)
-11. Forma de pagamento (ex: PIX, boleto, transferência, parcelado)
-12. Prazo de execução (ex: 30 dias, 3 meses)
-13. Percentual de multa por atraso na entrega pelo CONTRATADO, por dia (ex: 0,5% ao dia)
-14. Limite máximo da multa por atraso (ex: 10% do valor total)
-15. Percentual de multa por rescisão antecipada (ex: 20% do valor total)
-16. Cidade onde o contrato será assinado
-17. Estado (UF)`,
+10. Local de prestação do serviço (ex: remoto, presencial no endereço X, híbrido)
+11. Número de revisões inclusas no valor (ex: 2 revisões, ilimitadas, nenhuma)
+12. Valor total do serviço (ex: R$ 5.000,00)
+13. Forma de pagamento (ex: PIX, boleto, transferência, parcelado)
+14. Prazo de execução (ex: 30 dias, 3 meses)
+15. Percentual de multa por atraso na entrega pelo CONTRATADO, por dia (ex: 0,5% ao dia)
+16. Limite máximo da multa por atraso (ex: 10% do valor total)
+17. Percentual de multa por rescisão antecipada (ex: 20% do valor total)
+18. Cidade onde o contrato será assinado
+19. Estado (UF)`,
 
   'aluguel': `
 CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
@@ -261,12 +283,17 @@ CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 12. Dia do mês para vencimento (ex: dia 10)
 13. Data de início da locação
 14. Prazo da locação em meses
-15. Percentual de multa por atraso no pagamento (ex: 10%)
-16. Percentual de juros ao mês por atraso (ex: 1% ao mês)
-17. Índice de correção monetária anual (ex: IGPM, IPCA)
-18. Prazo de tolerância para pagamento em dias (ex: 5 dias)
-19. Cidade onde o contrato será assinado
-20. Estado (UF)`,
+15. Tipo de garantia locatícia (ex: caução em dinheiro, fiador/avalista, seguro fiança, título de capitalização, sem garantia)
+16. Quem é responsável pelo pagamento do IPTU — locador ou locatário?
+17. Quem é responsável pelo pagamento do condomínio, se houver — locador ou locatário?
+18. É permitida sublocação do imóvel? (sim ou não)
+19. É permitida a presença de animais de estimação? (sim ou não)
+20. Percentual de multa por atraso no pagamento (ex: 10%)
+21. Percentual de juros ao mês por atraso (ex: 1% ao mês)
+22. Índice de correção monetária anual (ex: IGPM, IPCA)
+23. Prazo de tolerância para pagamento em dias (ex: 5 dias)
+24. Cidade onde o contrato será assinado
+25. Estado (UF)`,
 
   'parceria': `
 CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
@@ -283,10 +310,12 @@ CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 11. Contribuição da PARTE B (o que ela entra com)
 12. Divisão dos resultados (ex: 50%/50%)
 13. Prazo da parceria (ex: 12 meses, 2 anos, indeterminado)
-14. Percentual de multa por descumprimento das obrigações (ex: 10%)
-15. Percentual de multa por rescisão antecipada (ex: 15%)
-16. Cidade onde o contrato será assinado
-17. Estado (UF)`,
+14. Haverá cláusula de não-concorrência? Se sim, por quanto tempo e em qual área? (ex: sim, 2 anos na área de design gráfico / não)
+15. Haverá conta bancária conjunta para movimentação dos recursos da parceria? (sim ou não)
+16. Percentual de multa por descumprimento das obrigações (ex: 10%)
+17. Percentual de multa por rescisão antecipada (ex: 15%)
+18. Cidade onde o contrato será assinado
+19. Estado (UF)`,
 
   'confidencialidade': `
 CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
@@ -298,12 +327,13 @@ CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 6. Número de telefone da parte RECEPTORA
 7. Email da parte RECEPTORA
 8. CPF/CNPJ da parte RECEPTORA
-9. Descrição das informações confidenciais que serão compartilhadas
-10. Prazo de confidencialidade (ex: 2 anos, 5 anos)
-11. Valor da multa por violação da confidencialidade (ex: R$ 50.000,00)
-12. As perdas e danos também serão cobradas além da multa? (sim ou não)
-13. Cidade onde o contrato será assinado
-14. Estado (UF)`,
+9. Qual é a finalidade do compartilhamento das informações confidenciais? (ex: negociação de parceria, prestação de serviços, avaliação de investimento)
+10. Descrição das informações confidenciais que serão compartilhadas
+11. Prazo de confidencialidade (ex: 2 anos, 5 anos)
+12. Valor da multa por violação da confidencialidade (ex: R$ 50.000,00)
+13. As perdas e danos também serão cobradas além da multa? (sim ou não)
+14. Cidade onde o contrato será assinado
+15. Estado (UF)`,
 
   'trabalho-freelancer': `
 CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
@@ -316,14 +346,16 @@ CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 7. Email do FREELANCER
 8. CPF do FREELANCER
 9. Escopo detalhado do trabalho (o que será entregue)
-10. Valor do projeto (ex: R$ 3.000,00)
-11. Forma de pagamento (ex: 50% na assinatura e 50% na entrega)
-12. Prazo de entrega (ex: 30 dias após assinatura)
-13. Percentual de multa por atraso na entrega, por dia (ex: 0,5% ao dia)
-14. Percentual de multa por atraso no pagamento pelo contratante, por dia (ex: 0,5% ao dia)
-15. Percentual de multa por rescisão antecipada (ex: 20%)
-16. Cidade onde o contrato será assinado
-17. Estado (UF)`,
+10. Quantas rodadas de revisão estão inclusas no valor? (ex: 2 revisões, 3 revisões, ilimitadas)
+11. Em caso de cancelamento pelo contratante após início do trabalho, como ficam os direitos sobre o material produzido até então? (ex: o freelancer retém os direitos / o contratante recebe o que foi produzido proporcionalmente ao valor pago)
+12. Valor do projeto (ex: R$ 3.000,00)
+13. Forma de pagamento (ex: 50% na assinatura e 50% na entrega)
+14. Prazo de entrega (ex: 30 dias após assinatura)
+15. Percentual de multa por atraso na entrega, por dia (ex: 0,5% ao dia)
+16. Percentual de multa por atraso no pagamento pelo contratante, por dia (ex: 0,5% ao dia)
+17. Percentual de multa por rescisão antecipada (ex: 20%)
+18. Cidade onde o contrato será assinado
+19. Estado (UF)`,
 
   'compra-venda': `
 CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
@@ -336,13 +368,15 @@ CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 7. Email do COMPRADOR
 8. CPF/CNPJ do COMPRADOR
 9. Descrição detalhada do bem (o que está sendo vendido)
-10. Valor total da venda
-11. Forma de pagamento
-12. Prazo para entrega do bem (ex: na assinatura, 7 dias, 30 dias)
-13. Percentual de multa por atraso no pagamento, por dia (ex: 0,5% ao dia)
-14. Percentual de multa por desistência/rescisão (ex: 20% do valor)
-15. Cidade onde o contrato será assinado
-16. Estado (UF)`
+10. Estado de conservação do bem (ex: novo, seminovo, usado em bom estado, usado com desgaste)
+11. Existem defeitos conhecidos no bem? Se sim, descreva-os. Se não, informe "nenhum defeito conhecido"
+12. Valor total da venda
+13. Forma de pagamento
+14. Prazo para entrega do bem (ex: na assinatura, 7 dias, 30 dias)
+15. Percentual de multa por atraso no pagamento, por dia (ex: 0,5% ao dia)
+16. Percentual de multa por desistência/rescisão (ex: 20% do valor)
+17. Cidade onde o contrato será assinado
+18. Estado (UF)`
 };
 
 // ============================================================
@@ -355,47 +389,53 @@ const CONTRACT_CLAUSES = {
     'CLÁUSULA 3ª — DAS OBRIGAÇÕES DO CONTRATANTE',
     'CLÁUSULA 4ª — DO PREÇO, DA FORMA E DAS CONDIÇÕES DE PAGAMENTO',
     'CLÁUSULA 5ª — DO PRAZO DE EXECUÇÃO E DA ENTREGA',
-    'CLÁUSULA 6ª — DAS PENALIDADES, DA MORA E DAS MULTAS CONTRATUAIS',
-    'CLÁUSULA 7ª — DA PROPRIEDADE INTELECTUAL E DOS DIREITOS AUTORAIS',
-    'CLÁUSULA 8ª — DA CONFIDENCIALIDADE E DO SIGILO PROFISSIONAL',
-    'CLÁUSULA 9ª — DA PROTEÇÃO DE DADOS PESSOAIS (LGPD — Lei 13.709/2018)',
-    'CLÁUSULA 10ª — DA ANTICORRUPÇÃO E DA CONFORMIDADE LEGAL (Lei 12.846/2013)',
-    'CLÁUSULA 11ª — DO CASO FORTUITO E DA FORÇA MAIOR',
-    'CLÁUSULA 12ª — DA RESCISÃO E DO DISTRATO',
-    'CLÁUSULA 13ª — DAS DISPOSIÇÕES GERAIS E DA INDEPENDÊNCIA DAS CLÁUSULAS',
-    'CLÁUSULA 14ª — DO FORO DE ELEIÇÃO'
+    'CLÁUSULA 6ª — DAS REVISÕES E ALTERAÇÕES DO ESCOPO',
+    'CLÁUSULA 7ª — DAS PENALIDADES, DA MORA E DAS MULTAS CONTRATUAIS',
+    'CLÁUSULA 8ª — DA PROPRIEDADE INTELECTUAL E DOS DIREITOS AUTORAIS',
+    'CLÁUSULA 9ª — DA CONFIDENCIALIDADE E DO SIGILO PROFISSIONAL',
+    'CLÁUSULA 10ª — DA PROTEÇÃO DE DADOS PESSOAIS (LGPD — Lei 13.709/2018)',
+    'CLÁUSULA 11ª — DA ANTICORRUPÇÃO E DA CONFORMIDADE LEGAL (Lei 12.846/2013)',
+    'CLÁUSULA 12ª — DO CASO FORTUITO E DA FORÇA MAIOR',
+    'CLÁUSULA 13ª — DA RESCISÃO E DO DISTRATO',
+    'CLÁUSULA 14ª — DAS DISPOSIÇÕES GERAIS E DA INDEPENDÊNCIA DAS CLÁUSULAS',
+    'CLÁUSULA 15ª — DO FORO DE ELEIÇÃO'
   ],
   'aluguel': [
     'CLÁUSULA 1ª — DO OBJETO E DA IDENTIFICAÇÃO DO IMÓVEL',
     'CLÁUSULA 2ª — DO PRAZO, DO INÍCIO E DO TÉRMINO DA LOCAÇÃO',
     'CLÁUSULA 3ª — DO VALOR DO ALUGUEL E DA FORMA DE PAGAMENTO',
-    'CLÁUSULA 4ª — DA CORREÇÃO MONETÁRIA E DO REAJUSTE ANUAL',
-    'CLÁUSULA 5ª — DAS PENALIDADES, DA MORA E DOS ENCARGOS POR ATRASO',
-    'CLÁUSULA 6ª — DAS OBRIGAÇÕES DO LOCADOR',
-    'CLÁUSULA 7ª — DAS OBRIGAÇÕES DO LOCATÁRIO',
-    'CLÁUSULA 8ª — DAS BENFEITORIAS E DAS REFORMAS NO IMÓVEL',
-    'CLÁUSULA 9ª — DA PROTEÇÃO DE DADOS PESSOAIS (LGPD — Lei 13.709/2018)',
-    'CLÁUSULA 10ª — DO CASO FORTUITO E DA FORÇA MAIOR',
-    'CLÁUSULA 11ª — DA RESCISÃO ANTECIPADA E DO AVISO PRÉVIO',
-    'CLÁUSULA 12ª — DA VISTORIA E DA RESTITUIÇÃO DO IMÓVEL',
-    'CLÁUSULA 13ª — DAS DISPOSIÇÕES GERAIS',
-    'CLÁUSULA 14ª — DO FORO DE ELEIÇÃO'
+    'CLÁUSULA 4ª — DA GARANTIA LOCATÍCIA',
+    'CLÁUSULA 5ª — DA CORREÇÃO MONETÁRIA E DO REAJUSTE ANUAL',
+    'CLÁUSULA 6ª — DAS PENALIDADES, DA MORA E DOS ENCARGOS POR ATRASO',
+    'CLÁUSULA 7ª — DAS OBRIGAÇÕES DO LOCADOR',
+    'CLÁUSULA 8ª — DAS OBRIGAÇÕES DO LOCATÁRIO',
+    'CLÁUSULA 9ª — DAS DESPESAS, DO IPTU E DO CONDOMÍNIO',
+    'CLÁUSULA 10ª — DA SUBLOCAÇÃO E DO USO DO IMÓVEL',
+    'CLÁUSULA 11ª — DAS BENFEITORIAS E DAS REFORMAS NO IMÓVEL',
+    'CLÁUSULA 12ª — DA PROTEÇÃO DE DADOS PESSOAIS (LGPD — Lei 13.709/2018)',
+    'CLÁUSULA 13ª — DO CASO FORTUITO E DA FORÇA MAIOR',
+    'CLÁUSULA 14ª — DA RESCISÃO ANTECIPADA E DO AVISO PRÉVIO',
+    'CLÁUSULA 15ª — DA VISTORIA E DA RESTITUIÇÃO DO IMÓVEL',
+    'CLÁUSULA 16ª — DAS DISPOSIÇÕES GERAIS',
+    'CLÁUSULA 17ª — DO FORO DE ELEIÇÃO'
   ],
   'parceria': [
     'CLÁUSULA 1ª — DO OBJETO E DA NATUREZA DA PARCERIA',
     'CLÁUSULA 2ª — DAS CONTRIBUIÇÕES E OBRIGAÇÕES DE CADA PARTE',
     'CLÁUSULA 3ª — DA PARTICIPAÇÃO NOS RESULTADOS, LUCROS E PERDAS',
     'CLÁUSULA 4ª — DA ADMINISTRAÇÃO E DA TOMADA DE DECISÕES',
-    'CLÁUSULA 5ª — DO PRAZO E DA VIGÊNCIA',
-    'CLÁUSULA 6ª — DAS PENALIDADES, DA MORA E DAS MULTAS CONTRATUAIS',
-    'CLÁUSULA 7ª — DA CONFIDENCIALIDADE E DO SIGILO COMERCIAL',
-    'CLÁUSULA 8ª — DA PROPRIEDADE INTELECTUAL DESENVOLVIDA EM PARCERIA',
-    'CLÁUSULA 9ª — DA PROTEÇÃO DE DADOS PESSOAIS (LGPD — Lei 13.709/2018)',
-    'CLÁUSULA 10ª — DA ANTICORRUPÇÃO E DA CONFORMIDADE LEGAL (Lei 12.846/2013)',
-    'CLÁUSULA 11ª — DO CASO FORTUITO E DA FORÇA MAIOR',
-    'CLÁUSULA 12ª — DA RESCISÃO, DO DISTRATO E DA LIQUIDAÇÃO',
-    'CLÁUSULA 13ª — DAS DISPOSIÇÕES GERAIS',
-    'CLÁUSULA 14ª — DO FORO DE ELEIÇÃO'
+    'CLÁUSULA 5ª — DA CONTA BANCÁRIA E DA MOVIMENTAÇÃO FINANCEIRA',
+    'CLÁUSULA 6ª — DO PRAZO E DA VIGÊNCIA',
+    'CLÁUSULA 7ª — DA NÃO-CONCORRÊNCIA',
+    'CLÁUSULA 8ª — DAS PENALIDADES, DA MORA E DAS MULTAS CONTRATUAIS',
+    'CLÁUSULA 9ª — DA CONFIDENCIALIDADE E DO SIGILO COMERCIAL',
+    'CLÁUSULA 10ª — DA PROPRIEDADE INTELECTUAL DESENVOLVIDA EM PARCERIA',
+    'CLÁUSULA 11ª — DA PROTEÇÃO DE DADOS PESSOAIS (LGPD — Lei 13.709/2018)',
+    'CLÁUSULA 12ª — DA ANTICORRUPÇÃO E DA CONFORMIDADE LEGAL (Lei 12.846/2013)',
+    'CLÁUSULA 13ª — DO CASO FORTUITO E DA FORÇA MAIOR',
+    'CLÁUSULA 14ª — DA RESCISÃO, DO DISTRATO E DA LIQUIDAÇÃO',
+    'CLÁUSULA 15ª — DAS DISPOSIÇÕES GERAIS',
+    'CLÁUSULA 16ª — DO FORO DE ELEIÇÃO'
   ],
   'confidencialidade': [
     'CLÁUSULA 1ª — DO OBJETO E DA FINALIDADE DO ACORDO',
@@ -416,30 +456,32 @@ const CONTRACT_CLAUSES = {
     'CLÁUSULA 3ª — DAS OBRIGAÇÕES DO CONTRATANTE',
     'CLÁUSULA 4ª — DO VALOR, DA FORMA E DAS CONDIÇÕES DE PAGAMENTO',
     'CLÁUSULA 5ª — DO PRAZO DE ENTREGA E DAS REVISÕES',
-    'CLÁUSULA 6ª — DAS PENALIDADES, DA MORA E DAS MULTAS CONTRATUAIS',
-    'CLÁUSULA 7ª — DA PROPRIEDADE INTELECTUAL E DA CESSÃO DE DIREITOS AUTORAIS',
-    'CLÁUSULA 8ª — DA CONFIDENCIALIDADE E DO SIGILO PROFISSIONAL',
-    'CLÁUSULA 9ª — DA PROTEÇÃO DE DADOS PESSOAIS (LGPD — Lei 13.709/2018)',
-    'CLÁUSULA 10ª — DA ANTICORRUPÇÃO E DA CONFORMIDADE LEGAL (Lei 12.846/2013)',
-    'CLÁUSULA 11ª — DA AUSÊNCIA DE VÍNCULO EMPREGATÍCIO',
-    'CLÁUSULA 12ª — DO CASO FORTUITO E DA FORÇA MAIOR',
-    'CLÁUSULA 13ª — DA RESCISÃO E DO DISTRATO',
-    'CLÁUSULA 14ª — DAS DISPOSIÇÕES GERAIS',
-    'CLÁUSULA 15ª — DO FORO DE ELEIÇÃO'
+    'CLÁUSULA 6ª — DOS DIREITOS SOBRE O MATERIAL EM CASO DE CANCELAMENTO',
+    'CLÁUSULA 7ª — DAS PENALIDADES, DA MORA E DAS MULTAS CONTRATUAIS',
+    'CLÁUSULA 8ª — DA PROPRIEDADE INTELECTUAL E DA CESSÃO DE DIREITOS AUTORAIS',
+    'CLÁUSULA 9ª — DA CONFIDENCIALIDADE E DO SIGILO PROFISSIONAL',
+    'CLÁUSULA 10ª — DA PROTEÇÃO DE DADOS PESSOAIS (LGPD — Lei 13.709/2018)',
+    'CLÁUSULA 11ª — DA ANTICORRUPÇÃO E DA CONFORMIDADE LEGAL (Lei 12.846/2013)',
+    'CLÁUSULA 12ª — DA AUSÊNCIA DE VÍNCULO EMPREGATÍCIO',
+    'CLÁUSULA 13ª — DO CASO FORTUITO E DA FORÇA MAIOR',
+    'CLÁUSULA 14ª — DA RESCISÃO E DO DISTRATO',
+    'CLÁUSULA 15ª — DAS DISPOSIÇÕES GERAIS',
+    'CLÁUSULA 16ª — DO FORO DE ELEIÇÃO'
   ],
   'compra-venda': [
     'CLÁUSULA 1ª — DO OBJETO E DA DESCRIÇÃO DO BEM',
-    'CLÁUSULA 2ª — DO PREÇO, DA FORMA E DAS CONDIÇÕES DE PAGAMENTO',
-    'CLÁUSULA 3ª — DA ENTREGA, DA TRADIÇÃO E DA TRANSFERÊNCIA DE POSSE',
-    'CLÁUSULA 4ª — DAS GARANTIAS LEGAIS E CONTRATUAIS (Vícios Redibitórios)',
-    'CLÁUSULA 5ª — DAS PENALIDADES, DA MORA E DAS MULTAS CONTRATUAIS',
-    'CLÁUSULA 6ª — DAS DECLARAÇÕES E GARANTIAS DO VENDEDOR',
-    'CLÁUSULA 7ª — DA PROTEÇÃO DE DADOS PESSOAIS (LGPD — Lei 13.709/2018)',
-    'CLÁUSULA 8ª — DA ANTICORRUPÇÃO E DA CONFORMIDADE LEGAL (Lei 12.846/2013)',
-    'CLÁUSULA 9ª — DO CASO FORTUITO E DA FORÇA MAIOR',
-    'CLÁUSULA 10ª — DA RESCISÃO E DO VENCIMENTO ANTECIPADO',
-    'CLÁUSULA 11ª — DAS DISPOSIÇÕES GERAIS',
-    'CLÁUSULA 12ª — DO FORO DE ELEIÇÃO'
+    'CLÁUSULA 2ª — DO ESTADO DE CONSERVAÇÃO E DOS DEFEITOS CONHECIDOS',
+    'CLÁUSULA 3ª — DO PREÇO, DA FORMA E DAS CONDIÇÕES DE PAGAMENTO',
+    'CLÁUSULA 4ª — DA ENTREGA, DA TRADIÇÃO E DA TRANSFERÊNCIA DE POSSE',
+    'CLÁUSULA 5ª — DAS GARANTIAS LEGAIS E CONTRATUAIS (Vícios Redibitórios)',
+    'CLÁUSULA 6ª — DAS PENALIDADES, DA MORA E DAS MULTAS CONTRATUAIS',
+    'CLÁUSULA 7ª — DAS DECLARAÇÕES E GARANTIAS DO VENDEDOR',
+    'CLÁUSULA 8ª — DA PROTEÇÃO DE DADOS PESSOAIS (LGPD — Lei 13.709/2018)',
+    'CLÁUSULA 9ª — DA ANTICORRUPÇÃO E DA CONFORMIDADE LEGAL (Lei 12.846/2013)',
+    'CLÁUSULA 10ª — DO CASO FORTUITO E DA FORÇA MAIOR',
+    'CLÁUSULA 11ª — DA RESCISÃO E DO VENCIMENTO ANTECIPADO',
+    'CLÁUSULA 12ª — DAS DISPOSIÇÕES GERAIS',
+    'CLÁUSULA 13ª — DO FORO DE ELEIÇÃO'
   ]
 };
 
@@ -520,7 +562,7 @@ const stripMarkdown = (text) => {
 };
 
 // ============================================================
-// ENVIO DE MENSAGEM PARA A IA (coleta) — lógica preservada
+// ENVIO DE MENSAGEM PARA A IA (coleta)
 // ============================================================
 export const sendMessageToIA = async (messages, contractType) => {
   if (!API_CONFIG.openaiApiKey) {
@@ -596,7 +638,7 @@ REGRAS ABSOLUTAS:
 3. Se um campo não foi respondido, use string vazia ""
 4. NÃO invente valores — use apenas exatamente o que o usuário disse
 5. Os campos "cidade" e "estado" são SOMENTE para eleição de foro — não confunda com endereço do imóvel ou outros campos
-6. Os campos de telefone e email devem ser extraídos corretamente para cada parte (contratante, contratado, locador, locatário, etc.)
+6. Os campos de telefone e email devem ser extraídos corretamente para cada parte
 
 Formato de saída esperado (exemplo):
 {"campo1":"valor respondido","campo2":"outro valor","campo3":""}`;
@@ -654,6 +696,14 @@ export const generateContractFromConversation = async (messages, contractType) =
   const contractTitle = selectedTemplate.title.toUpperCase();
   const legalRef = LEGAL_REF[contractType] || 'segundo o Código Civil Brasileiro';
 
+  // Data real do momento da geração — nunca deixar a IA inventar
+  const hoje = new Date();
+  const dataAtual = hoje.toLocaleDateString('pt-BR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+
   let filledTemplate = selectedTemplate.template;
   Object.keys(answers).forEach(key => {
     filledTemplate = filledTemplate.replace(new RegExp(`{${key}}`, 'g'), answers[key] || '');
@@ -670,6 +720,8 @@ export const generateContractFromConversation = async (messages, contractType) =
     .join('\n');
 
   const prompt = `Você é um Advogado Sênior especialista em Direito Civil e Empresarial Brasileiro. Elabore o instrumento contratual abaixo com rigor técnico-jurídico, vocabulário formal e estrutura de escritório de advocacia de alto padrão.
+
+⚠️ DATA OBRIGATÓRIA: A data de assinatura deste contrato é ${dataAtual}. USE EXATAMENTE ESTA DATA em toda menção a data, local e data, ou encerramento do contrato. NUNCA invente outra data.
 
 Com base nas informações abaixo, redija um ${contractTitle} completo, robusto e juridicamente impecável, ${legalRef}.
 
