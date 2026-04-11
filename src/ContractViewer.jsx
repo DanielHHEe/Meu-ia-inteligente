@@ -13,6 +13,14 @@ import PaymentModal from './PaymentModal';
 const formatContractText = (text) => {
   if (!text) return '';
 
+  // ── Remove tudo a partir da seção de assinaturas gerada pela IA ──
+  // Padrões comuns que a IA usa para iniciar a seção de assinaturas
+  const sigSectionPattern = /(\n[\s\S]*?)?(local\s+e\s+data|e,?\s+por\s+estarem\s+(assim\s+)?(justas?|de\s+acordo)|em\s+\d+\s*\(duas?\)\s+vias|assim\s+justas?\s+e\s+contratadas?|por\s+estarem\s+de\s+acordo|assinam\s+o\s+presente)/i;
+  const matchIdx = text.search(sigSectionPattern);
+  if (matchIdx !== -1) {
+    text = text.substring(0, matchIdx).trimEnd();
+  }
+
   const lines = text.split('\n');
   let html = '';
 
@@ -24,6 +32,18 @@ const formatContractText = (text) => {
       html += '<div style="height:10px"></div>';
       continue;
     }
+
+    // ── Ignora linhas de assinatura geradas pela IA (o componente tem seu próprio grid) ──
+    // Linha de underscores (ex: __________________________)
+    if (/^_{4,}\s*$/.test(trimmed)) continue;
+    // "Local e data:" / "Local:" / "Data:" isolados
+    if (/^(local\s*(e\s*data)?|data)\s*[:\-]?\s*[_,]*/i.test(trimmed) && trimmed.length < 40) continue;
+    // Linha de assinatura com nome logo abaixo de ___ (ex: "Assinatura: ___")
+    if (/^(assinatura|ass\.|rubrica)\s*[:\-]/i.test(trimmed)) continue;
+    // Linha "Nome:" sozinha ou com underscores
+    if (/^nome\s*:\s*[_\s]*$/i.test(trimmed)) continue;
+    // Linhas de qualificação de testemunha inline (Testemunha 1:, Testemunha 2:)
+    if (/^testemunha\s*\d?\s*[:\-]/i.test(trimmed)) continue;
 
     // Título principal do contrato (ex: CONTRATO DE PRESTAÇÃO DE SERVIÇOS)
     if (
@@ -240,14 +260,15 @@ const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
 
         /* ─── CORREÇÃO: grid de assinaturas sempre lado a lado ─── */
         .cv-sig-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 80px;
+          display: grid !important;
+          grid-template-columns: 1fr 1fr !important;
+          gap: 80px !important;
           margin-bottom: 48px;
+          width: 100%;
         }
         /* ─────────────────────────────────────────────────────── */
 
-        .cv-sig-block { text-align: center; width: 100%; }
+        .cv-sig-block { text-align: center; width: 100%; display: block !important; }
         .cv-sig-label { font-weight: 700; font-size: 13px; letter-spacing: 0.05em; color: #374151; margin-bottom: 40px; }
         .cv-sig-line {
           height: 1px; width: 100%; display: block;
