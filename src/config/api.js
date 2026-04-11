@@ -943,7 +943,7 @@ REDIJA O INSTRUMENTO CONTRATUAL COMPLETO AGORA, sem resumos, sem omissões e sem
       ].forEach(p => { contract = contract.replace(p, value); });
     });
 
-    return contract;
+    return contract;''
   } catch (error) {
     console.error('Erro na geração:', error);
     throw error;
