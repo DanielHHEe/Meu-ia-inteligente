@@ -180,6 +180,101 @@ const contractTypes = [
       { id: "estado",                 question: "Qual o Estado (UF)?",                                                 type: "text" },
     ],
   },
+  // ==================== NOVOS CONTRATOS ====================
+  {
+    id: "empreitada",
+    name: "Contrato de Empreitada",
+    icon: Building2,
+    description: "Obras e construção civil — art. 618 CC",
+    popular: false,
+    questions: [
+      { id: "contratante_nome",       question: "Qual o nome completo do CONTRATANTE (dono da obra)?",                           type: "text" },
+      { id: "contratante_cpf_cnpj",   question: "Qual o CPF ou CNPJ do CONTRATANTE?",                                            type: "text" },
+      { id: "empreiteiro_nome",       question: "Qual o nome completo do EMPREITEIRO (quem vai executar a obra)?",               type: "text" },
+      { id: "empreiteiro_cpf_cnpj",   question: "Qual o CPF ou CNPJ do EMPREITEIRO?",                                           type: "text" },
+      { id: "tipo_obra",              question: "Qual é o tipo de obra ou serviço? (Ex: construção, reforma, instalação elétrica)", type: "text" },
+      { id: "descricao_obra",         question: "Descreva detalhadamente o que será feito na obra:",                              type: "textarea" },
+      { id: "endereco_obra",          question: "Qual o endereço onde a obra será executada?",                                   type: "text" },
+      { id: "modalidade_empreitada",  question: "A empreitada é por preço global (valor fechado) ou por medição/etapas?",        type: "text" },
+      { id: "valor_total",            question: "Qual o valor total da empreitada? (Ex: R$ 50.000,00)",                          type: "text" },
+      { id: "forma_pagamento",        question: "Qual a forma de pagamento? (Ex: 30% na assinatura, 40% na metade, 30% na entrega)", type: "text" },
+      { id: "prazo_execucao",         question: "Qual o prazo total para conclusão da obra? (Ex: 90 dias, 6 meses)",             type: "text" },
+      { id: "prazo_garantia",         question: "Qual o prazo de garantia da obra após a entrega? (Ex: 5 anos para estrutura)",  type: "text" },
+      { id: "multa_atraso",           question: "Percentual de multa por atraso na entrega da obra, por dia? (Ex: 0,5% ao dia)", type: "text" },
+      { id: "multa_limite",           question: "Limite máximo da multa por atraso? (Ex: 10% do valor total)",                   type: "text" },
+      { id: "multa_rescisao",         question: "Percentual de multa por rescisão antecipada? (Ex: 20%)",                        type: "text" },
+      { id: "cidade",                 question: "Em qual cidade o contrato será assinado?",                                      type: "text" },
+      { id: "estado",                 question: "Qual o Estado (UF)?",                                                           type: "text" },
+    ],
+  },
+  {
+    id: "sociedade",
+    name: "Sociedade Simples",
+    icon: Users,
+    description: "Abertura de empresa entre sócios — CC arts. 997-1038",
+    popular: false,
+    questions: [
+      { id: "socio_a_nome",         question: "Qual o nome completo do SÓCIO A?",                                              type: "text" },
+      { id: "socio_a_cpf",          question: "Qual o CPF do SÓCIO A?",                                                        type: "text" },
+      { id: "socio_a_quota",        question: "Qual o percentual de participação (quota) do SÓCIO A? (Ex: 50%)",               type: "text" },
+      { id: "socio_b_nome",         question: "Qual o nome completo do SÓCIO B?",                                              type: "text" },
+      { id: "socio_b_cpf",          question: "Qual o CPF do SÓCIO B?",                                                        type: "text" },
+      { id: "socio_b_quota",        question: "Qual o percentual de participação (quota) do SÓCIO B? (Ex: 50%)",               type: "text" },
+      { id: "razao_social",         question: "Qual será a razão social da empresa? (nome oficial registrado)",                 type: "text" },
+      { id: "nome_fantasia",        question: "Qual será o nome fantasia? (se não houver, informe 'sem nome fantasia')",        type: "text" },
+      { id: "objeto_social",        question: "Qual é o objeto social? (o que a empresa vai fazer — descreva as atividades)",  type: "textarea" },
+      { id: "endereco_sede",        question: "Qual o endereço da sede da empresa?",                                           type: "text" },
+      { id: "capital_social",       question: "Qual o valor do capital social? (Ex: R$ 10.000,00)",                            type: "text" },
+      { id: "distribuicao_lucros",  question: "Como será feita a distribuição dos lucros entre os sócios? (Ex: proporcional às quotas)", type: "text" },
+      { id: "multa_rescisao",       question: "Percentual de multa por rescisão antecipada ou descumprimento? (Ex: 20%)",      type: "text" },
+      { id: "cidade",               question: "Em qual cidade o contrato será assinado?",                                      type: "text" },
+      { id: "estado",               question: "Qual o Estado (UF)?",                                                           type: "text" },
+    ],
+  },
+  {
+    id: "representacao-comercial",
+    name: "Representação Comercial",
+    icon: Briefcase,
+    description: "Representantes comerciais — Lei 4.886/65",
+    popular: false,
+    questions: [
+      { id: "representada_nome",        question: "Qual o nome ou razão social da empresa REPRESENTADA (quem fabrica/vende)?",    type: "text" },
+      { id: "representada_cnpj",        question: "Qual o CNPJ da REPRESENTADA?",                                                 type: "text" },
+      { id: "representante_nome",       question: "Qual o nome completo ou razão social do REPRESENTANTE COMERCIAL?",             type: "text" },
+      { id: "representante_cpf_cnpj",   question: "Qual o CPF ou CNPJ do REPRESENTANTE?",                                        type: "text" },
+      { id: "produtos_representados",   question: "Quais produtos ou serviços o representante irá vender? (descreva)",            type: "textarea" },
+      { id: "territorio_atuacao",       question: "Qual o território de atuação do representante? (Ex: estado de SP, região Sul)", type: "text" },
+      { id: "exclusividade_territorial",question: "O representante terá exclusividade nesse território? (sim ou não)",            type: "text" },
+      { id: "percentual_comissao",      question: "Qual o percentual de comissão do representante? (Ex: 5%)",                     type: "text" },
+      { id: "base_calculo_comissao",    question: "A comissão é calculada sobre o quê? (Ex: valor faturado e recebido)",          type: "text" },
+      { id: "prazo_contrato",           question: "Qual o prazo de duração do contrato? (Ex: 12 meses, indeterminado)",           type: "text" },
+      { id: "multa_descumprimento",     question: "Percentual de multa por descumprimento das obrigações? (Ex: 20%)",             type: "text" },
+      { id: "cidade",                   question: "Em qual cidade o contrato será assinado?",                                     type: "text" },
+      { id: "estado",                   question: "Qual o Estado (UF)?",                                                          type: "text" },
+    ],
+  },
+  {
+    id: "comodato",
+    name: "Contrato de Comodato",
+    icon: FileText,
+    description: "Empréstimo gratuito de bem — CC arts. 579-585",
+    popular: false,
+    questions: [
+      { id: "comodante_nome",        question: "Qual o nome completo do COMODANTE (dono do bem que vai emprestar)?",             type: "text" },
+      { id: "comodante_cpf_cnpj",    question: "Qual o CPF ou CNPJ do COMODANTE?",                                              type: "text" },
+      { id: "comodatario_nome",      question: "Qual o nome completo do COMODATÁRIO (quem recebe o bem emprestado)?",           type: "text" },
+      { id: "comodatario_cpf_cnpj",  question: "Qual o CPF ou CNPJ do COMODATÁRIO?",                                           type: "text" },
+      { id: "descricao_bem",         question: "O que está sendo emprestado? Descreva o bem com detalhes:",                     type: "textarea" },
+      { id: "estado_conservacao",    question: "Qual o estado de conservação do bem no momento da entrega?",                    type: "text" },
+      { id: "finalidade_uso",        question: "Para qual finalidade o comodatário irá usar o bem?",                            type: "text" },
+      { id: "prazo_comodato",        question: "Qual o prazo do empréstimo? (Ex: 30 dias, 6 meses, indeterminado)",             type: "text" },
+      { id: "responsavel_manutencao",question: "Quem é responsável pela manutenção do bem durante o empréstimo?",              type: "text" },
+      { id: "multa_dano",            question: "Como será calculada a indenização em caso de dano ao bem pelo comodatário?",    type: "text" },
+      { id: "multa_atraso_devolucao",question: "Percentual de multa por dia de atraso na devolução do bem? (Ex: 0,5% ao dia)", type: "text" },
+      { id: "cidade",                question: "Em qual cidade o contrato será assinado?",                                      type: "text" },
+      { id: "estado",                question: "Qual o Estado (UF)?",                                                           type: "text" },
+    ],
+  },
 ];
 
 // ==================== PAYMENT MODAL ====================
@@ -545,7 +640,6 @@ const ChatUserAvatar = ({ showInChat }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
-  // Fecha o menu ao clicar fora
   useEffect(() => {
     const handler = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
@@ -620,7 +714,6 @@ const ChatUserAvatar = ({ showInChat }) => {
           </span>
         </button>
 
-        {/* Menu dropdown */}
         <AnimatePresence>
           {menuOpen && (
             <motion.div

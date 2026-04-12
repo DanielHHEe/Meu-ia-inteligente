@@ -228,6 +228,155 @@ export const CONTRACT_TEMPLATES = {
       CIDADE: {cidade}
       ESTADO: {estado}
     `
+  },
+  'empreitada': {
+    title: 'Contrato de Empreitada',
+    template: `
+      CONTRATANTE: {contratante_nome}
+      CPF/CNPJ: {contratante_cpf_cnpj}
+      TELEFONE: {contratante_telefone}
+      EMAIL: {contratante_email}
+
+      EMPREITEIRO: {empreiteiro_nome}
+      CPF/CNPJ: {empreiteiro_cpf_cnpj}
+      TELEFONE: {empreiteiro_telefone}
+      EMAIL: {empreiteiro_email}
+      REGISTRO PROFISSIONAL: {empreiteiro_registro}
+
+      TIPO DE OBRA/SERVIÇO: {tipo_obra}
+      DESCRIÇÃO DA OBRA: {descricao_obra}
+      ENDEREÇO DA OBRA: {endereco_obra}
+      MODALIDADE DA EMPREITADA: {modalidade_empreitada}
+
+      RESPONSÁVEL PELOS MATERIAIS: {responsavel_materiais}
+      RESPONSÁVEL PELOS EQUIPAMENTOS: {responsavel_equipamentos}
+      SUBEMPREITADA PERMITIDA: {permite_subempreitada}
+      RESPONSÁVEL PELO ART/RRT: {responsavel_art}
+      SEGURO DE OBRA: {seguro_obra}
+      LICENÇAS E ALVARÁS: {responsavel_licencas}
+
+      VALOR TOTAL: R$ {valor_total}
+      FORMA DE PAGAMENTO: {forma_pagamento}
+      CRONOGRAMA DE MEDIÇÕES: {cronograma_medicoes}
+      PRAZO DE EXECUÇÃO: {prazo_execucao}
+      PRAZO DE GARANTIA DA OBRA: {prazo_garantia}
+
+      MULTA POR ATRASO: {multa_atraso}% ao dia, limitado a {multa_limite}%
+      MULTA POR RESCISÃO: {multa_rescisao}%
+
+      CIDADE: {cidade}
+      ESTADO: {estado}
+    `
+  },
+  'sociedade': {
+    title: 'Contrato Social de Sociedade Simples',
+    template: `
+      SÓCIO A: {socio_a_nome}
+      CPF: {socio_a_cpf}
+      ESTADO CIVIL: {socio_a_estado_civil}
+      TELEFONE: {socio_a_telefone}
+      EMAIL: {socio_a_email}
+      QUOTA: {socio_a_quota}%
+
+      SÓCIO B: {socio_b_nome}
+      CPF: {socio_b_cpf}
+      ESTADO CIVIL: {socio_b_estado_civil}
+      TELEFONE: {socio_b_telefone}
+      EMAIL: {socio_b_email}
+      QUOTA: {socio_b_quota}%
+
+      SÓCIOS ADICIONAIS: {socios_adicionais}
+
+      RAZÃO SOCIAL: {razao_social}
+      NOME FANTASIA: {nome_fantasia}
+      OBJETO SOCIAL: {objeto_social}
+      SEDE: {endereco_sede}
+      CAPITAL SOCIAL: R$ {capital_social}
+      INTEGRALIZAÇÃO DO CAPITAL: {integralizacao_capital}
+
+      ADMINISTRAÇÃO: {administracao}
+      PODERES DO ADMINISTRADOR: {poderes_administrador}
+      PRÓ-LABORE: {pro_labore}
+      DISTRIBUIÇÃO DE LUCROS: {distribuicao_lucros}
+      DISTRIBUIÇÃO DE PERDAS: {distribuicao_perdas}
+      RETIRADA DE SÓCIOS: {retirada_socios}
+      TRANSFERÊNCIA DE QUOTAS: {transferencia_quotas}
+      PRAZO DA SOCIEDADE: {prazo_sociedade}
+      NÃO-CONCORRÊNCIA: {nao_concorrencia}
+
+      CIDADE: {cidade}
+      ESTADO: {estado}
+    `
+  },
+  'representacao-comercial': {
+    title: 'Contrato de Representação Comercial',
+    template: `
+      REPRESENTADA: {representada_nome}
+      CNPJ: {representada_cnpj}
+      TELEFONE: {representada_telefone}
+      EMAIL: {representada_email}
+
+      REPRESENTANTE: {representante_nome}
+      CPF/CNPJ: {representante_cpf_cnpj}
+      REGISTRO CORE: {representante_core}
+      TELEFONE: {representante_telefone}
+      EMAIL: {representante_email}
+
+      PRODUTOS/SERVIÇOS REPRESENTADOS: {produtos_representados}
+      TERRITÓRIO DE ATUAÇÃO: {territorio_atuacao}
+      EXCLUSIVIDADE TERRITORIAL: {exclusividade_territorial}
+      CLIENTES EXCLUÍDOS DA REPRESENTAÇÃO: {clientes_excluidos}
+
+      COMISSÃO: {percentual_comissao}% sobre {base_calculo_comissao}
+      PRAZO DE PAGAMENTO DA COMISSÃO: {prazo_pagamento_comissao}
+      ESTORNO DE COMISSÃO: {estorno_comissao}
+      META MÍNIMA DE VENDAS: {meta_minima}
+      CONSEQUÊNCIA DE NÃO ATINGIR META: {consequencia_meta}
+
+      PRAZO DO CONTRATO: {prazo_contrato}
+      AVISO PRÉVIO PARA RESCISÃO: {aviso_previo}
+      INDENIZAÇÃO POR RESCISÃO SEM JUSTA CAUSA: {indenizacao_rescisao}
+
+      MULTA POR DESCUMPRIMENTO: {multa_descumprimento}%
+
+      CIDADE: {cidade}
+      ESTADO: {estado}
+    `
+  },
+  'comodato': {
+    title: 'Contrato de Comodato',
+    template: `
+      COMODANTE: {comodante_nome}
+      CPF/CNPJ: {comodante_cpf_cnpj}
+      TELEFONE: {comodante_telefone}
+      EMAIL: {comodante_email}
+
+      COMODATÁRIO: {comodatario_nome}
+      CPF/CNPJ: {comodatario_cpf_cnpj}
+      TELEFONE: {comodatario_telefone}
+      EMAIL: {comodatario_email}
+
+      BEM EMPRESTADO: {descricao_bem}
+      ESTADO DE CONSERVAÇÃO NA ENTREGA: {estado_conservacao}
+      FINALIDADE DO USO: {finalidade_uso}
+      LOCAL DE USO DO BEM: {local_uso}
+      VISTORIA DE ENTREGA COM LAUDO: {vistoria_entrega}
+
+      PRAZO DO COMODATO: {prazo_comodato}
+      RENOVAÇÃO AUTOMÁTICA: {renovacao_automatica}
+      AVISO PRÉVIO PARA DEVOLUÇÃO: {aviso_previo_devolucao}
+
+      RESPONSÁVEL PELA MANUTENÇÃO: {responsavel_manutencao}
+      RESPONSÁVEL PELO SEGURO: {responsavel_seguro}
+      PERMITE SUBEMPRÉSTIMO: {permite_subemprestimo}
+      PERMITE MODIFICAÇÕES NO BEM: {permite_modificacoes}
+
+      MULTA POR DANO AO BEM: {multa_dano}
+      MULTA POR ATRASO NA DEVOLUÇÃO: {multa_atraso_devolucao}% ao dia
+
+      CIDADE: {cidade}
+      ESTADO: {estado}
+    `
   }
 };
 
@@ -298,6 +447,47 @@ export const FIELD_ORDER_BY_CONTRACT = {
     'arras', 'despesas_transferencia', 'prazo_entrega_bem',
     'documentacao_entrega', 'vistoria_formal', 'garantia_contratual',
     'multa_atraso_pagamento', 'multa_desistencia',
+    'cidade', 'estado'
+  ],
+  'empreitada': [
+    'contratante_nome', 'contratante_telefone', 'contratante_email', 'contratante_cpf_cnpj',
+    'empreiteiro_nome', 'empreiteiro_telefone', 'empreiteiro_email', 'empreiteiro_cpf_cnpj',
+    'empreiteiro_registro',
+    'tipo_obra', 'descricao_obra', 'endereco_obra', 'modalidade_empreitada',
+    'responsavel_materiais', 'responsavel_equipamentos', 'permite_subempreitada',
+    'responsavel_art', 'seguro_obra', 'responsavel_licencas',
+    'valor_total', 'forma_pagamento', 'cronograma_medicoes', 'prazo_execucao', 'prazo_garantia',
+    'multa_atraso', 'multa_limite', 'multa_rescisao',
+    'cidade', 'estado'
+  ],
+  'sociedade': [
+    'socio_a_nome', 'socio_a_cpf', 'socio_a_estado_civil', 'socio_a_telefone', 'socio_a_email', 'socio_a_quota',
+    'socio_b_nome', 'socio_b_cpf', 'socio_b_estado_civil', 'socio_b_telefone', 'socio_b_email', 'socio_b_quota',
+    'socios_adicionais',
+    'razao_social', 'nome_fantasia', 'objeto_social', 'endereco_sede',
+    'capital_social', 'integralizacao_capital',
+    'administracao', 'poderes_administrador', 'pro_labore',
+    'distribuicao_lucros', 'distribuicao_perdas',
+    'retirada_socios', 'transferencia_quotas', 'prazo_sociedade', 'nao_concorrencia',
+    'cidade', 'estado'
+  ],
+  'representacao-comercial': [
+    'representada_nome', 'representada_cnpj', 'representada_telefone', 'representada_email',
+    'representante_nome', 'representante_cpf_cnpj', 'representante_core', 'representante_telefone', 'representante_email',
+    'produtos_representados', 'territorio_atuacao', 'exclusividade_territorial', 'clientes_excluidos',
+    'percentual_comissao', 'base_calculo_comissao', 'prazo_pagamento_comissao',
+    'estorno_comissao', 'meta_minima', 'consequencia_meta',
+    'prazo_contrato', 'aviso_previo', 'indenizacao_rescisao',
+    'multa_descumprimento',
+    'cidade', 'estado'
+  ],
+  'comodato': [
+    'comodante_nome', 'comodante_telefone', 'comodante_email', 'comodante_cpf_cnpj',
+    'comodatario_nome', 'comodatario_telefone', 'comodatario_email', 'comodatario_cpf_cnpj',
+    'descricao_bem', 'estado_conservacao', 'finalidade_uso', 'local_uso', 'vistoria_entrega',
+    'prazo_comodato', 'renovacao_automatica', 'aviso_previo_devolucao',
+    'responsavel_manutencao', 'responsavel_seguro', 'permite_subemprestimo', 'permite_modificacoes',
+    'multa_dano', 'multa_atraso_devolucao',
     'cidade', 'estado'
   ]
 };
@@ -481,7 +671,127 @@ CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 23. Percentual de multa por atraso no pagamento, por dia (ex: 0,5% ao dia)
 24. Percentual de multa por desistência/rescisão (ex: 20% do valor)
 25. Cidade onde o contrato será assinado
-26. Estado (UF)`
+26. Estado (UF)`,
+
+  'empreitada': `
+CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
+1. Nome completo do CONTRATANTE (dono da obra)
+2. Número de telefone do CONTRATANTE
+3. Email do CONTRATANTE
+4. CPF ou CNPJ do CONTRATANTE
+5. Nome completo do EMPREITEIRO (quem vai executar a obra)
+6. Número de telefone do EMPREITEIRO
+7. Email do EMPREITEIRO
+8. CPF ou CNPJ do EMPREITEIRO
+9. O empreiteiro possui registro profissional? Se sim, informe o número e o conselho (ex: CREA, CAU). Se não, informe "sem registro".
+10. Qual é o tipo de obra ou serviço? (ex: construção de casa, reforma de escritório, instalação elétrica, pintura, demolição)
+11. Descreva detalhadamente o que será feito na obra
+12. Qual o endereço onde a obra será executada?
+13. Esta empreitada é por preço global (valor fechado para tudo) ou por medição/etapas (paga conforme o avanço da obra)?
+14. Quem fornece os materiais de construção — o contratante, o empreiteiro, ou cada um é responsável por uma parte? (descreva)
+15. Quem fornece os equipamentos e ferramentas necessários para a obra — o contratante ou o empreiteiro?
+16. O empreiteiro pode contratar outros profissionais ou empresas para ajudar na obra (subempreitada)? (sim ou não)
+17. Quem é responsável por emitir a ART ou RRT (documento técnico de responsabilidade pela obra) — o empreiteiro ou o contratante? (ex: empreiteiro arca com o custo e emite em seu nome)
+18. Haverá seguro de obra durante a execução? Se sim, quem contrata e paga? (se não houver, informe "sem seguro de obra")
+19. Quem é responsável por obter as licenças e alvarás necessários para a obra junto à prefeitura — o contratante ou o empreiteiro?
+20. Qual o valor total da empreitada? (ex: R$ 50.000,00)
+21. Qual a forma de pagamento? (ex: 30% na assinatura, 40% na metade da obra, 30% na entrega)
+22. Como será feita a medição do avanço da obra para liberar os pagamentos por etapa? (ex: vistorias mensais, entrega de cada fase definida em cronograma — se for preço global, informe "pagamento único ou conforme acordado")
+23. Qual o prazo total para conclusão da obra? (ex: 90 dias, 6 meses)
+24. Qual o prazo de garantia da obra após a entrega? (ex: 5 anos para estrutura conforme o Código Civil, 1 ano para acabamento)
+25. Percentual de multa por atraso na entrega da obra, por dia (ex: 0,5% ao dia)
+26. Limite máximo da multa por atraso (ex: 10% do valor total)
+27. Percentual de multa por rescisão antecipada (ex: 20%)
+28. Cidade onde o contrato será assinado
+29. Estado (UF)`,
+
+  'sociedade': `
+CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
+1. Nome completo do SÓCIO A
+2. CPF do SÓCIO A
+3. Estado civil do SÓCIO A
+4. Número de telefone do SÓCIO A
+5. Email do SÓCIO A
+6. Qual o percentual de participação (quota) do SÓCIO A na sociedade? (ex: 50%)
+7. Nome completo do SÓCIO B
+8. CPF do SÓCIO B
+9. Estado civil do SÓCIO B
+10. Número de telefone do SÓCIO B
+11. Email do SÓCIO B
+12. Qual o percentual de participação (quota) do SÓCIO B na sociedade? (ex: 50%)
+13. Há mais sócios além do A e B? Se sim, informe nome, CPF, telefone, email e percentual de cada um. Se não, informe "apenas dois sócios".
+14. Qual será a razão social da empresa? (nome oficial registrado)
+15. Qual será o nome fantasia? (nome usado no dia a dia — se não houver, informe "sem nome fantasia")
+16. Qual é o objeto social? (o que a empresa vai fazer — descreva as atividades)
+17. Qual o endereço da sede da empresa?
+18. Qual o valor do capital social? (o dinheiro ou bens que os sócios colocam para abrir a empresa — ex: R$ 10.000,00)
+19. Como o capital social será integralizado? (ex: 100% em dinheiro no ato da assinatura / 50% agora e 50% em 30 dias / parte em dinheiro e parte em equipamentos)
+20. Quem vai administrar a empresa no dia a dia? (pode ser um dos sócios ou todos — informe o nome)
+21. Quais os poderes do administrador? (ex: assinar contratos até R$ 10.000 sozinho, acima disso precisa de aprovação de todos os sócios)
+22. Os sócios que trabalham na empresa receberão pró-labore (salário mensal)? Se sim, qual o valor para cada um? (se não, informe "sem pró-labore")
+23. Como será feita a distribuição dos lucros entre os sócios? (ex: proporcional às quotas, ou de outra forma)
+24. Como serão distribuídas as perdas entre os sócios em caso de prejuízo? (ex: proporcional às quotas)
+25. O que acontece se um sócio quiser sair da sociedade? Qual o prazo de aviso prévio e como será calculado o valor da sua parte?
+26. Um sócio pode vender ou transferir sua quota para outra pessoa sem a aprovação dos demais sócios? (sim ou não — se não, como funciona o direito de preferência dos outros sócios)
+27. Qual o prazo de duração da sociedade? (ex: indeterminado, 5 anos)
+28. Os sócios ficam proibidos de abrir ou participar de empresas concorrentes enquanto forem sócios? Por quanto tempo essa restrição vale após a saída? (ex: sim, proibido durante a sociedade e por 2 anos após a saída)
+29. Cidade onde o contrato será assinado
+30. Estado (UF)`,
+
+  'representacao-comercial': `
+CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
+1. Nome completo ou razão social da empresa REPRESENTADA (quem fabrica ou vende o produto)
+2. CNPJ da REPRESENTADA
+3. Número de telefone da REPRESENTADA
+4. Email da REPRESENTADA
+5. Nome completo ou razão social do REPRESENTANTE COMERCIAL (quem vai vender)
+6. CPF ou CNPJ do REPRESENTANTE
+7. O representante possui registro no CORE (Conselho dos Representantes Comerciais)? Se sim, informe o número. Se não, informe "sem registro CORE".
+8. Número de telefone do REPRESENTANTE
+9. Email do REPRESENTANTE
+10. Quais produtos ou serviços o representante irá vender? (descreva)
+11. Qual o território de atuação do representante? (ex: estado de São Paulo, região Sul do Brasil, todo o Brasil)
+12. O representante terá exclusividade nesse território — ou seja, a representada não poderá contratar outros representantes para a mesma área? (sim ou não)
+13. Há clientes ou contas que ficam fora da representação — ou seja, que o representante não pode atender e a empresa atende diretamente? Se sim, liste-os. Se não, informe "sem clientes excluídos".
+14. Qual o percentual de comissão do representante? (ex: 5%)
+15. Essa comissão é calculada sobre o quê — valor bruto do pedido, valor líquido, valor faturado ou valor recebido? (ex: sobre o valor faturado e recebido pelo cliente)
+16. Em qual prazo a comissão será paga ao representante após a venda ser confirmada ou o cliente pagar? (ex: até o dia 10 do mês seguinte ao recebimento)
+17. Se o cliente não pagar a compra, a comissão do representante será estornada (devolvida)? (sim ou não)
+18. Haverá meta mínima de vendas que o representante deve atingir? Se sim, qual o valor ou volume por período? (se não houver meta, informe "sem meta mínima")
+19. O que acontece se o representante não atingir a meta? (ex: rescisão do contrato, redução de território, advertência — se não houver meta, informe "não aplicável")
+20. Qual o prazo de duração do contrato? (ex: 12 meses, indeterminado)
+21. Qual o prazo de aviso prévio para encerrar o contrato? (ex: 30 dias — a Lei 4.886/65 exige aviso prévio mínimo de 30 dias para contratos com mais de 6 meses)
+22. Em caso de rescisão sem justa causa pela representada, haverá indenização ao representante? Se sim, qual o critério? (ex: 1/12 das comissões dos últimos 12 meses por ano de contrato, conforme a lei)
+23. Percentual de multa por descumprimento das obrigações contratuais (ex: 20% do valor das comissões dos últimos 12 meses)
+24. Cidade onde o contrato será assinado
+25. Estado (UF)`,
+
+  'comodato': `
+CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
+1. Nome completo do COMODANTE (quem empresta o bem — o dono)
+2. Número de telefone do COMODANTE
+3. Email do COMODANTE
+4. CPF ou CNPJ do COMODANTE
+5. Nome completo do COMODATÁRIO (quem recebe o bem emprestado)
+6. Número de telefone do COMODATÁRIO
+7. Email do COMODATÁRIO
+8. CPF ou CNPJ do COMODATÁRIO
+9. O que está sendo emprestado? Descreva o bem com detalhes (ex: notebook Dell Inspiron, número de série XYZ / veículo Ford Ka 2020 placa ABC-1234 / impressora HP modelo X)
+10. Qual o estado de conservação do bem no momento da entrega? (ex: bom estado, com arranhão na lateral, funcionando perfeitamente)
+11. Para qual finalidade o comodatário irá usar o bem? (ex: uso em trabalho home office, para exposição em evento, para uso na obra da rua X)
+12. Onde o bem ficará guardado ou será utilizado durante o comodato? (ex: na residência do comodatário, no escritório da empresa, em obra específica)
+13. Será realizada vistoria formal do bem na entrega, com laudo descritivo ou fotos? (sim ou não)
+14. Qual o prazo do empréstimo? (ex: 30 dias, 6 meses, indeterminado)
+15. O contrato se renova automaticamente se nenhuma das partes se manifestar? (sim ou não)
+16. Com quanto tempo de antecedência o comodatário deve avisar que vai devolver o bem? (ex: 15 dias antes — se o prazo for fixo, informe "devolução na data de término")
+17. Quem é responsável pela manutenção e consertos do bem durante o período de empréstimo — o comodante ou o comodatário? (ex: manutenção ordinária fica com o comodatário e reparos maiores com o comodante)
+18. Haverá seguro para o bem durante o comodato? Se sim, quem contrata e paga? (se não houver, informe "sem seguro")
+19. O comodatário pode emprestar o bem para outra pessoa (subempréstimo)? (sim ou não)
+20. O comodatário pode fazer modificações, adaptações ou melhorias no bem? (sim ou não — se sim, descreva o que é permitido)
+21. Em caso de dano ao bem por culpa do comodatário, como será calculado o valor da indenização? (ex: valor de mercado do bem na data do dano, custo do reparo, valor declarado na vistoria)
+22. Percentual de multa por dia de atraso na devolução do bem (ex: 0,5% ao dia sobre o valor do bem)
+23. Cidade onde o contrato será assinado
+24. Estado (UF)`
 };
 
 // ============================================================
@@ -607,6 +917,84 @@ const CONTRACT_CLAUSES = {
     'CLÁUSULA 14ª — DA RESCISÃO E DO VENCIMENTO ANTECIPADO',
     'CLÁUSULA 15ª — DAS DISPOSIÇÕES GERAIS',
     'CLÁUSULA 16ª — DO FORO DE ELEIÇÃO'
+  ],
+  'empreitada': [
+    'CLÁUSULA 1ª — DO OBJETO, DO TIPO E DA DESCRIÇÃO DA OBRA',
+    'CLÁUSULA 2ª — DA MODALIDADE DA EMPREITADA E DO ESCOPO DOS SERVIÇOS',
+    'CLÁUSULA 3ª — DAS OBRIGAÇÕES DO EMPREITEIRO',
+    'CLÁUSULA 4ª — DAS OBRIGAÇÕES DO CONTRATANTE',
+    'CLÁUSULA 5ª — DOS MATERIAIS, EQUIPAMENTOS E INSUMOS',
+    'CLÁUSULA 6ª — DA SUBEMPREITADA',
+    'CLÁUSULA 7ª — DA RESPONSABILIDADE TÉCNICA, ART/RRT E LICENÇAS',
+    'CLÁUSULA 8ª — DO SEGURO DE OBRA E DE RESPONSABILIDADE CIVIL',
+    'CLÁUSULA 9ª — DO PREÇO, DAS MEDIÇÕES E DAS CONDIÇÕES DE PAGAMENTO',
+    'CLÁUSULA 10ª — DO PRAZO DE EXECUÇÃO E DO CRONOGRAMA',
+    'CLÁUSULA 11ª — DA GARANTIA DA OBRA E DA RESPONSABILIDADE POR VÍCIOS (art. 618 CC)',
+    'CLÁUSULA 12ª — DAS PENALIDADES, DA MORA E DAS MULTAS CONTRATUAIS',
+    'CLÁUSULA 13ª — DA SEGURANÇA DO TRABALHO E DAS OBRIGAÇÕES TRABALHISTAS',
+    'CLÁUSULA 14ª — DA PROTEÇÃO DE DADOS PESSOAIS (LGPD — Lei 13.709/2018)',
+    'CLÁUSULA 15ª — DA ANTICORRUPÇÃO E DA CONFORMIDADE LEGAL (Lei 12.846/2013)',
+    'CLÁUSULA 16ª — DO CASO FORTUITO E DA FORÇA MAIOR',
+    'CLÁUSULA 17ª — DA RESCISÃO E DO DISTRATO',
+    'CLÁUSULA 18ª — DAS DISPOSIÇÕES GERAIS',
+    'CLÁUSULA 19ª — DO FORO DE ELEIÇÃO'
+  ],
+  'sociedade': [
+    'CLÁUSULA 1ª — DA DENOMINAÇÃO, DA SEDE E DO PRAZO DE DURAÇÃO',
+    'CLÁUSULA 2ª — DO OBJETO SOCIAL',
+    'CLÁUSULA 3ª — DO CAPITAL SOCIAL, DAS QUOTAS E DA INTEGRALIZAÇÃO',
+    'CLÁUSULA 4ª — DOS DIREITOS E OBRIGAÇÕES DOS SÓCIOS',
+    'CLÁUSULA 5ª — DA ADMINISTRAÇÃO E DOS PODERES DO ADMINISTRADOR',
+    'CLÁUSULA 6ª — DO PRÓ-LABORE E DA REMUNERAÇÃO DOS SÓCIOS',
+    'CLÁUSULA 7ª — DA APURAÇÃO DE RESULTADOS E DA DISTRIBUIÇÃO DE LUCROS',
+    'CLÁUSULA 8ª — DA DISTRIBUIÇÃO DE PERDAS E DA RESPONSABILIDADE DOS SÓCIOS',
+    'CLÁUSULA 9ª — DA CESSÃO E TRANSFERÊNCIA DE QUOTAS',
+    'CLÁUSULA 10ª — DA RETIRADA, EXCLUSÃO E FALECIMENTO DE SÓCIO',
+    'CLÁUSULA 11ª — DA NÃO-CONCORRÊNCIA E DO SIGILO COMERCIAL',
+    'CLÁUSULA 12ª — DA DISSOLUÇÃO E LIQUIDAÇÃO DA SOCIEDADE',
+    'CLÁUSULA 13ª — DA PROTEÇÃO DE DADOS PESSOAIS (LGPD — Lei 13.709/2018)',
+    'CLÁUSULA 14ª — DA ANTICORRUPÇÃO E DA CONFORMIDADE LEGAL (Lei 12.846/2013)',
+    'CLÁUSULA 15ª — DO CASO FORTUITO E DA FORÇA MAIOR',
+    'CLÁUSULA 16ª — DAS DISPOSIÇÕES GERAIS',
+    'CLÁUSULA 17ª — DO FORO DE ELEIÇÃO'
+  ],
+  'representacao-comercial': [
+    'CLÁUSULA 1ª — DO OBJETO E DA NATUREZA DA REPRESENTAÇÃO',
+    'CLÁUSULA 2ª — DO TERRITÓRIO DE ATUAÇÃO E DA EXCLUSIVIDADE',
+    'CLÁUSULA 3ª — DOS PRODUTOS E SERVIÇOS REPRESENTADOS',
+    'CLÁUSULA 4ª — DAS OBRIGAÇÕES DO REPRESENTANTE',
+    'CLÁUSULA 5ª — DAS OBRIGAÇÕES DA REPRESENTADA',
+    'CLÁUSULA 6ª — DA COMISSÃO, DO CÁLCULO E DO PRAZO DE PAGAMENTO',
+    'CLÁUSULA 7ª — DO ESTORNO DE COMISSÃO E DA INADIMPLÊNCIA DO CLIENTE',
+    'CLÁUSULA 8ª — DAS METAS E DOS RESULTADOS MÍNIMOS',
+    'CLÁUSULA 9ª — DO PRAZO DE VIGÊNCIA E DO AVISO PRÉVIO',
+    'CLÁUSULA 10ª — DA RESCISÃO, DA INDENIZAÇÃO E DOS DIREITOS DO REPRESENTANTE (Lei 4.886/65)',
+    'CLÁUSULA 11ª — DAS PENALIDADES E DAS MULTAS CONTRATUAIS',
+    'CLÁUSULA 12ª — DA CONFIDENCIALIDADE E DO SIGILO COMERCIAL',
+    'CLÁUSULA 13ª — DA PROTEÇÃO DE DADOS PESSOAIS (LGPD — Lei 13.709/2018)',
+    'CLÁUSULA 14ª — DA ANTICORRUPÇÃO E DA CONFORMIDADE LEGAL (Lei 12.846/2013)',
+    'CLÁUSULA 15ª — DO CASO FORTUITO E DA FORÇA MAIOR',
+    'CLÁUSULA 16ª — DAS DISPOSIÇÕES GERAIS',
+    'CLÁUSULA 17ª — DO FORO DE ELEIÇÃO'
+  ],
+  'comodato': [
+    'CLÁUSULA 1ª — DO OBJETO E DA DESCRIÇÃO DO BEM EMPRESTADO',
+    'CLÁUSULA 2ª — DA FINALIDADE E DO LOCAL DE USO DO BEM',
+    'CLÁUSULA 3ª — DA VISTORIA DE ENTREGA E DO ESTADO DE CONSERVAÇÃO',
+    'CLÁUSULA 4ª — DO PRAZO DO COMODATO E DA RENOVAÇÃO',
+    'CLÁUSULA 5ª — DAS OBRIGAÇÕES DO COMODATÁRIO',
+    'CLÁUSULA 6ª — DAS OBRIGAÇÕES DO COMODANTE',
+    'CLÁUSULA 7ª — DA MANUTENÇÃO E DOS REPAROS DO BEM',
+    'CLÁUSULA 8ª — DO SEGURO DO BEM',
+    'CLÁUSULA 9ª — DA PROIBIÇÃO DE SUBEMPRÉSTIMO E DE MODIFICAÇÕES',
+    'CLÁUSULA 10ª — DA DEVOLUÇÃO DO BEM E DO AVISO PRÉVIO',
+    'CLÁUSULA 11ª — DA RESPONSABILIDADE POR DANOS E DA INDENIZAÇÃO',
+    'CLÁUSULA 12ª — DAS PENALIDADES E DAS MULTAS CONTRATUAIS',
+    'CLÁUSULA 13ª — DA PROTEÇÃO DE DADOS PESSOAIS (LGPD — Lei 13.709/2018)',
+    'CLÁUSULA 14ª — DO CASO FORTUITO E DA FORÇA MAIOR',
+    'CLÁUSULA 15ª — DA RESCISÃO ANTECIPADA',
+    'CLÁUSULA 16ª — DAS DISPOSIÇÕES GERAIS',
+    'CLÁUSULA 17ª — DO FORO DE ELEIÇÃO'
   ]
 };
 
@@ -616,30 +1004,34 @@ const LEGAL_REF = {
   'parceria': 'segundo o Código Civil Brasileiro e a legislação comercial aplicável',
   'confidencialidade': 'segundo o Código Civil, a Lei de Propriedade Industrial (Lei 9.279/96) e a LGPD (Lei 13.709/2018)',
   'trabalho-freelancer': 'segundo a Lei 11.196/05, LC 128/08, a Lei 9.610/98 (Direitos Autorais) e o Código Civil',
-  'compra-venda': 'segundo o Código Civil Brasileiro (arts. 481 a 532) e o Código de Defesa do Consumidor'
+  'compra-venda': 'segundo o Código Civil Brasileiro (arts. 481 a 532) e o Código de Defesa do Consumidor',
+  'empreitada': 'segundo o Código Civil Brasileiro (arts. 610 a 626), as normas da ABNT e a legislação trabalhista aplicável',
+  'sociedade': 'segundo o Código Civil Brasileiro (arts. 997 a 1.038) e a legislação empresarial aplicável',
+  'representacao-comercial': 'segundo a Lei 4.886/65, a Lei 8.420/92 e o Código Civil Brasileiro',
+  'comodato': 'segundo o Código Civil Brasileiro (arts. 579 a 585)'
 };
 
 // ============================================================
 // SYSTEM PROMPT — coleta de dados
 // ============================================================
-const SYSTEM_PROMPT = `Você é um Advogado Especialista em Direito Civil e Contratos Empresariais, com mais de 20 anos de experiência em escritório de advocacia sênior.
+const SYSTEM_PROMPT = `Você é um advogado experiente que está ajudando uma pessoa a montar um contrato.
 
-Conduza uma entrevista técnica, profissional e objetiva para coletar todas as informações necessárias à elaboração de um instrumento contratual juridicamente válido e robusto.
+Seu trabalho é fazer perguntas simples e diretas, uma de cada vez, para coletar as informações necessárias. Fale como se estivesse conversando com alguém que não é da área jurídica — use palavras do dia a dia, frases curtas e evite termos difíceis. Quando precisar usar um termo técnico, explique brevemente o que ele significa.
 
-REGRAS ABSOLUTAS DE FORMATAÇÃO — NUNCA VIOLE:
-- NUNCA use markdown nas suas respostas: sem asteriscos (**), sem underline (__), sem hashtags (#), sem backticks
-- Escreva APENAS em texto puro e simples
-- Suas perguntas devem ser frases diretas, sem nenhum símbolo especial antes ou depois
+REGRAS DE FORMATAÇÃO — NUNCA VIOLE:
+- NUNCA use markdown: sem asteriscos (**), sem underline (__), sem hashtags (#), sem backticks
+- Escreva apenas em texto simples
+- Suas perguntas devem ser frases diretas e fáceis de entender
 
-REGRAS ABSOLUTAS DE CONDUÇÃO — NUNCA VIOLE:
-1. Faça APENAS UMA pergunta por vez, de forma clara e direta
-2. Siga RIGOROSAMENTE a lista de campos obrigatórios fornecida — não pule NENHUM campo, incluindo telefone e email
+REGRAS DE CONDUÇÃO — NUNCA VIOLE:
+1. Faça APENAS UMA pergunta por vez
+2. Siga a lista de campos obrigatórios em ordem — não pule nenhum campo
 3. NÃO gere o contrato durante a entrevista
-4. NÃO antecipe respostas nem invente valores
-5. Somente após coletar TODOS os campos da lista, pergunte: "Deseja adicionar algo a mais para por no contrato ?"
-6. Aguarde a resposta. Se o usuário disser "não" ou "nada", responda EXATAMENTE: "Perfeito! Vou gerar seu contrato agora."
-7. Se o usuário quiser adicionar informações, colete-as e repita a pergunta do passo 5
-8. NUNCA encerre sem ter coletado todos os campos da lista, incluindo telefone e email de todas as partes`;
+4. NÃO invente respostas nem complete informações que o usuário não deu
+5. Quando coletar TODOS os campos da lista, pergunte: "Deseja adicionar algo a mais para por no contrato?"
+6. Se o usuário disser "não" ou "nada", responda EXATAMENTE: "Perfeito! Vou gerar seu contrato agora."
+7. Se o usuário quiser adicionar algo, colete e repita a pergunta do passo 5
+8. NUNCA encerre sem ter coletado todos os campos, incluindo telefone e email de todas as partes`;
 
 // ============================================================
 // PROMPT INICIAL — sem markdown
@@ -668,7 +1060,23 @@ Este acordo será unilateral (apenas uma parte recebe informações confidenciai
 
     'trabalho-freelancer': `Ótimo! Você escolheu o Contrato Freelancer. Vou fazer algumas perguntas para montar seu contrato completo.
 
-Qual o nome completo do CONTRATANTE (o cliente que vai pagar)?`
+Qual o nome completo do CONTRATANTE (o cliente que vai pagar)?`,
+
+    'empreitada': `Ótimo! Você escolheu o Contrato de Empreitada. Vou fazer algumas perguntas para montar seu contrato completo.
+
+Qual o nome completo do CONTRATANTE (o dono da obra)?`,
+
+    'sociedade': `Ótimo! Você escolheu o Contrato Social de Sociedade. Vou fazer algumas perguntas para montar seu contrato completo.
+
+Qual o nome completo do SÓCIO A?`,
+
+    'representacao-comercial': `Ótimo! Você escolheu o Contrato de Representação Comercial. Vou fazer algumas perguntas para montar seu contrato completo.
+
+Qual o nome ou razão social da empresa REPRESENTADA (quem fabrica ou vende o produto)?`,
+
+    'comodato': `Ótimo! Você escolheu o Contrato de Comodato. Comodato é um empréstimo gratuito de um bem — o dono empresta sem cobrar nada por isso. Vou fazer algumas perguntas para montar seu contrato completo.
+
+Qual o nome completo do COMODANTE (o dono do bem que vai emprestar)?`
   };
   return prompts[contractType] || `Ótimo! Vamos montar seu contrato.\n\nQual o nome completo da parte contratante?`;
 };
@@ -762,14 +1170,13 @@ REGRAS ABSOLUTAS:
 2. Para cada campo, use o contexto da pergunta do assistente para identificar a qual campo pertence a resposta do usuário
 3. Se um campo não foi respondido, use string vazia ""
 4. NÃO invente valores — use apenas exatamente o que o usuário disse
-5. Os campos "cidade" e "estado" são SOMENTE para eleição de foro — não confunda com endereço do imóvel ou outros campos
+5. Os campos "cidade" e "estado" são SOMENTE para eleição de foro — não confunda com endereço da obra, sede ou imóvel
 6. Os campos de telefone e email devem ser extraídos corretamente para cada parte
-7. O campo "categoria_bem" deve refletir exatamente o tipo de bem informado pelo usuário (ex: veículo, imóvel, equipamento, maquinário etc.)
+7. O campo "modalidade_empreitada" deve ser "preço global" ou "por medição/etapas" conforme informado
 8. O campo "modalidade_nda" deve ser "unilateral" ou "bilateral/mútuo" conforme informado
-9. O campo "garantia_pos_entrega" deve refletir exatamente o prazo e escopo de garantia informado pelo usuário
-10. O campo "garantia_contratual" deve refletir exatamente o prazo e cobertura da garantia contratual informada
-11. O campo "preferencia_compra" deve refletir se há ou não direito de preferência e o prazo informado
-12. O campo "aviso_previo_rescisao" deve refletir os prazos e condições de aviso prévio informados
+9. O campo "socios_adicionais" deve conter os dados completos de sócios além de A e B, ou "apenas dois sócios"
+10. O campo "exclusividade_territorial" deve refletir exatamente se há ou não exclusividade territorial no contrato de representação
+11. Campos de garantia, prazo e multa devem ser extraídos com precisão sem alterar os valores informados
 
 Formato de saída esperado (exemplo):
 {"campo1":"valor respondido","campo2":"outro valor","campo3":""}`;
@@ -827,7 +1234,6 @@ export const generateContractFromConversation = async (messages, contractType) =
   const contractTitle = selectedTemplate.title.toUpperCase();
   const legalRef = LEGAL_REF[contractType] || 'segundo o Código Civil Brasileiro';
 
-  // Data real do momento da geração — nunca deixar a IA inventar
   const hoje = new Date();
   const dataAtual = hoje.toLocaleDateString('pt-BR', {
     day: 'numeric',
@@ -852,7 +1258,7 @@ export const generateContractFromConversation = async (messages, contractType) =
 
   const prompt = `Você é um Advogado Sênior especialista em Direito Civil e Empresarial Brasileiro. Elabore o instrumento contratual abaixo com rigor técnico-jurídico, vocabulário formal e estrutura de escritório de advocacia de alto padrão.
 
-⚠️ DATA OBRIGATÓRIA: A data de assinatura deste contrato é ${dataAtual}. USE EXATAMENTE ESTA DATA em toda menção a data, local e data, ou encerramento do contrato. NUNCA invente outra data.
+⚠️ DATA OBRIGATÓRIA: A data de assinatura deste contrato é ${dataAtual}. USE EXATAMENTE ESTA DATA. NUNCA invente outra data.
 
 Com base nas informações abaixo, redija um ${contractTitle} completo, robusto e juridicamente impecável, ${legalRef}.
 
@@ -875,30 +1281,25 @@ INSTRUÇÕES OBRIGATÓRIAS DE REDAÇÃO
 4. "cidade" e "estado" destinam-se EXCLUSIVAMENTE à cláusula de eleição de foro
 5. As cláusulas de penalidades DEVEM refletir com precisão os valores de multa informados
 6. No PREÂMBULO, inclua telefone e email de cada parte na qualificação completa
-7. Para contratos de compra e venda, adapte a linguagem jurídica conforme a categoria do bem informada — as cláusulas de entrega, documentação, transferência e garantia devem ser coerentes com o tipo específico de bem (imóvel, veículo, equipamento, mercadoria etc.), sem presumir que é sempre um veículo ou imóvel
-8. Para contratos de aluguel, a cláusula de direito de preferência deve referenciar expressamente o art. 27 da Lei 8.245/91 e o prazo informado pelas partes; a cláusula de rescisão antecipada deve referenciar o art. 4º da Lei 8.245/91
-9. CADA CLÁUSULA deve ser redigida de forma EXTENSA e DETALHADA, com:
-   - Cabeçalho em NEGRITO e CAIXA ALTA (ex: **CLÁUSULA 1ª — DO OBJETO**)
-   - Corpo jurídico completo com parágrafos numerados (§1º, §2º, §3º...)
-   - Uso de terminologia técnica: "mora", "vencimento antecipado", "caráter irretratável",
-     "sub-rogação", "solidariedade", "notificação extrajudicial", "ato ilícito", "perdas e danos"
-   - Referência explícita aos dispositivos legais aplicáveis (artigos do CC, leis específicas)
+7. Para contratos de empreitada, referencie o art. 618 do CC na cláusula de garantia da obra (5 anos para solidez e segurança, prazo decadencial de 180 dias para reclamar)
+8. Para contratos de sociedade, referencie os arts. 997 a 1.038 do CC e oriente que o documento deve ser registrado na Junta Comercial ou Cartório competente
+9. Para contratos de representação comercial, referencie expressamente a Lei 4.886/65 e a Lei 8.420/92 nas cláusulas de rescisão e indenização
+10. Para contratos de comodato, referencie os arts. 579 a 585 do CC e deixe claro o caráter gratuito e a responsabilidade do comodatário pelos riscos do bem
+11. Para contratos de compra e venda, adapte integralmente as cláusulas ao tipo específico de bem informado
+12. Para contratos de aluguel, referencie expressamente a Lei 8.245/91 nas cláusulas de preferência (art. 27) e rescisão (art. 4º)
+13. CADA CLÁUSULA deve ser redigida de forma EXTENSA e DETALHADA, com:
+    - Cabeçalho em NEGRITO e CAIXA ALTA (ex: **CLÁUSULA 1ª — DO OBJETO**)
+    - Corpo jurídico completo com parágrafos numerados (§1º, §2º, §3º...)
+    - Terminologia técnica: "mora", "vencimento antecipado", "caráter irretratável", "sub-rogação", "solidariedade", "notificação extrajudicial", "perdas e danos"
+    - Referência explícita aos dispositivos legais aplicáveis
 
-10. CLÁUSULA DE LGPD: deve conter obrigações de controlador/operador, finalidade do tratamento,
-    base legal (art. 7º Lei 13.709/18), direitos dos titulares e medidas de segurança adotadas
+14. CLÁUSULA DE LGPD: obrigações de controlador/operador, finalidade, base legal (art. 7º Lei 13.709/18), direitos dos titulares e medidas de segurança
+15. CLÁUSULA DE ANTICORRUPÇÃO: referenciar Lei 12.846/2013, proibir suborno e pagamentos indevidos, prever rescisão imediata
+16. CLÁUSULA DE FORÇA MAIOR: definir hipóteses, prazo de comunicação (máximo 5 dias úteis) e consequências
+17. Inicie com PREÂMBULO completo: nome, CPF/CNPJ, telefone, email, estado civil (se PF), sede (se PJ) de todas as partes, e declaração de livre vontade
+18. NÃO inclua seção de assinaturas ou testemunhas
 
-11. CLÁUSULA DE ANTICORRUPÇÃO: deve referenciar a Lei 12.846/2013, proibir atos de corrupção,
-    suborno, pagamentos indevidos a agentes públicos e prever rescisão imediata em caso de violação
-
-12. CLÁUSULA DE FORÇA MAIOR: deve definir hipóteses (pandemias, desastres naturais, atos de guerra,
-    decisões governamentais), estabelecer prazo de comunicação (máximo 5 dias úteis) e consequências
-
-13. Inicie o documento com o PREÂMBULO completo identificando as partes, qualificação completa
-    (nome, CPF/CNPJ, telefone, email, estado civil se pessoa física, sede se jurídica) e a declaração de livre vontade
-
-14. NÃO inclua seção de assinaturas ou testemunhas (adicionada separadamente pelo sistema)
-
-ESTRUTURA OBRIGATÓRIA — DESENVOLVA CADA CLÁUSULA COM CORPO JURÍDICO COMPLETO:
+ESTRUTURA OBRIGATÓRIA:
 ${clausulasList}
 
 REDIJA O INSTRUMENTO CONTRATUAL COMPLETO AGORA, sem resumos, sem omissões e sem placeholders.`;
@@ -915,7 +1316,7 @@ REDIJA O INSTRUMENTO CONTRATUAL COMPLETO AGORA, sem resumos, sem omissões e sem
         messages: [
           {
             role: 'system',
-            content: `Você é um Advogado Sênior especialista em Direito Civil e Empresarial com 20+ anos de experiência. Redija contratos profissionais, extensos e juridicamente impecáveis, com linguagem técnica formal, parágrafos numerados e referências legais precisas. NUNCA use placeholders. NUNCA invente dados. NUNCA troque campos. Use terminologia jurídica brasileira de alto padrão: "mora", "vencimento antecipado", "caráter irretratável", "sub-rogação", "perdas e danos", "notificação extrajudicial". Cada cláusula deve ter pelo menos 3 parágrafos detalhados. Para contratos de compra e venda, adapte integralmente as cláusulas ao tipo específico de bem informado, sem presumir veículo ou imóvel. Para contratos de aluguel, referencie expressamente a Lei 8.245/91 nas cláusulas de preferência de compra (art. 27) e rescisão antecipada (art. 4º).`
+            content: `Você é um Advogado Sênior especialista em Direito Civil e Empresarial com 20+ anos de experiência. Redija contratos profissionais, extensos e juridicamente impecáveis, com linguagem técnica formal, parágrafos numerados e referências legais precisas. NUNCA use placeholders. NUNCA invente dados. Use terminologia jurídica brasileira de alto padrão. Cada cláusula deve ter pelo menos 3 parágrafos detalhados. Para empreitada, aplique o art. 618 CC. Para sociedade, aplique os arts. 997-1038 CC. Para representação comercial, aplique a Lei 4.886/65. Para comodato, aplique os arts. 579-585 CC.`
           },
           { role: 'user', content: prompt }
         ],
@@ -929,11 +1330,9 @@ REDIJA O INSTRUMENTO CONTRATUAL COMPLETO AGORA, sem resumos, sem omissões e sem
     const data = await response.json();
     let contract = data.choices[0].message.content;
 
-    // Remove placeholders residuais
     contract = contract.replace(/\[[A-ZÁÉÍÓÚÂÊÎÔÛÃÕÇ\s_]+\]/gi, '');
     contract = contract.replace(/\{[^}]+\}/g, '');
 
-    // Substitui variáveis remanescentes
     Object.keys(answers).forEach(key => {
       const value = answers[key] || '';
       [
@@ -943,7 +1342,7 @@ REDIJA O INSTRUMENTO CONTRATUAL COMPLETO AGORA, sem resumos, sem omissões e sem
       ].forEach(p => { contract = contract.replace(p, value); });
     });
 
-    return contract;''
+    return contract;
   } catch (error) {
     console.error('Erro na geração:', error);
     throw error;
