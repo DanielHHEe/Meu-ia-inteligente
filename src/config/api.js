@@ -1014,35 +1014,24 @@ const LEGAL_REF = {
 // ============================================================
 // SYSTEM PROMPT — coleta de dados
 // ============================================================
-const SYSTEM_PROMPT = `Você é um advogado experiente ajudando alguém a montar um contrato. Sua função é coletar as informações necessárias de forma simples e direta, como numa conversa.
+const SYSTEM_PROMPT = `Você é um advogado experiente que está ajudando uma pessoa a montar um contrato.
+
+Seu trabalho é fazer perguntas simples e diretas, uma de cada vez, para coletar as informações necessárias. Fale como se estivesse conversando com alguém que não é da área jurídica — use palavras do dia a dia, frases curtas e evite termos difíceis. Quando precisar usar um termo técnico, explique brevemente o que ele significa.
 
 REGRAS DE FORMATAÇÃO — NUNCA VIOLE:
 - NUNCA use markdown: sem asteriscos (**), sem underline (__), sem hashtags (#), sem backticks
-- Escreva apenas em texto simples, com frases curtas e diretas
-- Evite jargões jurídicos. Quando precisar de um termo técnico, explique brevemente
+- Escreva apenas em texto simples
+- Suas perguntas devem ser frases diretas e fáceis de entender
 
 REGRAS DE CONDUÇÃO — NUNCA VIOLE:
 1. Faça APENAS UMA pergunta por vez
 2. Siga a lista de campos obrigatórios em ordem — não pule nenhum campo
 3. NÃO gere o contrato durante a entrevista
-4. NÃO invente ou suponha respostas que o usuário não deu
-5. Seja inteligente: se a resposta do usuário já deixar claro um campo seguinte, confirme e avance — não pergunte de novo o que já foi dito
-6. Se o usuário der uma resposta vaga, peça esclarecimento de forma amigável antes de avançar
-7. Quando coletar TODOS os campos da lista, pergunte: "Deseja adicionar algo a mais para por no contrato?"
-8. Se o usuário disser "não" ou "nada", responda EXATAMENTE: "Perfeito! Vou gerar seu contrato agora."
-9. Se o usuário quiser adicionar algo, colete e repita a pergunta do passo 7
-10. NUNCA encerre sem ter coletado todos os campos obrigatórios, incluindo telefone e email de todas as partes
-
-REGRA ESPECIAL — ASSINATURA DIGITAL:
-- Se em qualquer momento o usuário mencionar que o contrato será assinado online, de forma digital, por plataforma eletrônica, ou qualquer variação disso, NÃO pergunte cidade e estado de assinatura
-- Nesse caso, use automaticamente: cidade = "assinatura digital" e estado = "assinatura digital"
-- Siga direto para a próxima pergunta, sem mencionar que pulou a pergunta de cidade/estado
-
-REGRA ESPECIAL — EVITAR REDUNDÂNCIA:
-- Analise todas as respostas anteriores antes de fazer cada nova pergunta
-- Se a resposta a um campo futuro já foi dada implicitamente em uma resposta anterior, registre o valor e pule essa pergunta
-- Exemplo: se o usuário já informou o endereço da obra e depois menciona que a cidade do contrato é a mesma, não pergunte novamente
-- Exemplo: se o usuário respondeu "não" para algo que tornaria uma pergunta seguinte irrelevante (ex: "sem meta mínima"), pule a pergunta sobre consequência de não atingir a meta`;
+4. NÃO invente respostas nem complete informações que o usuário não deu
+5. Quando coletar TODOS os campos da lista, pergunte: "Deseja adicionar algo a mais para por no contrato?"
+6. Se o usuário disser "não" ou "nada", responda EXATAMENTE: "Perfeito! Vou gerar seu contrato agora."
+7. Se o usuário quiser adicionar algo, colete e repita a pergunta do passo 5
+8. NUNCA encerre sem ter coletado todos os campos, incluindo telefone e email de todas as partes`;
 
 // ============================================================
 // PROMPT INICIAL — sem markdown
@@ -1106,18 +1095,6 @@ const stripMarkdown = (text) => {
 };
 
 // ============================================================
-// HELPER — detecta assinatura digital na conversa
-// ============================================================
-const isDigitalSignature = (messages) => {
-  const fullText = messages
-    .filter(m => m.role === 'user')
-    .map(m => m.content.toLowerCase())
-    .join(' ');
-  return /assina(tura|r)?\s*(digital|online|eletr[oô]nica?|remota?|via\s+plataforma|pelo\s+celular|pelo\s+computador)/.test(fullText)
-    || /online|digital|eletr[oô]nico?|docusign|clicksign|d4sign|zapsign/.test(fullText);
-};
-
-// ============================================================
 // ENVIO DE MENSAGEM PARA A IA (coleta)
 // ============================================================
 export const sendMessageToIA = async (messages, contractType) => {
@@ -1128,16 +1105,10 @@ export const sendMessageToIA = async (messages, contractType) => {
   const userResponses = messages.filter(m => m.role === 'user').length;
   const totalFields = (FIELD_ORDER_BY_CONTRACT[contractType] || []).length;
   const fieldsInstruction = REQUIRED_FIELDS_INSTRUCTION[contractType] || '';
-  const digitalSig = isDigitalSignature(messages);
 
   let progressNote = '';
   if (userResponses >= totalFields - 1) {
     progressNote = `\n\n⚠️ ATENÇÃO: Você já recebeu ${userResponses} respostas. O total de campos é ${totalFields}. Verifique se TODOS foram coletados antes de perguntar sobre informações adicionais. NÃO encerre antes de coletar todos, incluindo telefone e email de cada parte.`;
-  }
-
-  let digitalNote = '';
-  if (digitalSig) {
-    digitalNote = `\n\n⚠️ ASSINATURA DIGITAL DETECTADA: O usuário indicou que o contrato será assinado digitalmente. NÃO pergunte cidade e estado de assinatura. Trate cidade = "assinatura digital" e estado = "assinatura digital" automaticamente e siga para o próximo campo.`;
   }
 
   try {
@@ -1152,7 +1123,7 @@ export const sendMessageToIA = async (messages, contractType) => {
         messages: [
           {
             role: 'system',
-            content: `${SYSTEM_PROMPT}${progressNote}${digitalNote}\n\nTipo de contrato: ${contractType}\n${fieldsInstruction}`
+            content: `${SYSTEM_PROMPT}${progressNote}\n\nTipo de contrato: ${contractType}\n${fieldsInstruction}`
           },
           ...messages
         ],
@@ -1179,16 +1150,11 @@ export const sendMessageToIA = async (messages, contractType) => {
 // ============================================================
 export const extractAnswersFromConversation = async (messages, contractType) => {
   const fieldOrder = FIELD_ORDER_BY_CONTRACT[contractType] || [];
-  const digitalSig = isDigitalSignature(messages);
 
   const conversationText = messages
     .filter(m => m.role === 'user' || m.role === 'assistant')
     .map(m => `${m.role === 'assistant' ? 'ASSISTENTE' : 'USUÁRIO'}: ${m.content}`)
     .join('\n\n');
-
-  const digitalSigInstruction = digitalSig
-    ? `\n12. O usuário indicou assinatura digital/online. Defina cidade = "assinatura digital" e estado = "assinatura digital".`
-    : '';
 
   const extractionPrompt = `Leia a conversa abaixo entre um assistente jurídico e um usuário.
 Extraia EXATAMENTE os valores fornecidos pelo usuário para cada campo listado.
@@ -1210,7 +1176,7 @@ REGRAS ABSOLUTAS:
 8. O campo "modalidade_nda" deve ser "unilateral" ou "bilateral/mútuo" conforme informado
 9. O campo "socios_adicionais" deve conter os dados completos de sócios além de A e B, ou "apenas dois sócios"
 10. O campo "exclusividade_territorial" deve refletir exatamente se há ou não exclusividade territorial no contrato de representação
-11. Campos de garantia, prazo e multa devem ser extraídos com precisão sem alterar os valores informados${digitalSigInstruction}
+11. Campos de garantia, prazo e multa devem ser extraídos com precisão sem alterar os valores informados
 
 Formato de saída esperado (exemplo):
 {"campo1":"valor respondido","campo2":"outro valor","campo3":""}`;
@@ -1243,13 +1209,6 @@ Formato de saída esperado (exemplo):
     raw = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '').trim();
 
     const answers = JSON.parse(raw);
-
-    // Garante assinatura digital no lado do cliente também
-    if (digitalSig) {
-      if (!answers.cidade || answers.cidade.trim() === '') answers.cidade = 'assinatura digital';
-      if (!answers.estado || answers.estado.trim() === '') answers.estado = 'assinatura digital';
-    }
-
     console.log('[extractAnswers] answers:', answers);
     return answers;
 
@@ -1260,10 +1219,6 @@ Formato de saída esperado (exemplo):
     fieldOrder.forEach((field, index) => {
       if (index < userMessages.length) answers[field] = userMessages[index];
     });
-    if (digitalSig) {
-      answers.cidade = answers.cidade || 'assinatura digital';
-      answers.estado = answers.estado || 'assinatura digital';
-    }
     return answers;
   }
 };
@@ -1301,12 +1256,6 @@ export const generateContractFromConversation = async (messages, contractType) =
     .map(c => `   - ${c}`)
     .join('\n');
 
-  // Instrução especial de foro para assinatura digital
-  const digitalSig = isDigitalSignature(messages);
-  const foroInstruction = digitalSig
-    ? `FORO: Como o contrato será assinado digitalmente, na cláusula de eleição de foro indique o foro da comarca do domicílio do CONTRATANTE (ou parte equivalente), conforme os dados fornecidos, sem mencionar cidade de assinatura.`
-    : `FORO: Use a cidade e estado informados como local de eleição de foro.`;
-
   const prompt = `Você é um Advogado Sênior especialista em Direito Civil e Empresarial Brasileiro. Elabore o instrumento contratual abaixo com rigor técnico-jurídico, vocabulário formal e estrutura de escritório de advocacia de alto padrão.
 
 ⚠️ DATA OBRIGATÓRIA: A data de assinatura deste contrato é ${dataAtual}. USE EXATAMENTE ESTA DATA. NUNCA invente outra data.
@@ -1329,7 +1278,7 @@ INSTRUÇÕES OBRIGATÓRIAS DE REDAÇÃO
 1. USE SOMENTE os dados fornecidos — JAMAIS invente valores, nomes ou percentuais
 2. NÃO utilize placeholders — substitua TUDO pelos valores reais informados
 3. NUNCA coloque CPF/CNPJ no campo de nome, nem endereço no campo de cidade
-4. ${foroInstruction}
+4. "cidade" e "estado" destinam-se EXCLUSIVAMENTE à cláusula de eleição de foro
 5. As cláusulas de penalidades DEVEM refletir com precisão os valores de multa informados
 6. No PREÂMBULO, inclua telefone e email de cada parte na qualificação completa
 7. Para contratos de empreitada, referencie o art. 618 do CC na cláusula de garantia da obra (5 anos para solidez e segurança, prazo decadencial de 180 dias para reclamar)
