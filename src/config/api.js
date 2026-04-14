@@ -517,13 +517,13 @@ CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 17. Local de prestação do serviço (ex: remoto, presencial no endereço X, híbrido)
 18. Número de revisões inclusas no valor (ex: 2 revisões, ilimitadas, nenhuma)
 19. Valor total do serviço (ex: R$ 5.000,00)
-20. Forma de pagamento (ex: PIX, boleto, transferência, parcelado) — se for parcelado, pergunte em quantas vezes
+20. Forma de pagamento (ex: PIX, boleto, transferência, parcelado)
 21. Prazo de execução (ex: 30 dias, 3 meses)
 22. Percentual de multa por atraso na entrega pelo CONTRATADO, por dia (ex: 0,5% ao dia)
 23. Limite máximo da multa por atraso (ex: 10% do valor total)
 24. Percentual de multa por rescisão antecipada (ex: 20% do valor total)
-25. O contrato será assinado online ou presencialmente? Se presencialmente, em qual cidade?
-26. Estado (UF) — pergunte somente se o usuário informou uma cidade no passo anterior`,
+25. Cidade onde o contrato será assinado
+26. Estado (UF)`,
 
   'aluguel': `
 CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
@@ -559,8 +559,8 @@ CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 30. Percentual de juros ao mês por atraso (ex: 1% ao mês)
 31. Índice de correção monetária anual (ex: IGPM, IPCA, INPC)
 32. Prazo de tolerância para pagamento em dias (ex: 5 dias)
-33. O contrato será assinado online ou presencialmente? Se presencialmente, em qual cidade?
-34. Estado (UF) — pergunte somente se o usuário informou uma cidade no passo anterior`,
+33. Cidade onde o contrato será assinado
+34. Estado (UF)`,
 
   'parceria': `
 CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
@@ -589,8 +589,8 @@ CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 23. Haverá conta bancária conjunta para movimentação dos recursos da parceria? (sim ou não)
 24. Percentual de multa por descumprimento das obrigações (ex: 10%)
 25. Percentual de multa por rescisão antecipada (ex: 15%)
-26. O contrato será assinado online ou presencialmente? Se presencialmente, em qual cidade?
-27. Estado (UF) — pergunte somente se o usuário informou uma cidade no passo anterior`,
+26. Cidade onde o contrato será assinado
+27. Estado (UF)`,
 
   'confidencialidade': `
 CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
@@ -611,8 +611,8 @@ CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 15. Prazo de confidencialidade (ex: 2 anos, 5 anos)
 16. Valor da multa por violação da confidencialidade (ex: R$ 50.000,00)
 17. As perdas e danos também serão cobradas além da multa? (sim ou não)
-18. O contrato será assinado online ou presencialmente? Se presencialmente, em qual cidade?
-19. Estado (UF) — pergunte somente se o usuário informou uma cidade no passo anterior`,
+18. Cidade onde o contrato será assinado
+19. Estado (UF)`,
 
   'trabalho-freelancer': `
 CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
@@ -636,13 +636,13 @@ CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 18. O freelancer utilizará ferramentas, softwares ou licenças pagas especificamente para executar este trabalho? Se sim, quem arca com esses custos — o freelancer ou o contratante? (se não houver custos extras, informe "sem custos operacionais adicionais")
 19. Durante a execução deste projeto, o freelancer pode trabalhar em projetos concorrentes ou similares para outros clientes? (sim ou não — se não, informe por quanto tempo essa restrição vale após o término)
 20. Valor do projeto (ex: R$ 3.000,00)
-21. Forma de pagamento (ex: 50% na assinatura e 50% na entrega) — se for parcelado, pergunte em quantas vezes
+21. Forma de pagamento (ex: 50% na assinatura e 50% na entrega)
 22. Prazo de entrega (ex: 30 dias após assinatura)
 23. Percentual de multa por atraso na entrega, por dia (ex: 0,5% ao dia)
 24. Percentual de multa por atraso no pagamento pelo contratante, por dia (ex: 0,5% ao dia)
 25. Percentual de multa por rescisão antecipada (ex: 20%)
-26. O contrato será assinado online ou presencialmente? Se presencialmente, em qual cidade?
-27. Estado (UF) — pergunte somente se o usuário informou uma cidade no passo anterior`,
+26. Cidade onde o contrato será assinado
+27. Estado (UF)`,
 
   'compra-venda': `
 CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
@@ -661,7 +661,7 @@ CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 13. O bem possui alienação fiduciária, financiamento em aberto, penhora, hipoteca ou qualquer outro ônus ou gravame? (sim ou não — se sim, descreva e informe se será regularizado antes ou na data da transferência)
 14. O bem é de propriedade exclusiva do vendedor, ou há coproprietários, herdeiros ou cônjuge que também precisará assinar? (se houver, informe os dados)
 15. Valor total da venda
-16. Forma de pagamento — se for parcelado, pergunte em quantas vezes
+16. Forma de pagamento
 17. Haverá pagamento de sinal (arras) no ato da assinatura? Se sim, qual o valor? Essas arras são confirmatórias (apenas garantem o negócio) ou penitenciais (quem desistir perde o sinal ou devolve em dobro)? (se não houver sinal, informe "sem arras")
 18. Quem arca com as despesas de transferência e regularização do bem? (ex: vendedor, comprador ou dividido entre ambos)
 19. Prazo para entrega do bem (ex: na assinatura, 7 dias, 30 dias)
@@ -670,8 +670,8 @@ CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 22. Haverá garantia contratual além da garantia legal? Se sim, por quanto tempo e o que ela cobre? (ex: sim, 6 meses cobrindo defeitos de funcionamento / somente garantia legal)
 23. Percentual de multa por atraso no pagamento, por dia (ex: 0,5% ao dia)
 24. Percentual de multa por desistência/rescisão (ex: 20% do valor)
-25. O contrato será assinado online ou presencialmente? Se presencialmente, em qual cidade?
-26. Estado (UF) — pergunte somente se o usuário informou uma cidade no passo anterior`,
+25. Cidade onde o contrato será assinado
+26. Estado (UF)`,
 
   'empreitada': `
 CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
@@ -695,15 +695,15 @@ CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 18. Haverá seguro de obra durante a execução? Se sim, quem contrata e paga? (se não houver, informe "sem seguro de obra")
 19. Quem é responsável por obter as licenças e alvarás necessários para a obra junto à prefeitura — o contratante ou o empreiteiro?
 20. Qual o valor total da empreitada? (ex: R$ 50.000,00)
-21. Qual a forma de pagamento? (ex: 30% na assinatura, 40% na metade da obra, 30% na entrega) — se for parcelado, pergunte em quantas vezes
+21. Qual a forma de pagamento? (ex: 30% na assinatura, 40% na metade da obra, 30% na entrega)
 22. Como será feita a medição do avanço da obra para liberar os pagamentos por etapa? (ex: vistorias mensais, entrega de cada fase definida em cronograma — se for preço global, informe "pagamento único ou conforme acordado")
 23. Qual o prazo total para conclusão da obra? (ex: 90 dias, 6 meses)
 24. Qual o prazo de garantia da obra após a entrega? (ex: 5 anos para estrutura conforme o Código Civil, 1 ano para acabamento)
 25. Percentual de multa por atraso na entrega da obra, por dia (ex: 0,5% ao dia)
 26. Limite máximo da multa por atraso (ex: 10% do valor total)
 27. Percentual de multa por rescisão antecipada (ex: 20%)
-28. O contrato será assinado online ou presencialmente? Se presencialmente, em qual cidade?
-29. Estado (UF) — pergunte somente se o usuário informou uma cidade no passo anterior`,
+28. Cidade onde o contrato será assinado
+29. Estado (UF)`,
 
   'sociedade': `
 CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
@@ -735,8 +735,8 @@ CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 26. Um sócio pode vender ou transferir sua quota para outra pessoa sem a aprovação dos demais sócios? (sim ou não — se não, como funciona o direito de preferência dos outros sócios)
 27. Qual o prazo de duração da sociedade? (ex: indeterminado, 5 anos)
 28. Os sócios ficam proibidos de abrir ou participar de empresas concorrentes enquanto forem sócios? Por quanto tempo essa restrição vale após a saída? (ex: sim, proibido durante a sociedade e por 2 anos após a saída)
-29. O contrato será assinado online ou presencialmente? Se presencialmente, em qual cidade?
-30. Estado (UF) — pergunte somente se o usuário informou uma cidade no passo anterior`,
+29. Cidade onde o contrato será assinado
+30. Estado (UF)`,
 
   'representacao-comercial': `
 CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
@@ -763,8 +763,8 @@ CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 21. Qual o prazo de aviso prévio para encerrar o contrato? (ex: 30 dias — a Lei 4.886/65 exige aviso prévio mínimo de 30 dias para contratos com mais de 6 meses)
 22. Em caso de rescisão sem justa causa pela representada, haverá indenização ao representante? Se sim, qual o critério? (ex: 1/12 das comissões dos últimos 12 meses por ano de contrato, conforme a lei)
 23. Percentual de multa por descumprimento das obrigações contratuais (ex: 20% do valor das comissões dos últimos 12 meses)
-24. O contrato será assinado online ou presencialmente? Se presencialmente, em qual cidade?
-25. Estado (UF) — pergunte somente se o usuário informou uma cidade no passo anterior`,
+24. Cidade onde o contrato será assinado
+25. Estado (UF)`,
 
   'comodato': `
 CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
@@ -790,8 +790,8 @@ CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 20. O comodatário pode fazer modificações, adaptações ou melhorias no bem? (sim ou não — se sim, descreva o que é permitido)
 21. Em caso de dano ao bem por culpa do comodatário, como será calculado o valor da indenização? (ex: valor de mercado do bem na data do dano, custo do reparo, valor declarado na vistoria)
 22. Percentual de multa por dia de atraso na devolução do bem (ex: 0,5% ao dia sobre o valor do bem)
-23. O contrato será assinado online ou presencialmente? Se presencialmente, em qual cidade?
-24. Estado (UF) — pergunte somente se o usuário informou uma cidade no passo anterior`
+23. Cidade onde o contrato será assinado
+24. Estado (UF)`
 };
 
 // ============================================================
@@ -1028,12 +1028,10 @@ REGRAS DE CONDUÇÃO — NUNCA VIOLE:
 2. Siga a lista de campos obrigatórios em ordem — não pule nenhum campo
 3. NÃO gere o contrato durante a entrevista
 4. NÃO invente respostas nem complete informações que o usuário não deu
-5. Quando o usuário informar a forma de pagamento e mencionar "parcelado" ou "parcelas", pergunte imediatamente em quantas vezes antes de continuar para o próximo campo
-6. Quando o usuário responder a pergunta sobre assinatura online/presencial: se disser "online" ou equivalente, registre "online" para cidade e pule a pergunta de estado; se informar uma cidade, pergunte o estado na sequência
-7. Quando coletar TODOS os campos da lista, pergunte: "Deseja adicionar algo a mais para por no contrato?"
-8. Se o usuário disser "não" ou "nada", responda EXATAMENTE: "Perfeito! Vou gerar seu contrato agora."
-9. Se o usuário quiser adicionar algo, colete e repita a pergunta do passo 7
-10. NUNCA encerre sem ter coletado todos os campos, incluindo telefone e email de todas as partes`;
+5. Quando coletar TODOS os campos da lista, pergunte: "Deseja adicionar algo a mais para por no contrato?"
+6. Se o usuário disser "não" ou "nada", responda EXATAMENTE: "Perfeito! Vou gerar seu contrato agora."
+7. Se o usuário quiser adicionar algo, colete e repita a pergunta do passo 5
+8. NUNCA encerre sem ter coletado todos os campos, incluindo telefone e email de todas as partes`;
 
 // ============================================================
 // PROMPT INICIAL — sem markdown
@@ -1173,15 +1171,12 @@ REGRAS ABSOLUTAS:
 3. Se um campo não foi respondido, use string vazia ""
 4. NÃO invente valores — use apenas exatamente o que o usuário disse
 5. Os campos "cidade" e "estado" são SOMENTE para eleição de foro — não confunda com endereço da obra, sede ou imóvel
-6. Se o usuário informou que a assinatura será "online", registre "online" no campo "cidade" e deixe "estado" vazio
-7. Se o usuário informou uma cidade para assinatura presencial, extraia cidade e estado normalmente
-8. O campo "forma_pagamento" deve incluir o número de parcelas quando o usuário informar pagamento parcelado (ex: "parcelado em 3x")
-9. Os campos de telefone e email devem ser extraídos corretamente para cada parte
-10. O campo "modalidade_empreitada" deve ser "preço global" ou "por medição/etapas" conforme informado
-11. O campo "modalidade_nda" deve ser "unilateral" ou "bilateral/mútuo" conforme informado
-12. O campo "socios_adicionais" deve conter os dados completos de sócios além de A e B, ou "apenas dois sócios"
-13. O campo "exclusividade_territorial" deve refletir exatamente se há ou não exclusividade territorial no contrato de representação
-14. Campos de garantia, prazo e multa devem ser extraídos com precisão sem alterar os valores informados
+6. Os campos de telefone e email devem ser extraídos corretamente para cada parte
+7. O campo "modalidade_empreitada" deve ser "preço global" ou "por medição/etapas" conforme informado
+8. O campo "modalidade_nda" deve ser "unilateral" ou "bilateral/mútuo" conforme informado
+9. O campo "socios_adicionais" deve conter os dados completos de sócios além de A e B, ou "apenas dois sócios"
+10. O campo "exclusividade_territorial" deve refletir exatamente se há ou não exclusividade territorial no contrato de representação
+11. Campos de garantia, prazo e multa devem ser extraídos com precisão sem alterar os valores informados
 
 Formato de saída esperado (exemplo):
 {"campo1":"valor respondido","campo2":"outro valor","campo3":""}`;
@@ -1252,6 +1247,11 @@ export const generateContractFromConversation = async (messages, contractType) =
   });
   filledTemplate = filledTemplate.replace(/{[^}]+}/g, '');
 
+  const dataBlock = Object.entries(answers)
+    .filter(([, v]) => v && v.trim() !== '')
+    .map(([k, v]) => `• ${k}: ${v}`)
+    .join('\n');
+
   const clausulasList = (CONTRACT_CLAUSES[contractType] || [])
     .map(c => `   - ${c}`)
     .join('\n');
@@ -1261,6 +1261,11 @@ export const generateContractFromConversation = async (messages, contractType) =
 ⚠️ DATA OBRIGATÓRIA: A data de assinatura deste contrato é ${dataAtual}. USE EXATAMENTE ESTA DATA. NUNCA invente outra data.
 
 Com base nas informações abaixo, redija um ${contractTitle} completo, robusto e juridicamente impecável, ${legalRef}.
+
+═══════════════════════════════════════════════════
+DADOS DO CONTRATO (USE EXATAMENTE ESTES VALORES)
+═══════════════════════════════════════════════════
+${dataBlock}
 
 ═══════════════════════════════════════════════════
 TEMPLATE DE REFERÊNCIA
@@ -1273,27 +1278,26 @@ INSTRUÇÕES OBRIGATÓRIAS DE REDAÇÃO
 1. USE SOMENTE os dados fornecidos — JAMAIS invente valores, nomes ou percentuais
 2. NÃO utilize placeholders — substitua TUDO pelos valores reais informados
 3. NUNCA coloque CPF/CNPJ no campo de nome, nem endereço no campo de cidade
-4. Se o campo "cidade" contiver "online", indique na cláusula de foro que o contrato foi celebrado por meio eletrônico, dispensando foro físico, ou escolha o foro do domicílio do contratante caso necessário
+4. "cidade" e "estado" destinam-se EXCLUSIVAMENTE à cláusula de eleição de foro
 5. As cláusulas de penalidades DEVEM refletir com precisão os valores de multa informados
 6. No PREÂMBULO, inclua telefone e email de cada parte na qualificação completa
-7. Se a forma de pagamento incluir parcelamento, detalhe na cláusula de pagamento o número de parcelas, valor de cada parcela e as datas de vencimento
-8. Para contratos de empreitada, referencie o art. 618 do CC na cláusula de garantia da obra (5 anos para solidez e segurança, prazo decadencial de 180 dias para reclamar)
-9. Para contratos de sociedade, referencie os arts. 997 a 1.038 do CC e oriente que o documento deve ser registrado na Junta Comercial ou Cartório competente
-10. Para contratos de representação comercial, referencie expressamente a Lei 4.886/65 e a Lei 8.420/92 nas cláusulas de rescisão e indenização
-11. Para contratos de comodato, referencie os arts. 579 a 585 do CC e deixe claro o caráter gratuito e a responsabilidade do comodatário pelos riscos do bem
-12. Para contratos de compra e venda, adapte integralmente as cláusulas ao tipo específico de bem informado
-13. Para contratos de aluguel, referencie expressamente a Lei 8.245/91 nas cláusulas de preferência (art. 27) e rescisão (art. 4º)
-14. CADA CLÁUSULA deve ser redigida de forma EXTENSA e DETALHADA, com:
+7. Para contratos de empreitada, referencie o art. 618 do CC na cláusula de garantia da obra (5 anos para solidez e segurança, prazo decadencial de 180 dias para reclamar)
+8. Para contratos de sociedade, referencie os arts. 997 a 1.038 do CC e oriente que o documento deve ser registrado na Junta Comercial ou Cartório competente
+9. Para contratos de representação comercial, referencie expressamente a Lei 4.886/65 e a Lei 8.420/92 nas cláusulas de rescisão e indenização
+10. Para contratos de comodato, referencie os arts. 579 a 585 do CC e deixe claro o caráter gratuito e a responsabilidade do comodatário pelos riscos do bem
+11. Para contratos de compra e venda, adapte integralmente as cláusulas ao tipo específico de bem informado
+12. Para contratos de aluguel, referencie expressamente a Lei 8.245/91 nas cláusulas de preferência (art. 27) e rescisão (art. 4º)
+13. CADA CLÁUSULA deve ser redigida de forma EXTENSA e DETALHADA, com:
     - Cabeçalho em NEGRITO e CAIXA ALTA (ex: **CLÁUSULA 1ª — DO OBJETO**)
     - Corpo jurídico completo com parágrafos numerados (§1º, §2º, §3º...)
     - Terminologia técnica: "mora", "vencimento antecipado", "caráter irretratável", "sub-rogação", "solidariedade", "notificação extrajudicial", "perdas e danos"
     - Referência explícita aos dispositivos legais aplicáveis
 
-15. CLÁUSULA DE LGPD: obrigações de controlador/operador, finalidade, base legal (art. 7º Lei 13.709/18), direitos dos titulares e medidas de segurança
-16. CLÁUSULA DE ANTICORRUPÇÃO: referenciar Lei 12.846/2013, proibir suborno e pagamentos indevidos, prever rescisão imediata
-17. CLÁUSULA DE FORÇA MAIOR: definir hipóteses, prazo de comunicação (máximo 5 dias úteis) e consequências
-18. Inicie com PREÂMBULO completo: nome, CPF/CNPJ, telefone, email, estado civil (se PF), sede (se PJ) de todas as partes, e declaração de livre vontade
-19. NÃO inclua seção de assinaturas ou testemunhas
+14. CLÁUSULA DE LGPD: obrigações de controlador/operador, finalidade, base legal (art. 7º Lei 13.709/18), direitos dos titulares e medidas de segurança
+15. CLÁUSULA DE ANTICORRUPÇÃO: referenciar Lei 12.846/2013, proibir suborno e pagamentos indevidos, prever rescisão imediata
+16. CLÁUSULA DE FORÇA MAIOR: definir hipóteses, prazo de comunicação (máximo 5 dias úteis) e consequências
+17. Inicie com PREÂMBULO completo: nome, CPF/CNPJ, telefone, email, estado civil (se PF), sede (se PJ) de todas as partes, e declaração de livre vontade
+18. NÃO inclua seção de assinaturas ou testemunhas
 
 ESTRUTURA OBRIGATÓRIA:
 ${clausulasList}

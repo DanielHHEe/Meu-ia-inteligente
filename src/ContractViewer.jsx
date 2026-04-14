@@ -21,67 +21,66 @@ const formatContractText = (text) => {
     const trimmed = line.trim();
 
     if (!trimmed) {
-      html += '<div style="height:14px"></div>';
+      html += '<div style="height:10px"></div>';
       continue;
     }
 
-    // Título principal do contrato
+    // Título principal do contrato (ex: CONTRATO DE PRESTAÇÃO DE SERVIÇOS)
     if (
       /^(CONTRATO|TERMO|ACORDO|INSTRUMENTO)\s+DE\s+/i.test(trimmed) &&
       trimmed === trimmed.toUpperCase()
     ) {
-      html += `<p class="doc-title">${trimmed}</p>`;
+      html += `<p style="text-align:center;font-weight:700;font-size:15px;margin:0 0 16px 0;letter-spacing:0.04em;">${trimmed}</p>`;
       continue;
     }
 
     // PREÂMBULO
     if (/^PREÂMBULO$/i.test(trimmed)) {
-      html += `<p class="doc-section-label">${trimmed}</p>`;
+      html += `<p style="text-align:center;font-weight:700;font-size:13px;margin:16px 0 10px 0;letter-spacing:0.05em;">${trimmed}</p>`;
       continue;
     }
 
-    // Cabeçalho de cláusula
+    // Cabeçalho de cláusula: CLÁUSULA Xª — ...
     if (/^CLÁUSULA\s+\d|^CLAUSULA\s+\d|^CL[ÁA]USULA\s+[IVXLC]+/i.test(trimmed)) {
+      // Remove markdown ** se vier da IA
       const clean = trimmed.replace(/\*\*/g, '');
-      html += `<p class="doc-clause-title">${clean}</p>`;
+      html += `<p style="font-weight:700;font-size:13px;margin:20px 0 8px 0;letter-spacing:0.02em;">${clean}</p>`;
       continue;
     }
 
-    // Parágrafos numerados
+    // Parágrafos numerados: 1.1., 2.3., §1º, §2º
     if (/^(\d+\.\d+\.?|§\d+[º°]?)\s/.test(trimmed)) {
       const clean = trimmed.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-      html += `<p class="doc-paragraph">${clean}</p>`;
+      html += `<p style="text-align:justify;margin:0 0 8px 0;padding-left:0;font-size:13px;line-height:1.85;">${clean}</p>`;
       continue;
     }
 
-    // Campos de qualificação
-    if (
-      /^(CONTRATANTE|CONTRATADO|LOCADOR|LOCATÁRIO|PARTE [AB]|REVELADORA|RECEPTORA|VENDEDOR|COMPRADOR|FREELANCER|EMPREITEIRO|SÓCIO [AB]|REPRESENTADA|REPRESENTANTE|COMODANTE|COMODATÁRIO)\s*:/i.test(trimmed) ||
-      /^(CPF|CNPJ|CPF\/CNPJ|TELEFONE|EMAIL|E-MAIL|ENDEREÇO|OBJETO|VALOR|FORMA DE PAGAMENTO|PRAZO|MULTA|CIDADE|ESTADO|IMÓVEL|BEM|REGIME FISCAL|RETENÇÃO)\s*:/i.test(trimmed)
-    ) {
+    // Campos de qualificação (CONTRATANTE:, CPF:, TELEFONE:, EMAIL: etc.)
+    if (/^(CONTRATANTE|CONTRATADO|LOCADOR|LOCATÁRIO|PARTE [AB]|REVELADORA|RECEPTORA|VENDEDOR|COMPRADOR|FREELANCER)\s*:/i.test(trimmed) ||
+        /^(CPF|CNPJ|CPF\/CNPJ|TELEFONE|EMAIL|E-MAIL|ENDEREÇO|OBJETO|VALOR|FORMA DE PAGAMENTO|PRAZO|MULTA|CIDADE|ESTADO|IMÓVEL|BEM)\s*:/i.test(trimmed)) {
       const colonIdx = trimmed.indexOf(':');
       const label = trimmed.substring(0, colonIdx);
       const value = trimmed.substring(colonIdx + 1).trim();
-      html += `<p class="doc-field"><span class="doc-field-label">${label}:</span> <span class="doc-field-value">${value}</span></p>`;
+      html += `<p style="margin:0 0 4px 0;font-size:13px;line-height:1.7;"><strong>${label}:</strong> ${value}</p>`;
       continue;
     }
 
-    // Linha de local e data / fechamento
+    // Linha de local e data / assinatura
     if (/^(local e data|e, por estarem|assim justas|em 2 \(duas\))/i.test(trimmed)) {
       const clean = trimmed.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-      html += `<p class="doc-closing">${clean}</p>`;
+      html += `<p style="text-align:center;margin:16px 0 8px 0;font-size:13px;line-height:1.7;">${clean}</p>`;
       continue;
     }
 
     // Linha de assinatura ___
-    if (/^_{3,}/.test(trimmed)) {
-      html += `<p class="doc-sig-line">${trimmed}</p>`;
+    if (/^_{3,}/.test(trimmed) || /^_{3,}/.test(trimmed)) {
+      html += `<p style="text-align:center;margin:8px 0;font-size:13px;">${trimmed}</p>`;
       continue;
     }
 
-    // Parágrafo normal
+    // Parágrafo normal — aplica negrito inline se vier ** da IA
     const clean = trimmed.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    html += `<p class="doc-text">${clean}</p>`;
+    html += `<p style="text-align:justify;margin:0 0 8px 0;font-size:13px;line-height:1.85;">${clean}</p>`;
   }
 
   return html;
@@ -94,9 +93,11 @@ const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
   const [showPayment, setShowPayment] = useState(false);
   const paperRef = useRef(null);
 
-  const getDateString = () => {
+  const getDateTimeString = () => {
     const now = new Date();
-    return now.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
+    const data = now.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
+    const hora = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    return `${data} às ${hora}`;
   };
 
   const triggerDownload = async () => {
@@ -107,7 +108,7 @@ const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
         await onDownload('pdf');
       } else if (paperRef.current) {
         const opt = {
-          margin: [20, 20, 20, 20],
+          margin: [15, 15, 15, 15],
           filename: `${contractType?.name || 'contrato'}.pdf`,
           image: { type: 'jpeg', quality: 0.98 },
           html2canvas: { scale: 2, useCORS: true, letterRendering: true },
@@ -139,472 +140,298 @@ const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
   const formattedHTML = formatContractText(contract);
 
   return (
-    <div className="cv-root">
+    <div className="contract-viewer" style={{ minHeight: '100vh', background: '#f8faf9' }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap');
-
-        /* ── Reset & Root ── */
-        .cv-root * { box-sizing: border-box; margin: 0; padding: 0; }
-        .cv-root {
-          min-height: 100vh;
-          background: #f4f3f0;
-          font-family: 'DM Sans', sans-serif;
-          color: #1c1c1c;
-        }
-
-        /* ── Layout Shell ── */
-        .cv-shell {
-          max-width: 860px;
-          margin: 0 auto;
-          padding: 28px 16px 60px;
-        }
-        @media (min-width: 640px) { .cv-shell { padding: 36px 24px 80px; } }
-        @media (min-width: 768px) { .cv-shell { padding: 48px 32px 100px; } }
-
-        /* ── Top Bar ── */
-        .cv-topbar {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 16px;
-          flex-wrap: wrap;
-          margin-bottom: 28px;
-        }
-        .cv-topbar-left {
-          display: flex;
-          align-items: center;
-          gap: 14px;
-        }
-        .cv-topbar-icon {
-          width: 44px; height: 44px;
-          background: #1c1c1c;
-          border-radius: 10px;
-          display: flex; align-items: center; justify-content: center;
-          flex-shrink: 0;
-        }
-        .cv-topbar-label {
-          font-size: 11px;
-          font-weight: 600;
-          letter-spacing: 0.12em;
-          text-transform: uppercase;
-          color: #888;
-          margin-bottom: 3px;
-        }
-        .cv-topbar-title {
-          font-family: 'Cormorant Garamond', Georgia, serif;
-          font-size: 22px;
-          font-weight: 600;
-          color: #1c1c1c;
-          line-height: 1.2;
-        }
-        @media (min-width: 640px) { .cv-topbar-title { font-size: 26px; } }
-
-        /* ── Download Button ── */
-        .cv-btn-download {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          padding: 11px 22px;
-          border-radius: 8px;
-          font-size: 14px;
-          font-weight: 600;
-          border: none;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          white-space: nowrap;
-          flex-shrink: 0;
-        }
-        .cv-btn-download.locked {
-          background: #1c1c1c;
-          color: #fff;
-          box-shadow: 0 2px 12px rgba(0,0,0,0.18);
-        }
-        .cv-btn-download.unlocked {
-          background: #18794e;
-          color: #fff;
-          box-shadow: 0 2px 12px rgba(24,121,78,0.25);
-        }
-        .cv-btn-download:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.08); }
-        .cv-btn-download:active:not(:disabled) { transform: translateY(0); }
-        .cv-btn-download:disabled { opacity: 0.65; cursor: not-allowed; }
-
-        /* ── Status Banner ── */
-        .cv-banner {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 12px;
-          flex-wrap: wrap;
-          border-radius: 10px;
-          padding: 14px 18px;
-          margin-bottom: 20px;
-          font-size: 13px;
-          font-weight: 500;
-        }
-        .cv-banner.pending {
-          background: #fdf8f0;
-          border: 1px solid #e8d9b8;
-          color: #6b4c1e;
-        }
-        .cv-banner.confirmed {
-          background: #f0faf4;
-          border: 1px solid #b3dfc7;
-          color: #145a35;
-        }
-        .cv-banner-left {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-        }
-        .cv-banner-dot {
-          width: 8px; height: 8px;
-          border-radius: 50%;
-          flex-shrink: 0;
-        }
-        .cv-banner.pending .cv-banner-dot { background: #c87941; }
-        .cv-banner.confirmed .cv-banner-dot { background: #18794e; }
-        .cv-banner-pay-btn {
-          padding: 8px 16px;
-          border-radius: 6px;
-          background: #1c1c1c;
-          color: #fff;
-          font-size: 13px;
-          font-weight: 600;
-          border: none;
-          cursor: pointer;
-          transition: all 0.2s;
-          flex-shrink: 0;
-        }
-        .cv-banner-pay-btn:hover { background: #333; }
-
-        /* ── Document Card ── */
-        .cv-document {
-          background: #fff;
-          border-radius: 4px;
-          box-shadow:
-            0 1px 2px rgba(0,0,0,0.04),
-            0 4px 16px rgba(0,0,0,0.06),
-            0 0 0 1px rgba(0,0,0,0.04);
-          margin-bottom: 24px;
-          position: relative;
-          overflow: hidden;
-        }
-
-        /* Subtle top rule */
-        .cv-document::before {
-          content: '';
-          display: block;
-          height: 3px;
-          background: linear-gradient(90deg, #1c1c1c 0%, #555 60%, #ccc 100%);
-        }
-
-        /* Lock overlay */
-        .cv-document.locked .cv-doc-body::after {
-          content: '';
-          position: absolute;
-          bottom: 0; left: 0; right: 0;
-          height: 200px;
-          background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.97));
-          pointer-events: none;
-          border-radius: 0 0 4px 4px;
-        }
-
-        /* ── Document Body (scrollable preview) ── */
-        .cv-doc-body {
-          position: relative;
-          padding: 40px 36px;
-          max-height: 62vh;
-          overflow-y: auto;
-        }
-        @media (min-width: 640px) { .cv-doc-body { padding: 52px 60px; } }
-        @media (min-width: 768px) { .cv-doc-body { padding: 64px 80px; max-height: 68vh; } }
-
-        .cv-doc-body::-webkit-scrollbar { width: 4px; }
-        .cv-doc-body::-webkit-scrollbar-track { background: transparent; }
-        .cv-doc-body::-webkit-scrollbar-thumb { background: #ddd; border-radius: 4px; }
-        .cv-doc-body::-webkit-scrollbar-thumb:hover { background: #bbb; }
-
-        /* ── Document Typography ── */
-        .doc-title {
-          font-family: 'Cormorant Garamond', Georgia, serif;
-          font-size: 17px;
-          font-weight: 700;
-          text-align: center;
-          letter-spacing: 0.06em;
-          color: #1c1c1c;
-          margin-bottom: 28px;
-          line-height: 1.4;
-        }
-        .doc-section-label {
-          font-size: 11px;
-          font-weight: 600;
-          letter-spacing: 0.14em;
-          text-transform: uppercase;
-          text-align: center;
-          color: #888;
-          margin: 28px 0 16px;
-        }
-        .doc-clause-title {
-          font-family: 'DM Sans', sans-serif;
-          font-size: 12px;
-          font-weight: 700;
-          letter-spacing: 0.06em;
-          text-transform: uppercase;
-          color: #1c1c1c;
-          margin: 32px 0 12px;
-          padding-bottom: 8px;
-          border-bottom: 1px solid #e8e8e8;
-        }
-        .doc-paragraph {
-          font-size: 13.5px;
-          line-height: 1.9;
-          color: #2c2c2c;
-          text-align: justify;
-          margin-bottom: 10px;
-          hyphens: auto;
-        }
-        .doc-field {
-          font-size: 13px;
-          line-height: 1.75;
-          color: #2c2c2c;
-          margin-bottom: 5px;
-        }
-        .doc-field-label {
-          font-weight: 600;
-          color: #1c1c1c;
-        }
-        .doc-field-value {
-          color: #444;
-        }
-        .doc-text {
-          font-size: 13.5px;
-          line-height: 1.9;
-          color: #2c2c2c;
-          text-align: justify;
-          margin-bottom: 10px;
-          hyphens: auto;
-        }
-        .doc-closing {
-          font-size: 13.5px;
-          line-height: 1.9;
-          color: #2c2c2c;
-          text-align: center;
-          margin: 20px 0 10px;
-        }
-        .doc-sig-line {
-          text-align: center;
-          font-size: 13px;
-          color: #aaa;
-          margin: 8px 0;
-        }
-
-        /* ── Signature Section (PDF only, inside paperRef) ── */
-        .cv-sig-section {
-          padding: 48px 80px 60px;
-          border-top: 1px solid #ececec;
-        }
-        @media (max-width: 640px) { .cv-sig-section { padding: 36px 36px 48px; } }
-
-        .cv-sig-date {
-          text-align: center;
-          font-size: 13px;
-          color: #888;
-          font-style: italic;
-          margin-bottom: 72px;
-          letter-spacing: 0.02em;
-        }
-
-        .cv-sig-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 0 80px;
-        }
-
-        .cv-sig-block {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 0;
-        }
-
-        /* Big spacer above line — gives breathing room */
-        .cv-sig-space {
-          height: 80px;
-        }
-
-        .cv-sig-rule {
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+        .contract-viewer * { font-family: 'DM Sans', sans-serif; box-sizing: border-box; }
+        .contract-title { font-family: 'Playfair Display', Georgia, serif; }
+        .contract-body {
+          font-family: 'Georgia', 'Times New Roman', serif;
+          color: #1a1a1a;
+          word-wrap: break-word;
+          overflow-wrap: break-word;
           width: 100%;
-          height: 1px;
-          background: #1c1c1c;
-          margin-bottom: 12px;
         }
-
-        .cv-sig-name {
-          font-size: 12px;
-          font-weight: 600;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-          color: #1c1c1c;
-          text-align: center;
-          margin-bottom: 4px;
+        .contract-body p {
+          width: 100%;
+          word-break: break-word;
+          overflow-wrap: break-word;
+          hyphens: auto;
         }
-
-        .cv-sig-role {
-          font-size: 11px;
-          color: #aaa;
-          letter-spacing: 0.04em;
-          text-align: center;
+        .download-btn {
+          position: relative; overflow: hidden;
+          transition: all 0.3s ease; border: none; color: #fff; cursor: pointer;
+          border-radius: 12px; font-weight: 600;
+          display: inline-flex; align-items: center; gap: 8px;
+          padding: 12px 28px; font-size: 15px;
         }
-
-        /* ── Back Button ── */
-        .cv-back-wrap {
-          text-align: center;
-          padding-top: 8px;
+        .download-btn.locked {
+          background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+          box-shadow: 0 4px 16px rgba(245,158,11,0.3);
         }
+        .download-btn.unlocked {
+          background: linear-gradient(135deg, #059669 0%, #047857 100%);
+          box-shadow: 0 4px 16px rgba(5,150,105,0.3);
+        }
+        .download-btn:hover { transform: translateY(-1px); filter: brightness(1.1); }
+        .download-btn:active { transform: translateY(0); }
+        .download-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+        .cv-container { max-width: 900px; margin: 0 auto; padding: 16px; }
+        @media (min-width: 640px) { .cv-container { padding: 24px; } }
+        @media (min-width: 768px) { .cv-container { padding: 32px; } }
+        .cv-header {
+          background: #fff; border-radius: 16px; padding: 20px; margin-bottom: 16px;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04);
+        }
+        @media (min-width: 640px) { .cv-header { padding: 24px; margin-bottom: 20px; } }
+        .cv-header-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+        .cv-header-info { display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0; }
+        .cv-icon-box {
+          width: 48px; height: 48px; min-width: 48px;
+          background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+          border-radius: 12px; display: flex; align-items: center; justify-content: center;
+        }
+        .cv-header-text { min-width: 0; }
+        .cv-header-title { font-size: 18px; font-weight: 700; color: #111; margin: 0 0 4px 0; overflow: hidden; text-overflow: ellipsis; }
+        @media (min-width: 640px) { .cv-header-title { font-size: 22px; } }
+        .cv-header-subtitle { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #059669; font-weight: 500; margin: 0; }
+        .cv-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+        .cv-success {
+          display: flex; align-items: flex-start; gap: 10px;
+          background: #ecfdf5; border: 1px solid #a7f3d0;
+          border-radius: 10px; padding: 12px 16px; margin-top: 16px;
+        }
+        .cv-success-text { font-size: 13px; color: #065f46; line-height: 1.5; margin: 0; }
+        .cv-success-text strong { display: block; margin-bottom: 2px; }
+        .cv-payment-banner {
+          display: flex; align-items: center; justify-content: space-between;
+          gap: 12px; flex-wrap: wrap;
+          background: linear-gradient(135deg, #fffbeb, #fef3c7);
+          border: 1px solid #fcd34d; border-radius: 10px;
+          padding: 12px 16px; margin-top: 16px;
+        }
+        .cv-payment-banner.paid {
+          background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+          border-color: #6ee7b7;
+        }
+        .cv-paper {
+          background: #fff; border-radius: 16px; overflow: hidden;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 6px 20px rgba(0,0,0,0.05);
+          margin-bottom: 20px;
+        }
+        .cv-paper.locked .cv-paper-body { position: relative; }
+        .cv-paper.locked .cv-paper-body::after {
+          content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 160px;
+          background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.95));
+          pointer-events: none;
+        }
+        .cv-paper-strip { height: 4px; background: linear-gradient(90deg, #059669, #10b981, #34d399); }
+        .cv-paper-body { padding: 24px 20px; max-height: 60vh; overflow-y: auto; }
+        @media (min-width: 640px) { .cv-paper-body { padding: 40px 48px; } }
+        @media (min-width: 768px) { .cv-paper-body { padding: 48px 64px; max-height: 65vh; } }
+        .cv-paper-body::-webkit-scrollbar { width: 5px; }
+        .cv-paper-body::-webkit-scrollbar-track { background: #f1f5f4; border-radius: 10px; }
+        .cv-paper-body::-webkit-scrollbar-thumb { background: #a7f3d0; border-radius: 10px; }
+        .cv-paper-body::-webkit-scrollbar-thumb:hover { background: #6ee7b7; }
+        .cv-signatures { padding: 24px 20px 32px; border-top: 1px solid #e5e7eb; }
+        @media (min-width: 640px) { .cv-signatures { padding: 32px 48px 40px; } }
+        @media (min-width: 768px) { .cv-signatures { padding: 40px 64px 48px; } }
+        .cv-date { text-align: center; font-size: 14px; color: #6b7280; font-style: italic; margin-bottom: 32px; }
+        .cv-sig-grid {
+          display: grid; grid-template-columns: 1fr 1fr;
+          gap: 120px; margin-bottom: 32px;
+        }
+        .cv-sig-block { text-align: center; width: 100%; }
+        .cv-sig-label { font-weight: 700; font-size: 13px; letter-spacing: 0.05em; color: #374151; margin-bottom: 12px; }
+        .cv-sig-line {
+          height: 1px; width: 100%; display: block;
+          background: linear-gradient(to right, #d1fae5, #6ee7b7, #d1fae5);
+          margin-bottom: 6px;
+        }
+        .cv-sig-sublabel { font-size: 12px; color: #9ca3af; }
+        .cv-witnesses { border-top: 1px dashed #e5e7eb; padding-top: 24px; }
+        .cv-witnesses-title { font-weight: 700; font-size: 13px; letter-spacing: 0.05em; color: #374151; margin-bottom: 16px; }
+        .cv-witness-grid {
+          display: grid; grid-template-columns: 1fr 1fr;
+          gap: 32px;
+        }
+        .cv-witness-item { display: flex; align-items: flex-start; gap: 12px; }
+        .cv-witness-num {
+          width: 28px; height: 28px; min-width: 28px; border-radius: 50%;
+          background: #ecfdf5; display: flex; align-items: center; justify-content: center;
+          font-size: 12px; font-weight: 600; color: #059669;
+        }
+        .cv-witness-fields { font-size: 13px; color: #4b5563; line-height: 1.8; width: 100%; }
+        .cv-witness-fields div {
+          border-bottom: 1px solid #d1d5db;
+          padding-bottom: 2px;
+          margin-bottom: 6px;
+        }
+        .cv-back { text-align: center; padding-bottom: 32px; }
         .cv-back-btn {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          padding: 10px 24px;
-          border-radius: 8px;
-          background: none;
-          border: 1px solid #d4d4d4;
-          font-size: 14px;
-          font-weight: 500;
-          color: #555;
-          cursor: pointer;
-          transition: all 0.2s;
-          font-family: 'DM Sans', sans-serif;
+          display: inline-flex; align-items: center; gap: 8px;
+          background: none; border: 1px solid #d1d5db; border-radius: 10px;
+          padding: 10px 24px; font-size: 14px; font-weight: 500; color: #374151;
+          cursor: pointer; transition: all 0.2s;
         }
-        .cv-back-btn:hover {
-          border-color: #1c1c1c;
-          color: #1c1c1c;
-          background: #fafafa;
-        }
-
-        /* ── Spinner ── */
-        @keyframes cv-spin { to { transform: rotate(360deg); } }
-        .cv-spin { animation: cv-spin 0.9s linear infinite; }
-
-        /* ── Print ── */
+        .cv-back-btn:hover { background: #fff; border-color: #059669; color: #059669; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @media print {
-          .cv-topbar, .cv-banner, .cv-back-wrap { display: none !important; }
-          .cv-document { box-shadow: none !important; }
-          .cv-doc-body { max-height: none !important; overflow: visible !important; }
           .cv-sig-grid { display: grid !important; grid-template-columns: 1fr 1fr !important; }
+          .cv-witness-grid { display: grid !important; grid-template-columns: 1fr 1fr !important; }
+          .cv-sig-line { width: 100% !important; display: block !important; }
+          .cv-witness-fields div { border-bottom: 1px solid #d1d5db !important; }
         }
       `}</style>
 
-      <div className="cv-shell">
-
-        {/* ── Top Bar ── */}
+      <div className="cv-container">
+        {/* Header */}
         <motion.div
-          className="cv-topbar"
-          initial={{ opacity: 0, y: -12 }}
+          className="cv-header"
+          initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35 }}
+          transition={{ duration: 0.4 }}
         >
-          <div className="cv-topbar-left">
-            <div className="cv-topbar-icon">
-              <FileText size={22} color="#fff" />
-            </div>
-            <div>
-              <div className="cv-topbar-label">Documento Gerado</div>
-              <div className="cv-topbar-title">
-                {contractType?.name || 'Contrato'}
+          <div className="cv-header-top">
+            <div className="cv-header-info">
+              <div className="cv-icon-box">
+                <FileText size={24} color="#059669" />
+              </div>
+              <div className="cv-header-text">
+                <h2 className="cv-header-title contract-title">
+                  {contractType?.name || 'Contrato'} — Documento Gerado
+                </h2>
+                <p className="cv-header-subtitle">
+                  <Sparkles size={14} />
+                  Gerado por IA · Pronto para assinatura
+                </p>
               </div>
             </div>
+            <div className="cv-actions">
+              <button
+                className={`download-btn ${isPaid ? 'unlocked' : 'locked'}`}
+                onClick={handleDownloadClick}
+                disabled={downloading}
+              >
+                {downloading ? (
+                  <><Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /><span>Gerando PDF...</span></>
+                ) : downloaded ? (
+                  <><CheckCircle size={18} /><span>Baixado!</span></>
+                ) : isPaid ? (
+                  <><Download size={18} /><span>Baixar PDF</span></>
+                ) : (
+                  <><Lock size={18} /><span>Pagar R$ 19,90</span></>
+                )}
+              </button>
+            </div>
           </div>
 
-          <button
-            className={`cv-btn-download ${isPaid ? 'unlocked' : 'locked'}`}
-            onClick={handleDownloadClick}
-            disabled={downloading}
-          >
-            {downloading ? (
-              <><Loader2 size={16} className="cv-spin" /><span>Gerando PDF…</span></>
-            ) : downloaded ? (
-              <><CheckCircle size={16} /><span>Baixado!</span></>
-            ) : isPaid ? (
-              <><Download size={16} /><span>Baixar PDF</span></>
-            ) : (
-              <><Lock size={16} /><span>Pagar R$ 19,90</span></>
-            )}
-          </button>
-        </motion.div>
-
-        {/* ── Status Banner ── */}
-        <motion.div
-          className={`cv-banner ${isPaid ? 'confirmed' : 'pending'}`}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.3, delay: 0.1 }}
-        >
-          <div className="cv-banner-left">
-            <div className="cv-banner-dot" />
+          {/* Banner de status do pagamento */}
+          <div className={`cv-payment-banner ${isPaid ? 'paid' : ''}`}>
             {isPaid ? (
-              <span>Pagamento confirmado — download liberado.</span>
+              <>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <CheckCircle size={18} color="#059669" />
+                  <span style={{ fontSize: '13px', color: '#065f46', fontWeight: '600' }}>
+                    Pagamento confirmado — Download liberado!
+                  </span>
+                </div>
+              </>
             ) : (
-              <span>Contrato pronto. Pague <strong>R$ 19,90 via Pix</strong> para liberar o download em PDF.</span>
+              <>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Lock size={16} color="#d97706" />
+                  <span style={{ fontSize: '13px', color: '#92400e', fontWeight: '600' }}>
+                    Contrato pronto! Pague R$ 19,90 via Pix para liberar o download.
+                  </span>
+                </div>
+                <button
+                  onClick={() => setShowPayment(true)}
+                  style={{
+                    padding: '8px 18px', borderRadius: '8px',
+                    background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                    color: 'white', fontWeight: '700', fontSize: '13px',
+                    border: 'none', cursor: 'pointer', flexShrink: 0,
+                    boxShadow: '0 2px 8px rgba(245,158,11,0.3)',
+                  }}
+                >
+                  Pagar agora
+                </button>
+              </>
             )}
           </div>
-          {!isPaid && (
-            <button className="cv-banner-pay-btn" onClick={() => setShowPayment(true)}>
-              Pagar agora
-            </button>
-          )}
+
+          <div className="cv-success">
+            <CheckCircle size={18} color="#059669" style={{ marginTop: 1, flexShrink: 0 }} />
+            <p className="cv-success-text">
+              <strong>Contrato gerado com sucesso!</strong>
+              Revise o documento abaixo. Após o pagamento, o PDF completo será liberado para download.
+            </p>
+          </div>
         </motion.div>
 
-        {/* ── Document Card ── */}
+        {/* Contract Paper */}
         <motion.div
-          className={`cv-document ${isPaid ? '' : 'locked'}`}
-          initial={{ opacity: 0, y: 12 }}
+          className={`cv-paper ${isPaid ? '' : 'locked'}`}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.15 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
         >
-          {/* paperRef envolve tudo que vai para o PDF */}
-          <div ref={paperRef}>
+          <div className="cv-paper-strip" />
 
-            {/* Scrollable body */}
-            <div className="cv-doc-body">
+          {/* paperRef cobre tudo que entra no PDF */}
+          <div ref={paperRef}>
+            <div className="cv-paper-body">
               <div
+                className="contract-body"
                 dangerouslySetInnerHTML={{ __html: formattedHTML }}
               />
             </div>
 
-            {/* ── Signature Section ── */}
-            <div className="cv-sig-section">
-
-              <div className="cv-sig-date">
-                {getDateString()}
+            {/* Assinaturas e testemunhas */}
+            <div className="cv-signatures">
+              <div className="cv-date">
+                {getDateTimeString()}
               </div>
 
               <div className="cv-sig-grid">
                 {getSignatureLabels(contractType?.id).map(({ label, sublabel }) => (
                   <div key={label} className="cv-sig-block">
-                    {/* Generous vertical space — breathing room above line */}
-                    <div className="cv-sig-space" />
-                    <div className="cv-sig-rule" />
-                    <div className="cv-sig-name">{label}</div>
-                    <div className="cv-sig-role">{sublabel}</div>
+                    <div className="cv-sig-label">{label}</div>
+                    <div className="cv-sig-line" />
+                    <div className="cv-sig-sublabel">{sublabel}</div>
                   </div>
                 ))}
               </div>
 
+              <div className="cv-witnesses">
+                <div className="cv-witnesses-title">TESTEMUNHAS</div>
+                <div className="cv-witness-grid">
+                  {[1, 2].map(n => (
+                    <div key={n} className="cv-witness-item">
+                      <div className="cv-witness-num">{n}</div>
+                      <div className="cv-witness-fields">
+                        <div>Nome: ___________________________</div>
+                        <div>CPF: ____________________________</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </motion.div>
 
-        {/* ── Back Button ── */}
-        <div className="cv-back-wrap">
+        {/* Botão voltar */}
+        <div className="cv-back">
           <button className="cv-back-btn" onClick={onBack}>
-            <ArrowLeft size={15} />
+            <ArrowLeft size={16} />
             Criar novo contrato
           </button>
         </div>
       </div>
 
-      {/* ── Payment Modal ── */}
+      {/* Modal de pagamento */}
       <PaymentModal
         isOpen={showPayment}
         onClose={() => setShowPayment(false)}
@@ -615,24 +442,16 @@ const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
   );
 };
 
-// ── Signature labels por tipo de contrato ──
 const getSignatureLabels = (contractTypeId) => {
   const labels = {
-    'aluguel':                [{ label: 'LOCADOR',           sublabel: 'Assinatura e Carimbo' }, { label: 'LOCATÁRIO',         sublabel: 'Assinatura e Carimbo' }],
-    'prestacao-servicos':     [{ label: 'CONTRATANTE',       sublabel: 'Assinatura e Carimbo' }, { label: 'CONTRATADO',        sublabel: 'Assinatura e Carimbo' }],
-    'trabalho-freelancer':    [{ label: 'CONTRATANTE',       sublabel: 'Assinatura e Carimbo' }, { label: 'FREELANCER',        sublabel: 'Assinatura e Carimbo' }],
-    'compra-venda':           [{ label: 'VENDEDOR',          sublabel: 'Assinatura e Carimbo' }, { label: 'COMPRADOR',         sublabel: 'Assinatura e Carimbo' }],
-    'parceria':               [{ label: 'PARTE A',           sublabel: 'Assinatura e Carimbo' }, { label: 'PARTE B',           sublabel: 'Assinatura e Carimbo' }],
-    'confidencialidade':      [{ label: 'PARTE REVELADORA',  sublabel: 'Assinatura e Carimbo' }, { label: 'PARTE RECEPTORA',   sublabel: 'Assinatura e Carimbo' }],
-    'empreitada':             [{ label: 'CONTRATANTE',       sublabel: 'Assinatura e Carimbo' }, { label: 'EMPREITEIRO',       sublabel: 'Assinatura e Carimbo' }],
-    'sociedade':              [{ label: 'SÓCIO A',           sublabel: 'Assinatura e Carimbo' }, { label: 'SÓCIO B',           sublabel: 'Assinatura e Carimbo' }],
-    'representacao-comercial':[{ label: 'REPRESENTADA',      sublabel: 'Assinatura e Carimbo' }, { label: 'REPRESENTANTE',     sublabel: 'Assinatura e Carimbo' }],
-    'comodato':               [{ label: 'COMODANTE',         sublabel: 'Assinatura e Carimbo' }, { label: 'COMODATÁRIO',       sublabel: 'Assinatura e Carimbo' }],
+    'aluguel':             [{ label: 'LOCADOR',          sublabel: 'Assinatura e Carimbo' }, { label: 'LOCATÁRIO',        sublabel: 'Assinatura e Carimbo' }],
+    'prestacao-servicos':  [{ label: 'CONTRATANTE',      sublabel: 'Assinatura e Carimbo' }, { label: 'CONTRATADO',       sublabel: 'Assinatura e Carimbo' }],
+    'trabalho-freelancer': [{ label: 'CONTRATANTE',      sublabel: 'Assinatura e Carimbo' }, { label: 'FREELANCER',       sublabel: 'Assinatura e Carimbo' }],
+    'compra-venda':        [{ label: 'VENDEDOR',         sublabel: 'Assinatura e Carimbo' }, { label: 'COMPRADOR',        sublabel: 'Assinatura e Carimbo' }],
+    'parceria':            [{ label: 'PARTE A',          sublabel: 'Assinatura e Carimbo' }, { label: 'PARTE B',          sublabel: 'Assinatura e Carimbo' }],
+    'confidencialidade':   [{ label: 'PARTE REVELADORA', sublabel: 'Assinatura e Carimbo' }, { label: 'PARTE RECEPTORA',  sublabel: 'Assinatura e Carimbo' }],
   };
-  return labels[contractTypeId] || [
-    { label: 'CONTRATANTE', sublabel: 'Assinatura e Carimbo' },
-    { label: 'CONTRATADO',  sublabel: 'Assinatura e Carimbo' },
-  ];
+  return labels[contractTypeId] || [{ label: 'CONTRATANTE', sublabel: 'Assinatura e Carimbo' }, { label: 'CONTRATADO', sublabel: 'Assinatura e Carimbo' }];
 };
 
 export default ContractViewer;
