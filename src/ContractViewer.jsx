@@ -166,14 +166,49 @@ const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
       if (onDownload) {
         await onDownload('pdf');
       } else if (paperRef.current) {
+
+        // Clona o elemento para não modificar o original
+        const clone = paperRef.current.cloneNode(true);
+
+        // Injeta os estilos inline no clone para o html2pdf capturar
+        const styleEl = document.createElement('style');
+        styleEl.innerHTML = `
+          @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap');
+          body { margin: 0; padding: 0; }
+          .cv-paper-inner { font-family: 'Inter', sans-serif; }
+          .cv-paper-scroll { padding: 44px 64px 40px; overflow: visible; max-height: none; }
+          .cv-contract-body { font-family: 'EB Garamond', Georgia, serif; font-size: 14px; color: #1c1c1c; line-height: 2; word-wrap: break-word; width: 100%; }
+          .cv-contract-body .c-title { text-align: center; font-weight: 600; font-size: 15px; letter-spacing: 0.12em; text-transform: uppercase; color: #111827; margin-bottom: 36px; padding-bottom: 24px; border-bottom: 1px solid #f0f0ee; line-height: 1.6; }
+          .cv-contract-body .c-preamble { text-align: center; font-weight: 500; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: #9ca3af; margin: 32px 0 20px; font-family: 'Inter', sans-serif; }
+          .cv-contract-body .c-clause { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #374151; font-family: 'Inter', sans-serif; margin: 40px 0 16px; padding: 12px 16px; background: #f9fafb; border-left: 3px solid #059669; line-height: 1.5; }
+          .cv-contract-body .c-para { text-align: justify; margin-bottom: 12px; color: #1f2937; line-height: 2; }
+          .cv-contract-body .c-field { margin-bottom: 6px; line-height: 1.8; padding: 2px 0; color: #1f2937; }
+          .cv-contract-body .c-field strong { font-weight: 600; color: #111827; }
+          .cv-contract-body .c-center { text-align: center; margin: 16px 0 10px; color: #4b5563; }
+          .cv-contract-body .c-spacer { height: 10px; }
+          .cv-sig-divider { margin: 0 52px; border: none; border-top: 1px solid #f0f0ee; }
+          .cv-sig-section { padding: 0 64px 52px; }
+          .cv-sig-date { text-align: center; font-family: 'EB Garamond', serif; font-size: 13px; color: #9ca3af; font-style: italic; padding: 32px 0 48px; line-height: 1.6; }
+          .cv-sig-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; }
+          .cv-sig-block { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+          .cv-sig-space { height: 72px; }
+          .cv-sig-line { width: 100%; height: 1px; background: #d1d5db; }
+          .cv-sig-label { font-family: 'Inter', sans-serif; font-size: 10.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #1f2937; text-align: center; }
+          .cv-sig-sublabel { font-family: 'Inter', sans-serif; font-size: 10.5px; color: #9ca3af; text-align: center; margin-top: -4px; }
+        `;
+
+        const wrapper = document.createElement('div');
+        wrapper.appendChild(styleEl);
+        wrapper.appendChild(clone);
+
         const opt = {
-          margin:     [15, 15, 15, 15],
-          filename:   `${ct.name || 'contrato'}.pdf`,
-          image:      { type: 'jpeg', quality: 0.98 },
+          margin:      [15, 15, 15, 15],
+          filename:    `${ct.name || 'contrato'}.pdf`,
+          image:       { type: 'jpeg', quality: 0.98 },
           html2canvas: { scale: 2, useCORS: true, letterRendering: true },
-          jsPDF:      { unit: 'mm', format: 'a4', orientation: 'portrait' },
+          jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' },
         };
-        await html2pdf().set(opt).from(paperRef.current).save();
+        await html2pdf().set(opt).from(wrapper).save();
       }
       setDownloaded(true);
       setTimeout(() => setDownloaded(false), 3000);
