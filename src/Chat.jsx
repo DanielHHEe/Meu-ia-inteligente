@@ -1287,8 +1287,23 @@ const Chat = () => {
           i++; continue;
         }
 
+        // Remove referências a testemunhas (linha inteira que menciona testemunha)
+        if (/testemunha|witness/i.test(stripped)) {
+          i++; continue;
+        }
+
+        // Frase de encerramento — remove menção a testemunhas mas mantém a frase
+        if (/^e,?\s+por\s+estarem\s+assim/i.test(stripped)) {
+          const clean = stripped
+            .replace(/,?\s*juntamente\s+com\s+\d+\s*\(duas?\)\s*testemunhas?/gi, '')
+            .replace(/,?\s*na\s+presença\s+das?\s+testemunhas?\s+abaixo/gi, '')
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+          html += `<p style="text-align:justify;margin:0 0 10px;color:#1f2937;line-height:1.9;font-family:Georgia,serif;font-size:13px">${clean}</p>`;
+          i++; continue;
+        }
+
         // Data/local de assinatura
-        if (/^(local e data|e, por estarem|assim justas|imperatriz|são paulo|rio de janeiro|\w+,\s+\d+\s+de\s+\w+\s+de\s+\d{4})/i.test(stripped)) {
+        if (/^(local e data|assim justas|em\s+\d|imperatriz|são paulo|rio de janeiro|\w+,\s+\d+\s+de\s+\w+\s+de\s+\d{4})/i.test(stripped)) {
           html += `<p style="text-align:center;margin:24px 0 32px;color:#4b5563;font-family:Georgia,serif;font-size:13px">${stripped}</p>`;
           i++; continue;
         }
