@@ -10,13 +10,14 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // ✅ DEBUG: verifica se o token está presente
   const token = process.env.MP_ACCESS_TOKEN;
+
+  // ✅ DEBUG — retorna quais variáveis MP existem no ambiente
   if (!token) {
-    console.error('❌ MP_ACCESS_TOKEN não configurado!');
     return res.status(500).json({
-      error: 'Configuração ausente',
-      details: 'MP_ACCESS_TOKEN não encontrado nas variáveis de ambiente',
+      error: 'MP_ACCESS_TOKEN ausente',
+      mp_vars_encontradas: Object.keys(process.env).filter(k => k.startsWith('MP') || k.includes('MERCADO') || k.includes('ACCESS')),
+      todas_vars: Object.keys(process.env),
     });
   }
 
@@ -63,14 +64,12 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    // ✅ DEBUG: loga a resposta completa do Mercado Pago
     console.log('📥 Resposta Mercado Pago (status', response.status, '):', JSON.stringify(data, null, 2));
 
     if (!response.ok) {
       return res.status(400).json({
         error: 'Erro ao criar pagamento',
         details: data.message || 'Erro desconhecido',
-        // ✅ Retorna a causa exata pro frontend ver no console
         mp_error: data,
       });
     }
