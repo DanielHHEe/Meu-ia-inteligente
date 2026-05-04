@@ -180,7 +180,6 @@ const contractTypes = [
       { id: "estado",                 question: "Qual o Estado (UF)?",                                                 type: "text" },
     ],
   },
-  // ==================== NOVOS CONTRATOS ====================
   {
     id: "empreitada",
     name: "Contrato de Empreitada",
@@ -399,7 +398,6 @@ const PaymentModal = ({ isOpen, onClose, onPaymentConfirmed, contractType }) => 
               boxShadow: '0 30px 70px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,255,255,0.04)',
             }}
           >
-            {/* Header */}
             <div style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               padding: '18px 20px 14px',
@@ -435,9 +433,7 @@ const PaymentModal = ({ isOpen, onClose, onPaymentConfirmed, contractType }) => 
               )}
             </div>
 
-            {/* Body */}
             <div style={{ padding: '18px 20px 22px' }}>
-
               {step === 'loading' && (
                 <div style={{ textAlign: 'center', padding: '32px 0' }}>
                   <div style={{
@@ -633,7 +629,7 @@ const PaymentModal = ({ isOpen, onClose, onPaymentConfirmed, contractType }) => 
   );
 };
 
-// ==================== USER AVATAR (Chat) com Menu ====================
+// ==================== USER AVATAR ====================
 const ChatUserAvatar = ({ showInChat }) => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
@@ -642,9 +638,7 @@ const ChatUserAvatar = ({ showInChat }) => {
 
   useEffect(() => {
     const handler = (e) => {
-      if (menuRef.current && !menuRef.current.contains(e.target)) {
-        setMenuOpen(false);
-      }
+      if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -664,52 +658,30 @@ const ChatUserAvatar = ({ showInChat }) => {
 
   return (
     <div ref={menuRef} style={{
-      display: 'flex',
-      justifyContent: 'flex-end',
+      display: 'flex', justifyContent: 'flex-end',
       padding: showInChat ? '0' : '16px 20px 0',
-      maxWidth: '900px',
-      margin: '0 auto',
-      width: '100%',
-      position: 'relative',
+      maxWidth: '900px', margin: '0 auto', width: '100%', position: 'relative',
     }}>
       <div style={{ position: 'relative' }}>
         <button
           onClick={() => setMenuOpen(!menuOpen)}
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '6px 12px 6px 8px',
-            borderRadius: '12px',
+            display: 'flex', alignItems: 'center', gap: '8px',
+            padding: '6px 12px 6px 8px', borderRadius: '12px',
             backgroundColor: menuOpen ? 'rgba(16,185,129,0.1)' : 'rgba(255,255,255,0.04)',
             border: `1px solid ${menuOpen ? 'rgba(16,185,129,0.3)' : 'rgba(255,255,255,0.07)'}`,
-            cursor: 'pointer',
-            transition: 'all 0.2s',
-            outline: 'none',
+            cursor: 'pointer', transition: 'all 0.2s', outline: 'none',
           }}
         >
           <div style={{
-            width: '28px',
-            height: '28px',
-            borderRadius: '8px',
+            width: '28px', height: '28px', borderRadius: '8px',
             background: 'linear-gradient(135deg, #10b981, #059669)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: 0,
-            boxShadow: '0 0 10px rgba(16,185,129,0.25)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            flexShrink: 0, boxShadow: '0 0 10px rgba(16,185,129,0.25)',
           }}>
             <span style={{ fontSize: '11px', fontWeight: '700', color: 'white' }}>{initials}</span>
           </div>
-          <span style={{ 
-            fontSize: '12px', 
-            color: menuOpen ? 'white' : 'rgba(255,255,255,0.7)', 
-            fontWeight: '500', 
-            maxWidth: '120px', 
-            overflow: 'hidden', 
-            textOverflow: 'ellipsis', 
-            whiteSpace: 'nowrap' 
-          }}>
+          <span style={{ fontSize: '12px', color: menuOpen ? 'white' : 'rgba(255,255,255,0.7)', fontWeight: '500', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {name}
           </span>
         </button>
@@ -722,40 +694,25 @@ const ChatUserAvatar = ({ showInChat }) => {
               exit={{ opacity: 0, y: -10, scale: 0.95 }}
               transition={{ duration: 0.15 }}
               style={{
-                position: 'absolute',
-                top: 'calc(100% + 8px)',
-                right: 0,
-                width: '180px',
-                backgroundColor: '#0d1520',
-                border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: '12px',
-                overflow: 'hidden',
-                boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
-                zIndex: 100,
+                position: 'absolute', top: 'calc(100% + 8px)', right: 0,
+                width: '180px', backgroundColor: '#0d1520',
+                border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px',
+                overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.5)', zIndex: 100,
               }}
             >
               <button
                 onClick={handleSignOut}
                 style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px',
-                  backgroundColor: 'transparent',
-                  border: 'none',
-                  color: '#ef4444',
-                  fontSize: '13px',
-                  fontWeight: '500',
-                  cursor: 'pointer',
-                  transition: 'background-color 0.2s',
-                  textAlign: 'left',
+                  width: '100%', padding: '12px 16px',
+                  display: 'flex', alignItems: 'center', gap: '10px',
+                  backgroundColor: 'transparent', border: 'none',
+                  color: '#ef4444', fontSize: '13px', fontWeight: '500',
+                  cursor: 'pointer', transition: 'background-color 0.2s', textAlign: 'left',
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.1)'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.1)'}
+                onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
               >
-                <LogOut size={14} />
-                Sair da conta
+                <LogOut size={14} /> Sair da conta
               </button>
             </motion.div>
           )}
@@ -869,7 +826,6 @@ const PdfCard = ({ contractType, isPaid, onOpenPayment, onDownload }) => (
     <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: 'linear-gradient(135deg, #10b981, #059669)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 0 16px rgba(16,185,129,0.3)' }}>
       <Bot size={16} color="white" />
     </div>
-
     <div style={{ maxWidth: '340px' }}>
       <div style={{
         padding: '11px 16px', borderRadius: '18px', borderBottomLeftRadius: '4px',
@@ -880,7 +836,6 @@ const PdfCard = ({ contractType, isPaid, onOpenPayment, onDownload }) => (
           ? '✅ Pagamento confirmado! Clique abaixo para baixar seu contrato.'
           : '✅ Contrato gerado! Clique abaixo para pagar e baixar o PDF.'}
       </div>
-
       <button
         onClick={isPaid ? onDownload : onOpenPayment}
         style={{ width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'left' }}
@@ -904,9 +859,7 @@ const PdfCard = ({ contractType, isPaid, onOpenPayment, onDownload }) => (
         >
           <div style={{
             width: '42px', height: '42px', borderRadius: '10px', flexShrink: 0,
-            background: isPaid
-              ? 'linear-gradient(135deg, #10b981, #059669)'
-              : 'linear-gradient(135deg, #f59e0b, #d97706)',
+            background: isPaid ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, #f59e0b, #d97706)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             boxShadow: isPaid ? '0 4px 12px rgba(16,185,129,0.3)' : '0 4px 12px rgba(245,158,11,0.3)',
           }}>
@@ -1007,8 +960,7 @@ const ChatInput = ({ value, onChange, onSend, disabled }) => {
         <div style={{
           display: 'flex', alignItems: 'flex-end', gap: '10px',
           backgroundColor: 'rgba(255,255,255,0.05)',
-          borderRadius: '28px',
-          padding: '8px 8px 8px 18px',
+          borderRadius: '28px', padding: '8px 8px 8px 18px',
           border: focused ? '1.5px solid rgba(16,185,129,0.5)' : '1.5px solid rgba(255,255,255,0.08)',
           boxShadow: focused ? '0 0 0 3px rgba(16,185,129,0.08)' : 'none',
           backdropFilter: 'blur(12px)', transition: 'border-color 0.2s, box-shadow 0.2s',
@@ -1027,8 +979,7 @@ const ChatInput = ({ value, onChange, onSend, disabled }) => {
             }}
           />
           <button onClick={onSend} disabled={disabled || !value.trim()} style={{
-            flexShrink: 0, width: '36px', height: '36px',
-            borderRadius: '18px',
+            flexShrink: 0, width: '36px', height: '36px', borderRadius: '18px',
             background: !disabled && value.trim() ? 'linear-gradient(135deg, #059669, #10b981)' : 'rgba(255,255,255,0.07)',
             color: !disabled && value.trim() ? 'white' : 'rgba(255,255,255,0.25)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -1121,7 +1072,6 @@ const Chat = () => {
   const [generatedContract, setGeneratedContract] = useState(null);
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
   const [isGenerating, setIsGenerating] = useState(false);
-
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [isPaid, setIsPaid] = useState(false);
 
@@ -1138,40 +1088,16 @@ const Chat = () => {
       @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
       @keyframes bounce { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-5px); } }
       * { box-sizing: border-box; margin: 0; padding: 0; }
-
-      html, body {
-        font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-        overflow: hidden;
-        background: #080d14 !important;
-        background-color: #080d14 !important;
-      }
-
+      html, body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; overflow: hidden; background: #080d14 !important; background-color: #080d14 !important; }
       ::-webkit-scrollbar { width: 4px; }
       ::-webkit-scrollbar-track { background: transparent; }
       ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
-
       ::placeholder { color: rgba(255,255,255,0.5) !important; }
-      ::-webkit-input-placeholder { color: rgba(255,255,255,0.5) !important; }
-      ::-moz-placeholder { color: rgba(255,255,255,0.5) !important; }
     `;
     document.head.appendChild(style);
-
     let metaTheme = document.querySelector('meta[name="theme-color"]');
-    if (!metaTheme) {
-      metaTheme = document.createElement('meta');
-      metaTheme.name = 'theme-color';
-      document.head.appendChild(metaTheme);
-    }
+    if (!metaTheme) { metaTheme = document.createElement('meta'); metaTheme.name = 'theme-color'; document.head.appendChild(metaTheme); }
     metaTheme.content = '#080d14';
-
-    let metaApple = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
-    if (!metaApple) {
-      metaApple = document.createElement('meta');
-      metaApple.name = 'apple-mobile-web-app-status-bar-style';
-      document.head.appendChild(metaApple);
-    }
-    metaApple.content = 'black-translucent';
-
     return () => style.remove();
   }, []);
 
@@ -1227,6 +1153,7 @@ const Chat = () => {
           try {
             const contract = await chatService.generateContract();
             setGeneratedContract(contract);
+            setCurrentStep(3);
             setMessages(prev => prev.map(m =>
               m.isGenerating ? { text: '__PDF_READY__', isBot: true, isPdfCard: true } : m
             ));
@@ -1251,62 +1178,84 @@ const Chat = () => {
     setShowPaymentModal(false);
   };
 
+  // ==================== HANDLE DOWNLOAD COM FORMATAÇÃO ====================
   const handleDownload = () => {
     if (!generatedContract || !isPaid) return;
+
     const contractText = typeof generatedContract === 'string'
       ? generatedContract
       : generatedContract.contract || generatedContract.content || String(generatedContract);
+
     const fileName = `${selectedContract?.name || 'Contrato'}.pdf`;
 
-    const gerar = (JsPDF) => {
-      const doc = new JsPDF({ unit: 'mm', format: 'a4' });
-      const pageWidth = doc.internal.pageSize.getWidth();
-      const pageHeight = doc.internal.pageSize.getHeight();
-      const margin = 20, maxWidth = pageWidth - margin * 2, lineHeight = 6;
-      let y = margin;
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(10);
-      for (const rawLine of contractText.split('\n')) {
-        const wrapped = doc.splitTextToSize(rawLine || ' ', maxWidth);
-        for (const segment of wrapped) {
-          if (y + lineHeight > pageHeight - margin) { doc.addPage(); y = margin; }
-          doc.text(segment, margin, y);
-          y += lineHeight;
+    // Formata o texto removendo asteriscos e aplicando estilos
+    const formatText = (text) => {
+      const lines = text.split('\n');
+      let html = '';
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed) { html += '<div style="height:10px"></div>'; continue; }
+        const stripped = trimmed.replace(/\*\*/g, '').trim();
+
+        if (/^(CONTRATO|TERMO|ACORDO|INSTRUMENTO)\s+DE\s+/i.test(stripped) && stripped === stripped.toUpperCase()) {
+          html += `<p style="text-align:center;font-weight:bold;font-size:14px;letter-spacing:1px;text-transform:uppercase;color:#111827;margin:0 0 28px;padding-bottom:20px;border-bottom:1px solid #e5e7eb;line-height:1.6;font-family:Georgia,serif">${stripped}</p>`;
+        } else if (/^PREÂMBULO$/i.test(stripped)) {
+          html += `<p style="text-align:center;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#9ca3af;margin:24px 0 16px;font-family:Arial,sans-serif">${stripped}</p>`;
+        } else if (/^CL[ÁA]USULA\s+[\dIVXLC]/i.test(stripped)) {
+          html += `<p style="font-size:10px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;color:#374151;font-family:Arial,sans-serif;margin:32px 0 12px;padding:10px 14px;background:#f9fafb;border-left:3px solid #059669;line-height:1.5">${stripped}</p>`;
+        } else if (/^(\d+\.\d+\.?|§\d+[º°]?)\s/.test(stripped)) {
+          const clean = stripped.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+          html += `<p style="text-align:justify;margin:0 0 10px;color:#1f2937;line-height:1.9;font-family:Georgia,serif;font-size:13px">${clean}</p>`;
+        } else if (/^(CONTRATANTE|CONTRATADO|LOCADOR|LOCATÁRIO|PARTE [AB]|VENDEDOR|COMPRADOR|FREELANCER|REVELADORA|RECEPTORA)\s*:/i.test(stripped) || /^(CPF|CNPJ|TELEFONE|EMAIL|E-MAIL|ENDEREÇO)\s*:/i.test(stripped)) {
+          const colonIdx = stripped.indexOf(':');
+          const label = stripped.substring(0, colonIdx);
+          const value = stripped.substring(colonIdx + 1).trim();
+          html += `<p style="margin:0 0 5px;line-height:1.7;color:#1f2937;font-family:Georgia,serif;font-size:13px"><strong>${label}:</strong> ${value}</p>`;
+        } else if (/^_{3,}/.test(stripped)) {
+          html += `<p style="text-align:center;margin:14px 0 8px;color:#4b5563;font-family:Georgia,serif">${stripped}</p>`;
+        } else if (/^[A-ZÀ-Ú][a-zA-ZÀ-ú\s]+\s*[-–]\s*(VENDEDOR|COMPRADOR|CONTRATANTE|CONTRATADO|LOCADOR|LOCATÁRIO|FREELANCER|PARTE [AB])$/i.test(stripped)) {
+          html += `<p style="text-align:center;font-weight:bold;margin:8px 0;color:#1f2937;font-family:Georgia,serif;font-size:13px">${stripped}</p>`;
+        } else {
+          const clean = stripped.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+          html += `<p style="text-align:justify;margin:0 0 10px;color:#1f2937;line-height:1.9;font-family:Georgia,serif;font-size:13px">${clean}</p>`;
         }
       }
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-      const isMobile = isIOS || /Android/.test(navigator.userAgent);
-      const pdfBlob = doc.output('blob');
-      const downloadViaBlob = (blob, name) => {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url; a.download = name; a.style.display = 'none';
-        document.body.appendChild(a); a.click(); document.body.removeChild(a);
-        setTimeout(() => URL.revokeObjectURL(url), 10000);
-      };
-      if (isMobile && navigator.share && navigator.canShare) {
-        const file = new File([pdfBlob], fileName, { type: 'application/pdf' });
-        if (navigator.canShare({ files: [file] })) {
-          navigator.share({ files: [file], title: fileName }).catch(() => downloadViaBlob(pdfBlob, fileName));
-          return;
-        }
-      }
-      downloadViaBlob(pdfBlob, fileName);
+      return html;
     };
 
-    if (window.jspdf?.jsPDF) { gerar(window.jspdf.jsPDF); return; }
-    const script = document.createElement('script');
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
-    script.onload = () => { if (window.jspdf?.jsPDF) gerar(window.jspdf.jsPDF); };
-    script.onerror = () => {
-      const blob = new Blob([contractText], { type: 'text/plain;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = fileName.replace('.pdf', '.txt');
-      document.body.appendChild(a); a.click(); document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(url), 5000);
-    };
-    document.head.appendChild(script);
+    const formattedHTML = formatText(contractText);
+
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText = 'padding:40px 56px;background:white;font-family:Georgia,serif;max-width:800px;';
+    wrapper.innerHTML = formattedHTML;
+
+    const loadScript = (src) => new Promise((resolve, reject) => {
+      if (document.querySelector(`script[src="${src}"]`)) { resolve(); return; }
+      const s = document.createElement('script');
+      s.src = src; s.onload = resolve; s.onerror = reject;
+      document.head.appendChild(s);
+    });
+
+    loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js')
+      .then(() => {
+        const opt = {
+          margin: [15, 15, 15, 15],
+          filename: fileName,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        };
+        window.html2pdf().set(opt).from(wrapper).save();
+      })
+      .catch(() => {
+        // Fallback: download como texto
+        const blob = new Blob([contractText.replace(/\*\*/g, '')], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = fileName.replace('.pdf', '.txt');
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 5000);
+      });
   };
 
   const isDesktop = windowWidth >= 1024;
@@ -1314,10 +1263,8 @@ const Chat = () => {
   return (
     <div style={{
       height: 'calc(var(--vh, 1vh) * 100)',
-      display: 'flex',
-      flexDirection: 'column',
-      overflow: 'hidden',
-      backgroundColor: '#080d14',
+      display: 'flex', flexDirection: 'column',
+      overflow: 'hidden', backgroundColor: '#080d14',
       paddingTop: 'env(safe-area-inset-top, 0px)',
       paddingBottom: 'env(safe-area-inset-bottom, 0px)',
     }}>
@@ -1328,19 +1275,16 @@ const Chat = () => {
         {currentStep === 1 && (
           <div style={{
             flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch',
-            paddingTop: '0',
             backgroundImage: `linear-gradient(rgba(16,185,129,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(16,185,129,0.04) 1px, transparent 1px)`,
             backgroundSize: '50px 50px',
           }}>
-            {/* Avatar do usuário aparece APENAS na tela de seleção de contratos */}
             <ChatUserAvatar showInChat={false} />
             <ContractTypeSelector onSelect={handleSelectContract} />
           </div>
         )}
 
-        {currentStep === 2 && selectedContract && (
+        {currentStep >= 2 && selectedContract && (
           <div style={{ display: 'flex', flexDirection: 'column', height: '100%', backgroundColor: '#0a1018' }}>
-            {/* Top bar */}
             <div style={{ backgroundColor: 'rgba(8,13,20,0.9)', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '10px 16px', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '10px', backdropFilter: 'blur(12px)' }}>
               <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'linear-gradient(135deg, #10b981, #059669)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 0 10px rgba(16,185,129,0.3)' }}>
                 <selectedContract.icon size={14} color="white" />
@@ -1352,10 +1296,8 @@ const Chat = () => {
                 <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10b981', boxShadow: '0 0 6px rgba(16,185,129,0.6)' }} />
                 <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.3)', fontWeight: '500' }}>IA ativa</span>
               </div>
-              {/* Avatar do usuário NÃO aparece durante a criação do contrato */}
             </div>
 
-            {/* Messages */}
             <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '20px 8px 8px' }}>
               <div style={{ maxWidth: '672px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <AnimatePresence>
@@ -1378,7 +1320,6 @@ const Chat = () => {
               </div>
             </div>
 
-            {/* Input */}
             <div style={{ flexShrink: 0, position: 'sticky', bottom: 0, zIndex: 10 }}>
               <ChatInput value={inputValue} onChange={setInputValue} onSend={handleSendMessage} disabled={isTyping || isGenerating} />
             </div>
