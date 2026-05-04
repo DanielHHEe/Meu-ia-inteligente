@@ -51,62 +51,71 @@ const formatContractText = (text) => {
       continue;
     }
 
-    // Título principal do contrato (ex: CONTRATO DE PRESTAÇÃO DE SERVIÇOS)
+    // Remove asteriscos de markdown para fazer os testes de padrão
+    const stripped = trimmed.replace(/\*\*/g, '').trim();
+
+    // Título principal do contrato — com ou sem asteriscos
+    // Ex: **CONTRATO DE COMPRA E VENDA** ou CONTRATO DE COMPRA E VENDA
     if (
-      /^(CONTRATO|TERMO|ACORDO|INSTRUMENTO)\s+DE\s+/i.test(trimmed) &&
-      trimmed === trimmed.toUpperCase()
+      /^(CONTRATO|TERMO|ACORDO|INSTRUMENTO)\s+DE\s+/i.test(stripped) &&
+      stripped === stripped.toUpperCase()
     ) {
-      html += `<p class="c-title">${trimmed}</p>`;
+      html += `<p class="c-title">${stripped}</p>`;
       continue;
     }
 
-    // PREÂMBULO
-    if (/^PREÂMBULO$/i.test(trimmed)) {
-      html += `<p class="c-preamble">${trimmed}</p>`;
+    // PREÂMBULO — com ou sem asteriscos
+    if (/^PREÂMBULO$/i.test(stripped)) {
+      html += `<p class="c-preamble">${stripped}</p>`;
       continue;
     }
 
-    // Cabeçalho de cláusula: CLÁUSULA Xª — ...
-    if (/^CLÁUSULA\s+\d|^CLAUSULA\s+\d|^CL[ÁA]USULA\s+[IVXLC]+/i.test(trimmed)) {
-      const clean = trimmed.replace(/\*\*/g, '');
-      html += `<p class="c-clause">${clean}</p>`;
+    // Cabeçalho de cláusula — detecta mesmo com **asteriscos** ao redor
+    // Ex: **CLÁUSULA 1ª — DO OBJETO** ou CLÁUSULA 1ª — DO OBJETO
+    if (/^CL[ÁA]USULA\s+[\dIVXLC]/i.test(stripped)) {
+      html += `<p class="c-clause">${stripped}</p>`;
       continue;
     }
 
     // Parágrafos numerados: 1.1., 2.3., §1º, §2º
-    if (/^(\d+\.\d+\.?|§\d+[º°]?)\s/.test(trimmed)) {
-      const clean = trimmed.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    if (/^(\d+\.\d+\.?|§\d+[º°]?)\s/.test(stripped)) {
+      const clean = stripped.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
       html += `<p class="c-para">${clean}</p>`;
       continue;
     }
 
     // Campos de qualificação (CONTRATANTE:, CPF:, etc.)
     if (
-      /^(CONTRATANTE|CONTRATADO|LOCADOR|LOCATÁRIO|PARTE [AB]|REVELADORA|RECEPTORA|VENDEDOR|COMPRADOR|FREELANCER)\s*:/i.test(trimmed) ||
-      /^(CPF|CNPJ|CPF\/CNPJ|TELEFONE|EMAIL|E-MAIL|ENDEREÇO|OBJETO|VALOR|FORMA DE PAGAMENTO|PRAZO|MULTA|CIDADE|ESTADO|IMÓVEL|BEM)\s*:/i.test(trimmed)
+      /^(CONTRATANTE|CONTRATADO|LOCADOR|LOCATÁRIO|PARTE [AB]|REVELADORA|RECEPTORA|VENDEDOR|COMPRADOR|FREELANCER)\s*:/i.test(stripped) ||
+      /^(CPF|CNPJ|CPF\/CNPJ|TELEFONE|EMAIL|E-MAIL|ENDEREÇO|OBJETO|VALOR|FORMA DE PAGAMENTO|PRAZO|MULTA|CIDADE|ESTADO|IMÓVEL|BEM)\s*:/i.test(stripped)
     ) {
-      const colonIdx = trimmed.indexOf(':');
-      const label = trimmed.substring(0, colonIdx);
-      const value = trimmed.substring(colonIdx + 1).trim();
+      const colonIdx = stripped.indexOf(':');
+      const label = stripped.substring(0, colonIdx);
+      const value = stripped.substring(colonIdx + 1).trim();
       html += `<p class="c-field"><strong>${label}:</strong> ${value}</p>`;
       continue;
     }
 
     // Linha de local e data / assinatura
-    if (/^(local e data|e, por estarem|assim justas|em 2 \(duas\))/i.test(trimmed)) {
-      const clean = trimmed.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-      html += `<p class="c-center">${clean}</p>`;
+    if (/^(local e data|e, por estarem|assim justas|em 2 \(duas\)|imperatriz|são paulo|rio de janeiro)/i.test(stripped)) {
+      html += `<p class="c-center">${stripped}</p>`;
       continue;
     }
 
-    // Linha de assinatura ___
-    if (/^_{3,}/.test(trimmed)) {
-      html += `<p class="c-center">${trimmed}</p>`;
+    // Linha de assinatura ___  ou nome - PAPEL
+    if (/^_{3,}/.test(stripped)) {
+      html += `<p class="c-center">${stripped}</p>`;
       continue;
     }
 
-    // Parágrafo normal
-    const clean = trimmed.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    // Linha com nome e papel de assinatura: "Daniel Herenio - VENDEDOR"
+    if (/^[A-ZÀ-Ú][a-zA-ZÀ-ú\s]+\s*[-–]\s*(VENDEDOR|COMPRADOR|CONTRATANTE|CONTRATADO|LOCADOR|LOCATÁRIO|FREELANCER|PARTE [AB])$/i.test(stripped)) {
+      html += `<p class="c-center" style="font-weight:600;">${stripped}</p>`;
+      continue;
+    }
+
+    // Parágrafo normal — mantém bold inline se houver
+    const clean = stripped.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
     html += `<p class="c-para">${clean}</p>`;
   }
 
