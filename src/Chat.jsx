@@ -1377,9 +1377,44 @@ const Chat = () => {
 
     const formattedHTML = formatText(contractText);
 
+    // Extrai os nomes das partes do texto do contrato
+    const extractNames = (text, contractId) => {
+      const patterns = {
+        'compra-venda':           [/VENDEDOR[:\s,]+([A-ZÀ-Úa-záéíóúâêîôûãõç][^\n,;]+?)(?:\s*,|\s*CPF|\s*CNPJ|\s*telefone)/i, /COMPRADOR[:\s,]+([A-ZÀ-Úa-záéíóúâêîôûãõç][^\n,;]+?)(?:\s*,|\s*CPF|\s*CNPJ|\s*telefone)/i],
+        'prestacao-servicos':     [/CONTRATANTE[:\s,]+([A-ZÀ-Úa-záéíóúâêîôûãõç][^\n,;]+?)(?:\s*,|\s*CPF|\s*CNPJ|\s*telefone)/i, /CONTRATADO[:\s,]+([A-ZÀ-Úa-záéíóúâêîôûãõç][^\n,;]+?)(?:\s*,|\s*CPF|\s*CNPJ|\s*telefone)/i],
+        'aluguel':                [/LOCADOR[:\s,]+([A-ZÀ-Úa-záéíóúâêîôûãõç][^\n,;]+?)(?:\s*,|\s*CPF|\s*CNPJ|\s*telefone)/i, /LOCATÁRIO[:\s,]+([A-ZÀ-Úa-záéíóúâêîôûãõç][^\n,;]+?)(?:\s*,|\s*CPF|\s*CNPJ|\s*telefone)/i],
+        'trabalho-freelancer':    [/CONTRATANTE[:\s,]+([A-ZÀ-Úa-záéíóúâêîôûãõç][^\n,;]+?)(?:\s*,|\s*CPF|\s*CNPJ|\s*telefone)/i, /FREELANCER[:\s,]+([A-ZÀ-Úa-záéíóúâêîôûãõç][^\n,;]+?)(?:\s*,|\s*CPF|\s*CNPJ|\s*telefone)/i],
+        'parceria':               [/PARTE A[:\s,]+([A-ZÀ-Úa-záéíóúâêîôûãõç][^\n,;]+?)(?:\s*,|\s*CPF|\s*CNPJ|\s*telefone)/i, /PARTE B[:\s,]+([A-ZÀ-Úa-záéíóúâêîôûãõç][^\n,;]+?)(?:\s*,|\s*CPF|\s*CNPJ|\s*telefone)/i],
+        'confidencialidade':      [/REVELADORA[:\s,]+([A-ZÀ-Úa-záéíóúâêîôûãõç][^\n,;]+?)(?:\s*,|\s*CPF|\s*CNPJ|\s*telefone)/i, /RECEPTORA[:\s,]+([A-ZÀ-Úa-záéíóúâêîôûãõç][^\n,;]+?)(?:\s*,|\s*CPF|\s*CNPJ|\s*telefone)/i],
+        'empreitada':             [/CONTRATANTE[:\s,]+([A-ZÀ-Úa-záéíóúâêîôûãõç][^\n,;]+?)(?:\s*,|\s*CPF|\s*CNPJ|\s*telefone)/i, /EMPREITEIRO[:\s,]+([A-ZÀ-Úa-záéíóúâêîôûãõç][^\n,;]+?)(?:\s*,|\s*CPF|\s*CNPJ|\s*telefone)/i],
+        'sociedade':              [/SÓCIO A[:\s,]+([A-ZÀ-Úa-záéíóúâêîôûãõç][^\n,;]+?)(?:\s*,|\s*CPF|\s*CNPJ|\s*telefone)/i, /SÓCIO B[:\s,]+([A-ZÀ-Úa-záéíóúâêîôûãõç][^\n,;]+?)(?:\s*,|\s*CPF|\s*CNPJ|\s*telefone)/i],
+        'representacao-comercial':[/REPRESENTADA[:\s,]+([A-ZÀ-Úa-záéíóúâêîôûãõç][^\n,;]+?)(?:\s*,|\s*CPF|\s*CNPJ|\s*telefone)/i, /REPRESENTANTE[:\s,]+([A-ZÀ-Úa-záéíóúâêîôûãõç][^\n,;]+?)(?:\s*,|\s*CPF|\s*CNPJ|\s*telefone)/i],
+        'comodato':               [/COMODANTE[:\s,]+([A-ZÀ-Úa-záéíóúâêîôûãõç][^\n,;]+?)(?:\s*,|\s*CPF|\s*CNPJ|\s*telefone)/i, /COMODATÁRIO[:\s,]+([A-ZÀ-Úa-záéíóúâêîôûãõç][^\n,;]+?)(?:\s*,|\s*CPF|\s*CNPJ|\s*telefone)/i],
+      };
+      const pats = patterns[contractId] || [];
+      return pats.map(p => {
+        const m = text.match(p);
+        return m ? m[1].trim().replace(/\*\*/g, '') : '';
+      });
+    };
+
+    const names = extractNames(contractText, selectedContract?.id);
+    const colWidth = 50;
+
+    const sigCells = names.map(name =>
+      `<div style="display:table-cell;width:${colWidth}%;text-align:center;padding:0 24px;vertical-align:top">
+        <div style="height:72px"></div>
+        <div style="border-top:1px solid #9ca3af;padding-top:10px">
+          <p style="font-size:12px;color:#1f2937;font-family:Georgia,serif;margin:0">${name}</p>
+        </div>
+      </div>`
+    ).join('');
+
+    const sigBlock = `<div style="margin-top:56px;page-break-inside:avoid"><div style="display:table;width:100%">${sigCells}</div></div>`;
+
     const wrapper = document.createElement('div');
     wrapper.style.cssText = 'padding:40px 56px;background:white;font-family:Georgia,serif;max-width:800px;';
-    wrapper.innerHTML = formattedHTML;
+    wrapper.innerHTML = formattedHTML + sigBlock;
 
     const loadScript = (src) => new Promise((resolve, reject) => {
       if (document.querySelector(`script[src="${src}"]`)) { resolve(); return; }
