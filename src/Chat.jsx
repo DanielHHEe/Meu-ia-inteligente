@@ -1188,38 +1188,175 @@ const Chat = () => {
 
     const fileName = `${selectedContract?.name || 'Contrato'}.pdf`;
 
-    // Formata o texto removendo asteriscos e aplicando estilos
+    // Detecta blocos de assinatura (linhas ___ seguidas de nome - PAPEL)
+    const buildSignatureBlock = (lines, startIndex) => {
+      const sigLines = [];
+      let i = startIndex;
+      while (i < lines.length) {
+        const s = lines[i].trim().replace(/\*\*/g, '').trim();
+        if (/^_{3,}/.test(s) || /^[A-ZÀ-Úa-záéíóúâêîôûãõç][a-zA-ZÀ-ú\s]+\s*[-–]\s*(VENDEDOR|COMPRADOR|CONTRATANTE|CONTRATADO|LOCADOR|LOCATÁRIO|FREELANCER|PARTE [AB])$/i.test(s) || s === '') {
+          sigLines.push({ index: i, text: s });
+          i++;
+        } else {
+          break;
+        }
+      }
+      return sigLines;
+    };
+
     const formatText = (text) => {
       const lines = text.split('\n');
       let html = '';
-      for (const line of lines) {
-        const trimmed = line.trim();
-        if (!trimmed) { html += '<div style="height:10px"></div>'; continue; }
+      let i = 0;
+
+      // Coleta todos os blocos de assinatura para renderizar lado a lado
+      const signatureBlocks = [];
+      let currentSigBlock = [];
+
+      while (i < lines.length) {
+        const trimmed = lines[i].trim();
         const stripped = trimmed.replace(/\*\*/g, '').trim();
 
+        if (!stripped) {
+          if (currentSigBlock.length > 0) {
+            // Linha vazia entre blocos de assinatura — pode ser separador
+          }
+          html += '<div style="height:8px"></div>';
+          i++;
+          continue;
+        }
+
+        // Título principal
         if (/^(CONTRATO|TERMO|ACORDO|INSTRUMENTO)\s+DE\s+/i.test(stripped) && stripped === stripped.toUpperCase()) {
-          html += `<p style="text-align:center;font-weight:bold;font-size:14px;letter-spacing:1px;text-transform:uppercase;color:#111827;margin:0 0 28px;padding-bottom:20px;border-bottom:1px solid #e5e7eb;line-height:1.6;font-family:Georgia,serif">${stripped}</p>`;
-        } else if (/^PREÂMBULO$/i.test(stripped)) {
-          html += `<p style="text-align:center;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#9ca3af;margin:24px 0 16px;font-family:Arial,sans-serif">${stripped}</p>`;
-        } else if (/^CL[ÁA]USULA\s+[\dIVXLC]/i.test(stripped)) {
-          html += `<p style="font-size:10px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;color:#374151;font-family:Arial,sans-serif;margin:32px 0 12px;padding:10px 14px;background:#f9fafb;border-left:3px solid #059669;line-height:1.5">${stripped}</p>`;
-        } else if (/^(\d+\.\d+\.?|§\d+[º°]?)\s/.test(stripped)) {
+          html += `<p style="text-align:center;font-weight:bold;font-size:14px;letter-spacing:1px;text-transform:uppercase;color:#111827;margin:0 0 28px;padding-bottom:20px;border-bottom:1px solid #e5e7eb;line-height:1.6;font-family:Georgia,serif;page-break-after:avoid">${stripped}</p>`;
+          i++; continue;
+        }
+
+        // Preâmbulo
+        if (/^PREÂMBULO$/i.test(stripped)) {
+          html += `<p style="text-align:center;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#9ca3af;margin:24px 0 16px;font-family:Arial,sans-serif;page-break-after:avoid">${stripped}</p>`;
+          i++; continue;
+        }
+
+        // Cabeçalho de cláusula — page-break-inside:avoid garante que não corta
+        if (/^CL[ÁA]USULA\s+[\dIVXLC]/i.test(stripped)) {
+          html += `<div style="page-break-inside:avoid"><p style="font-size:10px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;color:#374151;font-family:Arial,sans-serif;margin:32px 0 12px;padding:10px 14px;background:#f9fafb;border-left:3px solid #059669;line-height:1.5;page-break-after:avoid">${stripped}</p>`;
+          // Inclui os próximos parágrafos da cláusula no mesmo bloco
+          i++;
+          while (i < lines.length) {
+            const nextTrimmed = lines[i].trim();
+            const nextStripped = nextTrimmed.replace(/\*\*/g, '').trim();
+            // Para quando encontrar outra cláusula, título ou assinatura
+            if (!nextStripped) { html += '<div style="height:8px"></div>'; i++; continue; }
+            if (/^CL[ÁA]USULA\s+[\dIVXLC]/i.test(nextStripped)) break;
+            if (/^(CONTRATO|TERMO|ACORDO|INSTRUMENTO)\s+DE\s+/i.test(nextStripped) && nextStripped === nextStripped.toUpperCase()) break;
+            if (/^_{3,}/.test(nextStripped)) break;
+            if (/^[A-ZÀ-Ú][a-zA-ZÀ-ú\s]+\s*[-–]\s*(VENDEDOR|COMPRADOR|CONTRATANTE|CONTRATADO|LOCADOR|LOCATÁRIO|FREELANCER|PARTE [AB])$/i.test(nextStripped)) break;
+
+            if (/^(\d+\.\d+\.?|§\d+[º°]?)\s/.test(nextStripped)) {
+              const clean = nextStripped.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+              html += `<p style="text-align:justify;margin:0 0 10px;color:#1f2937;line-height:1.9;font-family:Georgia,serif;font-size:13px">${clean}</p>`;
+            } else if (/^(CONTRATANTE|CONTRATADO|LOCADOR|LOCATÁRIO|PARTE [AB]|VENDEDOR|COMPRADOR|FREELANCER|REVELADORA|RECEPTORA)\s*:/i.test(nextStripped) || /^(CPF|CNPJ|TELEFONE|EMAIL|E-MAIL|ENDEREÇO)\s*:/i.test(nextStripped)) {
+              const colonIdx = nextStripped.indexOf(':');
+              const label = nextStripped.substring(0, colonIdx);
+              const value = nextStripped.substring(colonIdx + 1).trim();
+              html += `<p style="margin:0 0 5px;line-height:1.7;color:#1f2937;font-family:Georgia,serif;font-size:13px"><strong>${label}:</strong> ${value}</p>`;
+            } else {
+              const clean = nextStripped.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+              html += `<p style="text-align:justify;margin:0 0 10px;color:#1f2937;line-height:1.9;font-family:Georgia,serif;font-size:13px">${clean}</p>`;
+            }
+            i++;
+          }
+          html += '</div>';
+          continue;
+        }
+
+        // Parágrafos numerados
+        if (/^(\d+\.\d+\.?|§\d+[º°]?)\s/.test(stripped)) {
           const clean = stripped.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
           html += `<p style="text-align:justify;margin:0 0 10px;color:#1f2937;line-height:1.9;font-family:Georgia,serif;font-size:13px">${clean}</p>`;
-        } else if (/^(CONTRATANTE|CONTRATADO|LOCADOR|LOCATÁRIO|PARTE [AB]|VENDEDOR|COMPRADOR|FREELANCER|REVELADORA|RECEPTORA)\s*:/i.test(stripped) || /^(CPF|CNPJ|TELEFONE|EMAIL|E-MAIL|ENDEREÇO)\s*:/i.test(stripped)) {
+          i++; continue;
+        }
+
+        // Campos de qualificação
+        if (/^(CONTRATANTE|CONTRATADO|LOCADOR|LOCATÁRIO|PARTE [AB]|VENDEDOR|COMPRADOR|FREELANCER|REVELADORA|RECEPTORA)\s*:/i.test(stripped) || /^(CPF|CNPJ|TELEFONE|EMAIL|E-MAIL|ENDEREÇO)\s*:/i.test(stripped)) {
           const colonIdx = stripped.indexOf(':');
           const label = stripped.substring(0, colonIdx);
           const value = stripped.substring(colonIdx + 1).trim();
           html += `<p style="margin:0 0 5px;line-height:1.7;color:#1f2937;font-family:Georgia,serif;font-size:13px"><strong>${label}:</strong> ${value}</p>`;
-        } else if (/^_{3,}/.test(stripped)) {
-          html += `<p style="text-align:center;margin:14px 0 8px;color:#4b5563;font-family:Georgia,serif">${stripped}</p>`;
-        } else if (/^[A-ZÀ-Ú][a-zA-ZÀ-ú\s]+\s*[-–]\s*(VENDEDOR|COMPRADOR|CONTRATANTE|CONTRATADO|LOCADOR|LOCATÁRIO|FREELANCER|PARTE [AB])$/i.test(stripped)) {
-          html += `<p style="text-align:center;font-weight:bold;margin:8px 0;color:#1f2937;font-family:Georgia,serif;font-size:13px">${stripped}</p>`;
-        } else {
-          const clean = stripped.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-          html += `<p style="text-align:justify;margin:0 0 10px;color:#1f2937;line-height:1.9;font-family:Georgia,serif;font-size:13px">${clean}</p>`;
+          i++; continue;
         }
+
+        // Data/local de assinatura
+        if (/^(local e data|e, por estarem|assim justas|imperatriz|são paulo|rio de janeiro|\w+,\s+\d+\s+de\s+\w+\s+de\s+\d{4})/i.test(stripped)) {
+          html += `<p style="text-align:center;margin:24px 0 32px;color:#4b5563;font-family:Georgia,serif;font-size:13px">${stripped}</p>`;
+          i++; continue;
+        }
+
+        // Bloco de assinaturas — coleta pares e renderiza lado a lado
+        if (/^_{3,}/.test(stripped)) {
+          // Coleta todos os blocos de assinatura consecutivos
+          const sigs = [];
+          let j = i;
+          while (j < lines.length) {
+            const s = lines[j].trim().replace(/\*\*/g, '').trim();
+            if (/^_{3,}/.test(s)) {
+              // Linha de assinatura
+              let nameLabel = '';
+              if (j + 1 < lines.length) {
+                const next = lines[j + 1].trim().replace(/\*\*/g, '').trim();
+                if (/^[A-ZÀ-Úa-záéíóúâêîôûãõç]/.test(next) && next !== '') {
+                  nameLabel = next;
+                  j++;
+                }
+              }
+              sigs.push(nameLabel);
+              j++;
+            } else if (s === '') {
+              j++;
+            } else {
+              break;
+            }
+          }
+
+          if (sigs.length >= 2) {
+            // Renderiza em grid lado a lado
+            html += `<div style="display:table;width:100%;margin-top:48px;page-break-inside:avoid">`;
+            sigs.forEach((label) => {
+              html += `
+                <div style="display:table-cell;width:${Math.floor(100/sigs.length)}%;text-align:center;padding:0 16px;vertical-align:top">
+                  <div style="border-top:1px solid #9ca3af;padding-top:10px;margin-top:64px">
+                    <p style="font-weight:bold;font-size:12px;color:#1f2937;font-family:Arial,sans-serif;margin:0">${label}</p>
+                  </div>
+                </div>`;
+            });
+            html += `</div>`;
+            i = j;
+          } else {
+            // Assinatura única — centraliza
+            const label = sigs[0] || '';
+            html += `
+              <div style="text-align:center;margin-top:48px;page-break-inside:avoid">
+                <div style="display:inline-block;width:60%;border-top:1px solid #9ca3af;padding-top:10px;margin-top:64px">
+                  <p style="font-weight:bold;font-size:12px;color:#1f2937;font-family:Arial,sans-serif;margin:0">${label}</p>
+                </div>
+              </div>`;
+            i = j;
+          }
+          continue;
+        }
+
+        // Nome - PAPEL (assinatura sem linha acima — ignora pois já foi consumido)
+        if (/^[A-ZÀ-Úa-záéíóúâêîôûãõç][a-zA-ZÀ-ú\s]+\s*[-–]\s*(VENDEDOR|COMPRADOR|CONTRATANTE|CONTRATADO|LOCADOR|LOCATÁRIO|FREELANCER|PARTE [AB])$/i.test(stripped)) {
+          i++; continue;
+        }
+
+        // Parágrafo normal
+        const clean = stripped.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        html += `<p style="text-align:justify;margin:0 0 10px;color:#1f2937;line-height:1.9;font-family:Georgia,serif;font-size:13px">${clean}</p>`;
+        i++;
       }
+
       return html;
     };
 
@@ -1244,11 +1381,11 @@ const Chat = () => {
           image: { type: 'jpeg', quality: 0.98 },
           html2canvas: { scale: 2, useCORS: true, letterRendering: true },
           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+          pagebreak: { mode: ['avoid-all', 'css'] },
         };
         window.html2pdf().set(opt).from(wrapper).save();
       })
       .catch(() => {
-        // Fallback: download como texto
         const blob = new Blob([contractText.replace(/\*\*/g, '')], { type: 'text/plain;charset=utf-8' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
