@@ -11,7 +11,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     // DEBUG: Ver o que tem no localStorage
     const token = localStorage.getItem('sb-auth-token');
-    console.log('🔍 Token no localStorage:', token ? 'Existe' : 'Não existe');
+    console.log('🔍 Token no localStorage:', token ? 'Existe' : 'Não existe'); 
 
     // Pega a sessão atual ao montar
     const getSession = async () => {

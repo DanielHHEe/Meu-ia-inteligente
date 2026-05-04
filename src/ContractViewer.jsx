@@ -141,7 +141,6 @@ const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
   const [showPayment, setShowPayment] = useState(false);
   const paperRef = useRef(null);
 
-  // ← única alteração: normaliza aqui, o resto do componente usa ct
   const ct = normalizeContractType(contractType);
 
   const getDateTimeString = () => {
@@ -193,58 +192,59 @@ const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
 
       {/* ── Estilos ───────────────────────────────────────────── */}
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap');
 
         /* Reset e base */
         .cv-viewer *, .cv-viewer *::before, .cv-viewer *::after {
           box-sizing: border-box; margin: 0; padding: 0;
-          font-family: 'DM Sans', sans-serif;
         }
 
         /* Layout raiz */
         .cv-viewer {
-          background: #f4f5f3;
+          background: #f0f2ef;
           min-height: 100vh;
-          padding: 32px 16px 56px;
+          padding: 36px 16px 64px;
+          font-family: 'Inter', system-ui, sans-serif;
         }
         .cv-container {
-          max-width: 860px;
+          max-width: 820px;
           margin: 0 auto;
           display: flex;
           flex-direction: column;
-          gap: 16px;
+          gap: 12px;
         }
 
         /* ── Topbar ───────────────────────────────────────────── */
         .cv-topbar {
-          background: #fff;
-          border: 1px solid #e5e7eb;
-          border-radius: 14px;
-          padding: 20px 24px;
+          background: #ffffff;
+          border: 1px solid #e2e5e0;
+          border-radius: 12px;
+          padding: 18px 22px;
           display: flex;
           align-items: center;
           justify-content: space-between;
           gap: 16px;
           flex-wrap: wrap;
-          box-shadow: 0 1px 4px rgba(0,0,0,0.04);
         }
         .cv-topbar-left {
           display: flex;
           align-items: center;
-          gap: 14px;
+          gap: 13px;
           flex: 1;
           min-width: 0;
         }
         .cv-topbar-icon {
-          width: 42px; height: 42px; min-width: 42px;
-          background: #ecfdf5;
-          border-radius: 10px;
+          width: 40px; height: 40px; min-width: 40px;
+          background: #f0faf5;
+          border: 1px solid #d1f0e2;
+          border-radius: 9px;
           display: flex; align-items: center; justify-content: center;
         }
         .cv-topbar-title {
-          font-size: 15px;
+          font-size: 14px;
           font-weight: 600;
           color: #111827;
+          letter-spacing: -0.01em;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -253,38 +253,39 @@ const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
           display: flex;
           align-items: center;
           gap: 5px;
-          font-size: 12px;
+          font-size: 11.5px;
           color: #059669;
           font-weight: 500;
           margin-top: 3px;
+          letter-spacing: 0.01em;
         }
 
         /* ── Botão de pagamento / download ───────────────────── */
         .cv-btn {
           display: inline-flex;
           align-items: center;
-          gap: 8px;
+          gap: 7px;
           border: none;
-          border-radius: 10px;
-          padding: 10px 22px;
+          border-radius: 9px;
+          padding: 9px 20px;
           font-size: 13px;
           font-weight: 600;
+          font-family: 'Inter', sans-serif;
           cursor: pointer;
-          transition: opacity 0.15s, transform 0.15s;
+          transition: opacity 0.15s, transform 0.12s;
           white-space: nowrap;
+          letter-spacing: -0.01em;
         }
-        .cv-btn:hover  { opacity: 0.88; transform: translateY(-1px); }
+        .cv-btn:hover  { opacity: 0.87; transform: translateY(-1px); }
         .cv-btn:active { transform: translateY(0); }
-        .cv-btn:disabled { opacity: 0.65; cursor: not-allowed; transform: none; }
+        .cv-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
         .cv-btn.locked {
-          background: #f59e0b;
+          background: #d97706;
           color: #fff;
-          box-shadow: 0 3px 12px rgba(245,158,11,0.28);
         }
         .cv-btn.unlocked {
           background: #059669;
           color: #fff;
-          box-shadow: 0 3px 12px rgba(5,150,105,0.28);
         }
 
         /* ── Banner de aviso / pago ───────────────────────────── */
@@ -294,139 +295,215 @@ const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
           justify-content: space-between;
           gap: 12px;
           flex-wrap: wrap;
-          border-radius: 10px;
-          padding: 12px 18px;
-          font-size: 13px;
+          border-radius: 9px;
+          padding: 11px 16px;
+          font-size: 12.5px;
           font-weight: 500;
         }
         .cv-notice.pending {
           background: #fffbeb;
-          border: 1px solid #fcd34d;
-          color: #92400e;
+          border: 1px solid #fde68a;
+          color: #78350f;
         }
         .cv-notice.paid {
           background: #ecfdf5;
-          border: 1px solid #6ee7b7;
-          color: #065f46;
+          border: 1px solid #a7f3d0;
+          color: #064e3b;
         }
         .cv-notice-left {
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: 7px;
         }
         .cv-notice-pay-btn {
-          padding: 7px 16px;
-          border-radius: 8px;
-          background: #f59e0b;
+          padding: 6px 14px;
+          border-radius: 7px;
+          background: #d97706;
           color: #fff;
           font-weight: 600;
           font-size: 12px;
+          font-family: 'Inter', sans-serif;
           border: none;
           cursor: pointer;
           flex-shrink: 0;
           transition: opacity 0.15s;
         }
-        .cv-notice-pay-btn:hover { opacity: 0.88; }
+        .cv-notice-pay-btn:hover { opacity: 0.87; }
 
         /* ── Papel do contrato ────────────────────────────────── */
         .cv-paper {
-          background: #fff;
-          border: 1px solid #e5e7eb;
-          border-radius: 14px;
+          background: #ffffff;
+          border: 1px solid #e2e5e0;
+          border-radius: 12px;
           overflow: hidden;
-          box-shadow: 0 1px 4px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.04);
         }
+
+        /* Faixa decorativa superior */
         .cv-paper-strip {
-          height: 3px;
-          background: linear-gradient(90deg, #059669, #34d399);
+          height: 2px;
+          background: linear-gradient(90deg, #059669 0%, #34d399 60%, #6ee7b7 100%);
         }
 
         /* Wrapper capturado pelo html2pdf */
         .cv-paper-inner { }
 
+        /* Cabeçalho interno do papel */
+        .cv-paper-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 20px 52px 0;
+          border-bottom: 1px solid #f3f4f2;
+          padding-bottom: 16px;
+          margin-bottom: 4px;
+        }
+        .cv-paper-header-badge {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 10.5px;
+          font-weight: 600;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: #9ca3af;
+          font-family: 'Inter', sans-serif;
+        }
+        .cv-paper-header-dot {
+          width: 6px; height: 6px;
+          border-radius: 50%;
+          background: #34d399;
+        }
+        .cv-paper-header-num {
+          font-size: 10.5px;
+          color: #d1d5db;
+          font-family: 'Inter', sans-serif;
+          font-weight: 400;
+          letter-spacing: 0.05em;
+        }
+
         /* Corpo com scroll */
         .cv-paper-scroll {
-          padding: 52px 64px 40px;
-          max-height: 64vh;
+          padding: 44px 64px 40px;
+          max-height: 62vh;
           overflow-y: auto;
           position: relative;
         }
-        .cv-paper-scroll::-webkit-scrollbar { width: 4px; }
+        .cv-paper-scroll::-webkit-scrollbar { width: 3px; }
         .cv-paper-scroll::-webkit-scrollbar-track { background: transparent; }
-        .cv-paper-scroll::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
-        .cv-paper-scroll::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+        .cv-paper-scroll::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 4px; }
+        .cv-paper-scroll::-webkit-scrollbar-thumb:hover { background: #d1d5db; }
 
         /* Fade no rodapé quando não pago */
         .cv-paper.locked .cv-paper-scroll::after {
           content: '';
           position: absolute;
           bottom: 0; left: 0; right: 0;
-          height: 140px;
-          background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.97));
+          height: 160px;
+          background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.98));
           pointer-events: none;
         }
 
         /* ── Tipografia do contrato ───────────────────────────── */
         .cv-contract-body {
           font-family: 'EB Garamond', Georgia, 'Times New Roman', serif;
-          font-size: 13.5px;
-          color: #1a1a1a;
-          line-height: 1.9;
+          font-size: 14px;
+          color: #1c1c1c;
+          line-height: 2;
           word-wrap: break-word;
           overflow-wrap: break-word;
           width: 100%;
         }
+
+        /* Título principal */
         .cv-contract-body .c-title {
           text-align: center;
           font-weight: 600;
-          font-size: 14.5px;
-          letter-spacing: 0.08em;
+          font-size: 15px;
+          letter-spacing: 0.12em;
           text-transform: uppercase;
-          margin-bottom: 32px;
+          color: #111827;
+          margin-bottom: 36px;
+          padding-bottom: 24px;
+          border-bottom: 1px solid #f0f0ee;
+          line-height: 1.6;
         }
+
+        /* Preâmbulo */
         .cv-contract-body .c-preamble {
           text-align: center;
           font-weight: 500;
-          font-size: 13px;
-          letter-spacing: 0.06em;
+          font-size: 12px;
+          letter-spacing: 0.1em;
           text-transform: uppercase;
-          color: #6b7280;
-          margin: 28px 0 16px;
+          color: #9ca3af;
+          margin: 32px 0 20px;
+          font-family: 'Inter', sans-serif;
         }
+
+        /* Cabeçalho de cláusula */
         .cv-contract-body .c-clause {
+          font-size: 11px;
           font-weight: 600;
-          font-size: 13px;
-          letter-spacing: 0.04em;
+          letter-spacing: 0.1em;
           text-transform: uppercase;
-          margin: 34px 0 14px;
-          padding-bottom: 10px;
-          border-bottom: 1px solid #f0f0f0;
-          color: #111827;
+          color: #374151;
+          font-family: 'Inter', sans-serif;
+          margin: 40px 0 16px;
+          padding: 12px 16px;
+          background: #f9fafb;
+          border-left: 3px solid #059669;
+          border-radius: 0 6px 6px 0;
+          line-height: 1.5;
         }
+
+        /* Parágrafos numerados */
         .cv-contract-body .c-para {
           text-align: justify;
-          margin-bottom: 10px;
+          margin-bottom: 12px;
           hyphens: auto;
+          color: #1f2937;
+          line-height: 2;
         }
+
+        /* Campos de qualificação */
         .cv-contract-body .c-field {
-          margin-bottom: 5px;
-          line-height: 1.7;
+          margin-bottom: 6px;
+          line-height: 1.8;
+          padding: 2px 0;
+          color: #1f2937;
         }
         .cv-contract-body .c-field strong {
           font-weight: 600;
+          color: #111827;
         }
+
+        /* Centro (local/data, assinatura) */
         .cv-contract-body .c-center {
           text-align: center;
-          margin: 14px 0 8px;
+          margin: 16px 0 10px;
+          color: #4b5563;
         }
+
+        /* Espaçador */
         .cv-contract-body .c-spacer {
-          height: 14px;
+          height: 10px;
+        }
+
+        /* Bloco de qualificação das partes — agrupamento visual */
+        .cv-contract-body .c-field + .c-field {
+          border-top: none;
+        }
+
+        /* ── Divisor antes das assinaturas ───────────────────── */
+        .cv-sig-divider {
+          margin: 0 52px;
+          border: none;
+          border-top: 1px solid #f0f0ee;
         }
 
         /* ── Seção de assinaturas ─────────────────────────────── */
         .cv-sig-section {
-          padding: 0 64px 56px;
-          border-top: 1px solid #f0f0f0;
+          padding: 0 64px 52px;
         }
         .cv-sig-date {
           text-align: center;
@@ -434,64 +511,89 @@ const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
           font-size: 13px;
           color: #9ca3af;
           font-style: italic;
-          padding: 36px 0 52px;
+          padding: 32px 0 48px;
+          line-height: 1.6;
         }
         .cv-sig-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 96px;
+          gap: 80px;
         }
         .cv-sig-block {
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 16px;
+          gap: 12px;
         }
-        .cv-sig-space { height: 64px; }
+        .cv-sig-space { height: 72px; }
         .cv-sig-line {
           width: 100%;
           height: 1px;
           background: #d1d5db;
         }
         .cv-sig-label {
-          font-family: 'DM Sans', sans-serif;
-          font-size: 11px;
-          font-weight: 600;
-          letter-spacing: 0.1em;
+          font-family: 'Inter', sans-serif;
+          font-size: 10.5px;
+          font-weight: 700;
+          letter-spacing: 0.12em;
           text-transform: uppercase;
-          color: #374151;
+          color: #1f2937;
           text-align: center;
         }
         .cv-sig-sublabel {
-          font-family: 'DM Sans', sans-serif;
-          font-size: 11px;
+          font-family: 'Inter', sans-serif;
+          font-size: 10.5px;
           color: #9ca3af;
           text-align: center;
-          margin-top: -8px;
+          margin-top: -4px;
+          letter-spacing: 0.02em;
+        }
+
+        /* ── Rodapé do papel ──────────────────────────────────── */
+        .cv-paper-footer {
+          border-top: 1px solid #f3f4f2;
+          margin: 0 52px;
+          padding: 14px 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          font-family: 'Inter', sans-serif;
+          font-size: 10.5px;
+          color: #d1d5db;
+          letter-spacing: 0.04em;
+        }
+        .cv-paper-footer-dot {
+          width: 3px; height: 3px;
+          border-radius: 50%;
+          background: #e5e7eb;
         }
 
         /* ── Botão voltar ─────────────────────────────────────── */
         .cv-back {
           text-align: center;
-          padding-top: 4px;
+          padding-top: 8px;
         }
         .cv-back-btn {
           display: inline-flex;
           align-items: center;
           gap: 7px;
           background: none;
-          border: 1px solid #d1d5db;
-          border-radius: 10px;
-          padding: 10px 24px;
-          font-size: 13px;
+          border: 1px solid #e2e5e0;
+          border-radius: 9px;
+          padding: 9px 22px;
+          font-size: 12.5px;
           font-weight: 500;
+          font-family: 'Inter', sans-serif;
           color: #6b7280;
           cursor: pointer;
-          transition: border-color 0.15s, color 0.15s;
+          transition: border-color 0.15s, color 0.15s, background 0.15s;
+          letter-spacing: -0.01em;
         }
         .cv-back-btn:hover {
           border-color: #059669;
           color: #059669;
+          background: #f0faf5;
         }
 
         /* ── Animação spin ────────────────────────────────────── */
@@ -503,9 +605,12 @@ const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
 
         /* ── Responsivo ───────────────────────────────────────── */
         @media (max-width: 600px) {
-          .cv-paper-scroll  { padding: 28px 20px 28px; }
-          .cv-sig-section   { padding: 0 20px 36px; }
+          .cv-paper-header  { padding: 16px 20px 14px; }
+          .cv-paper-scroll  { padding: 28px 22px 28px; }
+          .cv-sig-section   { padding: 0 22px 36px; }
+          .cv-sig-divider   { margin: 0 20px; }
           .cv-sig-grid      { gap: 40px; }
+          .cv-paper-footer  { margin: 0 20px; }
           .cv-topbar-title  { font-size: 13px; }
         }
 
@@ -529,14 +634,14 @@ const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
         >
           <div className="cv-topbar-left">
             <div className="cv-topbar-icon">
-              <FileText size={20} color="#059669" />
+              <FileText size={18} color="#059669" />
             </div>
             <div style={{ minWidth: 0 }}>
               <div className="cv-topbar-title">
                 {ct.name} — Documento Gerado
               </div>
               <div className="cv-topbar-sub">
-                <Sparkles size={12} />
+                <Sparkles size={11} />
                 Gerado por IA · Pronto para assinatura
               </div>
             </div>
@@ -548,13 +653,13 @@ const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
             disabled={downloading}
           >
             {downloading ? (
-              <><Loader2 size={16} className="cv-spin" /><span>Gerando PDF...</span></>
+              <><Loader2 size={14} className="cv-spin" /><span>Gerando PDF...</span></>
             ) : downloaded ? (
-              <><CheckCircle size={16} /><span>Baixado!</span></>
+              <><CheckCircle size={14} /><span>Baixado!</span></>
             ) : isPaid ? (
-              <><Download size={16} /><span>Baixar PDF</span></>
+              <><Download size={14} /><span>Baixar PDF</span></>
             ) : (
-              <><Lock size={16} /><span>Pagar R$ 19,90</span></>
+              <><Lock size={14} /><span>Pagar R$ 29,90</span></>
             )}
           </button>
         </motion.div>
@@ -563,14 +668,14 @@ const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
         <div className={`cv-notice ${isPaid ? 'paid' : 'pending'}`}>
           {isPaid ? (
             <div className="cv-notice-left">
-              <CheckCircle size={15} />
+              <CheckCircle size={14} />
               <span>Pagamento confirmado — Download liberado!</span>
             </div>
           ) : (
             <>
               <div className="cv-notice-left">
-                <Lock size={14} />
-                <span>Contrato pronto! Pague R$ 19,90 via Pix para liberar o download.</span>
+                <Lock size={13} />
+                <span>Contrato pronto! Pague R$ 29,90 via Pix para liberar o download.</span>
               </div>
               <button className="cv-notice-pay-btn" onClick={() => setShowPayment(true)}>
                 Pagar agora
@@ -588,6 +693,17 @@ const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
         >
           <div className="cv-paper-strip" />
 
+          {/* Cabeçalho interno do papel */}
+          <div className="cv-paper-header">
+            <div className="cv-paper-header-badge">
+              <div className="cv-paper-header-dot" />
+              Documento válido
+            </div>
+            <div className="cv-paper-header-num">
+              {getDateTimeString()}
+            </div>
+          </div>
+
           {/* Tudo dentro de paperRef é capturado pelo html2pdf */}
           <div ref={paperRef} className="cv-paper-inner">
 
@@ -597,6 +713,9 @@ const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
                 dangerouslySetInnerHTML={{ __html: formattedHTML }}
               />
             </div>
+
+            {/* Divisor */}
+            <hr className="cv-sig-divider" />
 
             {/* Assinaturas — sem testemunhas */}
             <div className="cv-sig-section">
@@ -616,13 +735,15 @@ const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
               </div>
             </div>
 
+
+
           </div>
         </motion.div>
 
         {/* Voltar */}
         <div className="cv-back">
           <button className="cv-back-btn" onClick={onBack}>
-            <ArrowLeft size={15} />
+            <ArrowLeft size={14} />
             Criar novo contrato
           </button>
         </div>
