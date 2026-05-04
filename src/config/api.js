@@ -1297,7 +1297,10 @@ INSTRUÇÕES OBRIGATÓRIAS DE REDAÇÃO
 15. CLÁUSULA DE ANTICORRUPÇÃO: referenciar Lei 12.846/2013, proibir suborno e pagamentos indevidos, prever rescisão imediata
 16. CLÁUSULA DE FORÇA MAIOR: definir hipóteses, prazo de comunicação (máximo 5 dias úteis) e consequências
 17. Inicie com PREÂMBULO completo: nome, CPF/CNPJ, telefone, email, estado civil (se PF), sede (se PJ) de todas as partes, e declaração de livre vontade
-18. NÃO inclua seção de assinaturas ou testemunhas
+18. 18. NÃO inclua seção de assinaturas ou testemunhas
+19. NUNCA mencione testemunhas em nenhuma parte do contrato — nem no preâmbulo, nem nas cláusulas, nem na conclusão. O contrato NÃO requer testemunhas.
+20. A frase de encerramento deve ser apenas: "E, por estarem assim justas e contratadas, as partes firmam o presente instrumento." — SEM qualquer menção a testemunhas ou "2 (duas) testemunhas".
+21. NUNCA mencione testemunhas. O contrato não requer testemunhas.
 
 ESTRUTURA OBRIGATÓRIA:
 ${clausulasList}
