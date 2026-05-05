@@ -1,8 +1,59 @@
 export const API_CONFIG = {
   openaiApiKey: import.meta.env.VITE_OPENAI_API_KEY || '',
   apiUrl: 'https://api.openai.com/v1/chat/completions',
-  model: 'gpt-3.5-turbo-16k',
+  model: 'gpt-4o-mini',
 };
+// ============================================================
+// FORMATADORES — CPF, CNPJ, telefone
+// ============================================================
+const formatCPF = (v) => {
+  const d = v.replace(/\D/g, '');
+  if (d.length !== 11) return v;
+  return d.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+};
+
+const formatCNPJ = (v) => {
+  const d = v.replace(/\D/g, '');
+  if (d.length !== 14) return v;
+  return d.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+};
+
+const formatTelefone = (v) => {
+  const d = v.replace(/\D/g, '');
+  if (d.length === 11) return d.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+  if (d.length === 10) return d.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+  return v;
+};
+
+const formatDocumento = (v) => {
+  if (!v) return v;
+  const d = v.replace(/\D/g, '');
+  if (d.length === 11) return formatCPF(v);
+  if (d.length === 14) return formatCNPJ(v);
+  return v;
+};
+
+const formatAnswers = (answers) => {
+  const cpfFields = [
+    'contratante_cpf_cnpj','contratado_cpf_cnpj','locador_cpf_cnpj','locatario_cpf_cnpj',
+    'parte_a_cpf_cnpj','parte_b_cpf_cnpj','revelador_cpf_cnpj','receptor_cpf_cnpj',
+    'freelancer_cpf','vendedor_cpf_cnpj','comprador_cpf_cnpj','empreiteiro_cpf_cnpj',
+    'socio_a_cpf','socio_b_cpf','representada_cnpj','representante_cpf_cnpj',
+    'comodante_cpf_cnpj','comodatario_cpf_cnpj',
+  ];
+  const telFields = [
+    'contratante_telefone','contratado_telefone','locador_telefone','locatario_telefone',
+    'parte_a_telefone','parte_b_telefone','revelador_telefone','receptor_telefone',
+    'freelancer_telefone','vendedor_telefone','comprador_telefone','empreiteiro_telefone',
+    'socio_a_telefone','socio_b_telefone','representada_telefone','representante_telefone',
+    'comodante_telefone','comodatario_telefone',
+  ];
+  const out = { ...answers };
+  cpfFields.forEach(f => { if (out[f]) out[f] = formatDocumento(out[f]); });
+  telFields.forEach(f => { if (out[f]) out[f] = formatTelefone(out[f]); });
+  return out;
+};
+
 
 // ============================================================
 // TEMPLATES — espelham exatamente todos os campos coletados
@@ -39,6 +90,7 @@ export const CONTRACT_TEMPLATES = {
       MULTA POR ATRASO (CONTRATADO): {multa_atraso_contratado}% ao dia, limitado a {multa_limite}%
       MULTA POR RESCISÃO: {multa_rescisao}%
 
+      MODALIDADE DE ASSINATURA: {modalidade_assinatura}
       CIDADE: {cidade}
       ESTADO: {estado}
     `
@@ -84,6 +136,7 @@ export const CONTRACT_TEMPLATES = {
       CORREÇÃO MONETÁRIA: {correcao_monetaria}
       PRAZO DE TOLERÂNCIA: {prazo_tolerancia} dias
 
+      MODALIDADE DE ASSINATURA: {modalidade_assinatura}
       CIDADE: {cidade}
       ESTADO: {estado}
     `
@@ -123,6 +176,7 @@ export const CONTRACT_TEMPLATES = {
       MULTA POR DESCUMPRIMENTO: {multa_descumprimento}%
       MULTA POR RESCISÃO ANTECIPADA: {multa_rescisao}%
 
+      MODALIDADE DE ASSINATURA: {modalidade_assinatura}
       CIDADE: {cidade}
       ESTADO: {estado}
     `
@@ -152,6 +206,7 @@ export const CONTRACT_TEMPLATES = {
       MULTA POR VIOLAÇÃO: R$ {multa_violacao}
       PERDAS E DANOS: {perdas_danos}
 
+      MODALIDADE DE ASSINATURA: {modalidade_assinatura}
       CIDADE: {cidade}
       ESTADO: {estado}
     `
@@ -189,6 +244,7 @@ export const CONTRACT_TEMPLATES = {
       MULTA POR ATRASO NO PAGAMENTO: {multa_atraso_pagamento}% ao dia
       MULTA POR RESCISÃO: {multa_rescisao}%
 
+      MODALIDADE DE ASSINATURA: {modalidade_assinatura}
       CIDADE: {cidade}
       ESTADO: {estado}
     `
@@ -225,6 +281,7 @@ export const CONTRACT_TEMPLATES = {
       MULTA POR ATRASO NO PAGAMENTO: {multa_atraso_pagamento}% ao dia
       MULTA POR DESISTÊNCIA: {multa_desistencia}%
 
+      MODALIDADE DE ASSINATURA: {modalidade_assinatura}
       CIDADE: {cidade}
       ESTADO: {estado}
     `
@@ -264,6 +321,7 @@ export const CONTRACT_TEMPLATES = {
       MULTA POR ATRASO: {multa_atraso}% ao dia, limitado a {multa_limite}%
       MULTA POR RESCISÃO: {multa_rescisao}%
 
+      MODALIDADE DE ASSINATURA: {modalidade_assinatura}
       CIDADE: {cidade}
       ESTADO: {estado}
     `
@@ -304,6 +362,7 @@ export const CONTRACT_TEMPLATES = {
       PRAZO DA SOCIEDADE: {prazo_sociedade}
       NÃO-CONCORRÊNCIA: {nao_concorrencia}
 
+      MODALIDADE DE ASSINATURA: {modalidade_assinatura}
       CIDADE: {cidade}
       ESTADO: {estado}
     `
@@ -339,6 +398,7 @@ export const CONTRACT_TEMPLATES = {
 
       MULTA POR DESCUMPRIMENTO: {multa_descumprimento}%
 
+      MODALIDADE DE ASSINATURA: {modalidade_assinatura}
       CIDADE: {cidade}
       ESTADO: {estado}
     `
@@ -374,6 +434,7 @@ export const CONTRACT_TEMPLATES = {
       MULTA POR DANO AO BEM: {multa_dano}
       MULTA POR ATRASO NA DEVOLUÇÃO: {multa_atraso_devolucao}% ao dia
 
+      MODALIDADE DE ASSINATURA: {modalidade_assinatura}
       CIDADE: {cidade}
       ESTADO: {estado}
     `
@@ -392,7 +453,7 @@ export const FIELD_ORDER_BY_CONTRACT = {
     'descricao_servico', 'local_prestacao', 'numero_revisoes',
     'valor_total', 'forma_pagamento', 'prazo_execucao',
     'multa_atraso_contratado', 'multa_limite', 'multa_rescisao',
-    'cidade', 'estado'
+    'modalidade_assinatura', 'cidade', 'estado'
   ],
   'aluguel': [
     'locador_nome', 'locador_telefone', 'locador_email', 'locador_cpf_cnpj', 'locador_estado_civil',
@@ -404,7 +465,7 @@ export const FIELD_ORDER_BY_CONTRACT = {
     'responsavel_manutencao', 'vistoria_entrada', 'imovel_mobiliado',
     'preferencia_compra', 'aviso_previo_rescisao',
     'multa_atraso', 'juros_atraso', 'correcao_monetaria', 'prazo_tolerancia',
-    'cidade', 'estado'
+    'modalidade_assinatura', 'cidade', 'estado'
   ],
   'parceria': [
     'parte_a_nome', 'parte_a_telefone', 'parte_a_email', 'parte_a_cpf_cnpj',
@@ -416,7 +477,7 @@ export const FIELD_ORDER_BY_CONTRACT = {
     'liquidacao_encerramento', 'descumprimento_grave', 'seguro_empresarial',
     'prazo_parceria', 'nao_concorrencia', 'conta_conjunta',
     'multa_descumprimento', 'multa_rescisao',
-    'cidade', 'estado'
+    'modalidade_assinatura', 'cidade', 'estado'
   ],
   'confidencialidade': [
     'modalidade_nda',
@@ -425,7 +486,7 @@ export const FIELD_ORDER_BY_CONTRACT = {
     'finalidade_compartilhamento', 'informacoes_confidenciais',
     'compartilhamento_terceiros', 'destinacao_termino', 'excecoes_confidencialidade',
     'prazo_confidencialidade', 'multa_violacao', 'perdas_danos',
-    'cidade', 'estado'
+    'modalidade_assinatura', 'cidade', 'estado'
   ],
   'trabalho-freelancer': [
     'contratante_nome', 'contratante_telefone', 'contratante_email', 'contratante_cpf_cnpj',
@@ -436,7 +497,7 @@ export const FIELD_ORDER_BY_CONTRACT = {
     'direitos_cancelamento', 'ferramentas_custos', 'exclusividade_execucao',
     'valor_projeto', 'forma_pagamento', 'prazo_entrega',
     'multa_atraso_entrega', 'multa_atraso_pagamento', 'multa_rescisao',
-    'cidade', 'estado'
+    'modalidade_assinatura', 'cidade', 'estado'
   ],
   'compra-venda': [
     'vendedor_nome', 'vendedor_telefone', 'vendedor_email', 'vendedor_cpf_cnpj',
@@ -447,7 +508,7 @@ export const FIELD_ORDER_BY_CONTRACT = {
     'arras', 'despesas_transferencia', 'prazo_entrega_bem',
     'documentacao_entrega', 'vistoria_formal', 'garantia_contratual',
     'multa_atraso_pagamento', 'multa_desistencia',
-    'cidade', 'estado'
+    'modalidade_assinatura', 'cidade', 'estado'
   ],
   'empreitada': [
     'contratante_nome', 'contratante_telefone', 'contratante_email', 'contratante_cpf_cnpj',
@@ -458,7 +519,7 @@ export const FIELD_ORDER_BY_CONTRACT = {
     'responsavel_art', 'seguro_obra', 'responsavel_licencas',
     'valor_total', 'forma_pagamento', 'cronograma_medicoes', 'prazo_execucao', 'prazo_garantia',
     'multa_atraso', 'multa_limite', 'multa_rescisao',
-    'cidade', 'estado'
+    'modalidade_assinatura', 'cidade', 'estado'
   ],
   'sociedade': [
     'socio_a_nome', 'socio_a_cpf', 'socio_a_estado_civil', 'socio_a_telefone', 'socio_a_email', 'socio_a_quota',
@@ -469,7 +530,7 @@ export const FIELD_ORDER_BY_CONTRACT = {
     'administracao', 'poderes_administrador', 'pro_labore',
     'distribuicao_lucros', 'distribuicao_perdas',
     'retirada_socios', 'transferencia_quotas', 'prazo_sociedade', 'nao_concorrencia',
-    'cidade', 'estado'
+    'modalidade_assinatura', 'cidade', 'estado'
   ],
   'representacao-comercial': [
     'representada_nome', 'representada_cnpj', 'representada_telefone', 'representada_email',
@@ -479,7 +540,7 @@ export const FIELD_ORDER_BY_CONTRACT = {
     'estorno_comissao', 'meta_minima', 'consequencia_meta',
     'prazo_contrato', 'aviso_previo', 'indenizacao_rescisao',
     'multa_descumprimento',
-    'cidade', 'estado'
+    'modalidade_assinatura', 'cidade', 'estado'
   ],
   'comodato': [
     'comodante_nome', 'comodante_telefone', 'comodante_email', 'comodante_cpf_cnpj',
@@ -488,9 +549,18 @@ export const FIELD_ORDER_BY_CONTRACT = {
     'prazo_comodato', 'renovacao_automatica', 'aviso_previo_devolucao',
     'responsavel_manutencao', 'responsavel_seguro', 'permite_subemprestimo', 'permite_modificacoes',
     'multa_dano', 'multa_atraso_devolucao',
-    'cidade', 'estado'
+    'modalidade_assinatura', 'cidade', 'estado'
   ]
 };
+
+// ============================================================
+// INSTRUÇÃO FINAL DE ASSINATURA — igual para todos os contratos
+// ============================================================
+const ASSINATURA_INSTRUCTION = `
+PERGUNTA FINAL OBRIGATÓRIA — faça SEMPRE como penúltima pergunta:
+- Pergunte: "A assinatura do contrato será presencial ou online (por plataforma digital)?"
+- Se o usuário responder PRESENCIAL: pergunte a cidade e depois o estado (UF) onde o contrato será assinado
+- Se o usuário responder ONLINE: NÃO pergunte cidade nem estado. Registre modalidade_assinatura como "online" e deixe cidade e estado como "não aplicável"`;
 
 // ============================================================
 // LISTA DE CAMPOS PARA O SYSTEM PROMPT DE COLETA
@@ -512,7 +582,7 @@ CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 12. O contratante deve fornecer algum acesso, credencial ou equipamento para o contratado executar o serviço? Se sim, descreva o que será fornecido. Se não, informe "nenhum".
 13. O contratado pode prestar serviços para empresas concorrentes do contratante durante o contrato? (sim ou não — se não, informe por quanto tempo após o término essa restrição vale)
 14. Qual canal será considerado oficial para comunicações e aprovações entre as partes? (ex: email, WhatsApp, plataforma específica)
-15. Haverá garantia sobre o serviço após a entrega? Se sim, por quanto tempo o contratado responde por falhas ou vícios no que foi entregue? (ex: 90 dias, 6 meses — se não houver garantia além da legal, informe "somente garantia legal")
+15. Haverá garantia sobre o serviço após a entrega? Se sim, por quanto tempo o contratado responde por falhas ou vícios no que foi entregue?
 16. Descrição detalhada do serviço a ser prestado
 17. Local de prestação do serviço (ex: remoto, presencial no endereço X, híbrido)
 18. Número de revisões inclusas no valor (ex: 2 revisões, ilimitadas, nenhuma)
@@ -522,8 +592,7 @@ CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 22. Percentual de multa por atraso na entrega pelo CONTRATADO, por dia (ex: 0,5% ao dia)
 23. Limite máximo da multa por atraso (ex: 10% do valor total)
 24. Percentual de multa por rescisão antecipada (ex: 20% do valor total)
-25. Cidade onde o contrato será assinado
-26. Estado (UF)`,
+${ASSINATURA_INSTRUCTION}`,
 
   'aluguel': `
 CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
@@ -531,36 +600,35 @@ CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 2. Número de telefone do LOCADOR
 3. Email do LOCADOR
 4. CPF ou CNPJ do LOCADOR
-5. Estado civil do LOCADOR (se casado, o cônjuge também precisará assinar o contrato)
+5. Estado civil do LOCADOR
 6. Nome completo do LOCATÁRIO (inquilino)
 7. Número de telefone do LOCATÁRIO
 8. Email do LOCATÁRIO
 9. CPF ou CNPJ do LOCATÁRIO
-10. Estado civil do LOCATÁRIO (se casado, o cônjuge também precisará assinar o contrato)
+10. Estado civil do LOCATÁRIO
 11. Descrição do imóvel (tipo, características)
 12. Endereço completo do imóvel
-13. Qual o número de matrícula do imóvel no cartório de registro de imóveis?
-14. O imóvel possui alguma dívida pendente de IPTU, condomínio ou financiamento? (sim ou não — se sim, descreva)
+13. Número de matrícula do imóvel no cartório
+14. O imóvel possui alguma dívida pendente de IPTU, condomínio ou financiamento?
 15. Valor mensal do aluguel
 16. Dia do mês para vencimento (ex: dia 10)
 17. Data de início da locação
 18. Prazo da locação em meses
-19. Tipo de garantia locatícia (ex: caução em dinheiro, fiador/avalista, seguro fiança, título de capitalização, sem garantia)
+19. Tipo de garantia locatícia (ex: caução, fiador, seguro fiança, sem garantia)
 20. Quem é responsável pelo pagamento do IPTU — locador ou locatário?
-21. Quem é responsável pelo pagamento do condomínio, se houver — locador ou locatário?
+21. Quem é responsável pelo pagamento do condomínio — locador ou locatário?
 22. É permitida sublocação do imóvel? (sim ou não)
 23. É permitida a presença de animais de estimação? (sim ou não)
-24. Quem é responsável pelos reparos de manutenção ordinária do imóvel (pequenos consertos do dia a dia)? E pelos reparos extraordinários (estruturais, elétricos, hidráulicos)? (ex: manutenção ordinária fica com o locatário e extraordinária com o locador)
-25. Será realizada vistoria formal do imóvel antes da entrega das chaves, com laudo fotográfico? (sim ou não)
-26. O imóvel será entregue mobiliado? Se sim, haverá inventário de móveis e equipamentos assinado pelas partes? (sim ou não — se não mobiliado, informe "não mobiliado")
-27. Em caso de venda do imóvel durante a locação, o locatário terá direito de preferência para compra? Em qual prazo deverá manifestar interesse após ser notificado? (ex: sim, 30 dias / não haverá preferência)
-28. Qual o prazo de aviso prévio que o locatário deve dar ao locador para desocupar o imóvel antes do término do contrato? E em quais situações o locador pode retomar o imóvel antecipadamente? (ex: locatário deve avisar com 30 dias de antecedência)
+24. Quem é responsável pelos reparos de manutenção ordinária e extraordinária?
+25. Será realizada vistoria formal com laudo fotográfico? (sim ou não)
+26. O imóvel será entregue mobiliado? Haverá inventário?
+27. Em caso de venda, o locatário terá direito de preferência? Em qual prazo?
+28. Qual o prazo de aviso prévio para desocupação?
 29. Percentual de multa por atraso no pagamento (ex: 10%)
 30. Percentual de juros ao mês por atraso (ex: 1% ao mês)
-31. Índice de correção monetária anual (ex: IGPM, IPCA, INPC)
+31. Índice de correção monetária anual (ex: IGPM, IPCA)
 32. Prazo de tolerância para pagamento em dias (ex: 5 dias)
-33. Cidade onde o contrato será assinado
-34. Estado (UF)`,
+${ASSINATURA_INSTRUCTION}`,
 
   'parceria': `
 CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
@@ -573,28 +641,27 @@ CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 7. Email da PARTE B
 8. CPF/CNPJ da PARTE B
 9. Objeto da parceria (o que será feito em conjunto)
-10. Qual é a natureza jurídica desta parceria? (ex: parceria operacional simples sem personalidade jurídica, sociedade em conta de participação — SCP, joint venture com CNPJ próprio)
-11. Contribuição da PARTE A (o que ela entra com — capital, conhecimento, estrutura, clientes etc.)
-12. Contribuição da PARTE B (o que ela entra com)
-13. Haverá aporte financeiro inicial de cada parte? Se sim, qual o valor e o prazo para cada uma? (se não houver, informe "sem aporte inicial")
-14. Divisão dos resultados/lucros (ex: 50%/50%, 60%/40%)
-15. Como serão distribuídas as perdas em caso de prejuízo? (ex: na mesma proporção dos lucros)
-16. Quem terá poderes para assinar contratos e compromissos financeiros em nome da parceria? Há algum limite de valor para decisões unilaterais?
-17. Com qual periodicidade será feita a prestação de contas e apresentação de relatórios financeiros entre as partes? (ex: mensalmente, trimestralmente)
-18. O que acontece com os clientes, contratos em andamento e ativos da parceria em caso de encerramento? Como será feita a divisão?
-19. O que será considerado descumprimento grave, capaz de ensejar rescisão imediata sem pagamento de multa? (ex: desvio de recursos, violação de sigilo, concorrência desleal)
-20. Haverá seguro empresarial cobrindo a atividade da parceria? Se sim, quem contrata e quem arca com o custo? (se não houver, informe "sem seguro empresarial")
-21. Prazo da parceria (ex: 12 meses, 2 anos, indeterminado)
-22. Haverá cláusula de não-concorrência? Se sim, por quanto tempo e em qual área? (ex: sim, 2 anos na área de design gráfico / não)
-23. Haverá conta bancária conjunta para movimentação dos recursos da parceria? (sim ou não)
-24. Percentual de multa por descumprimento das obrigações (ex: 10%)
+10. Natureza jurídica desta parceria (ex: parceria simples, SCP, joint venture)
+11. Contribuição da PARTE A
+12. Contribuição da PARTE B
+13. Haverá aporte financeiro inicial? Se sim, qual o valor de cada parte?
+14. Divisão dos resultados/lucros (ex: 50%/50%)
+15. Como serão distribuídas as perdas?
+16. Quem terá poderes para assinar em nome da parceria?
+17. Periodicidade da prestação de contas (ex: mensal, trimestral)
+18. O que acontece com os ativos em caso de encerramento?
+19. O que será considerado descumprimento grave?
+20. Haverá seguro empresarial? Quem contrata?
+21. Prazo da parceria (ex: 12 meses, indeterminado)
+22. Haverá cláusula de não-concorrência? Se sim, por quanto tempo?
+23. Haverá conta bancária conjunta? (sim ou não)
+24. Percentual de multa por descumprimento (ex: 10%)
 25. Percentual de multa por rescisão antecipada (ex: 15%)
-26. Cidade onde o contrato será assinado
-27. Estado (UF)`,
+${ASSINATURA_INSTRUCTION}`,
 
   'confidencialidade': `
 CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
-1. Este acordo é unilateral (apenas uma parte recebe informações confidenciais) ou bilateral/mútuo (ambas as partes trocarão informações confidenciais entre si)?
+1. Este acordo é unilateral ou bilateral/mútuo?
 2. Nome completo da parte REVELADORA
 3. Número de telefone da parte REVELADORA
 4. Email da parte REVELADORA
@@ -603,16 +670,15 @@ CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 7. Número de telefone da parte RECEPTORA
 8. Email da parte RECEPTORA
 9. CPF/CNPJ da parte RECEPTORA
-10. Qual é a finalidade do compartilhamento das informações confidenciais? (ex: negociação de parceria, prestação de serviços, avaliação de investimento)
-11. Descrição das informações confidenciais que serão compartilhadas
-12. A parte receptora poderá compartilhar as informações confidenciais com seus próprios funcionários, sócios ou subcontratados para fins de análise? Se sim, ela será solidariamente responsável por qualquer violação cometida por eles? (ex: sim, com responsabilidade solidária / não é permitido compartilhamento)
-13. Ao término do prazo de confidencialidade, o que deverá ser feito com os documentos, arquivos e dados confidenciais recebidos? (ex: devolvidos à parte reveladora, destruídos com confirmação por escrito, mantidos em arquivo interno restrito)
-14. Há informações que, mesmo relacionadas ao objeto deste acordo, já são de domínio público ou poderão se tornar públicas por meio lícito? Essas informações estarão excluídas da obrigação de sigilo? (ex: sim, informações já publicadas em meios oficiais / não há exceções)
+10. Finalidade do compartilhamento das informações confidenciais
+11. Descrição das informações confidenciais
+12. A parte receptora pode compartilhar com funcionários ou subcontratados? Com responsabilidade solidária?
+13. O que fazer com os documentos ao término do prazo?
+14. Há exceções à confidencialidade (informações já públicas)?
 15. Prazo de confidencialidade (ex: 2 anos, 5 anos)
-16. Valor da multa por violação da confidencialidade (ex: R$ 50.000,00)
-17. As perdas e danos também serão cobradas além da multa? (sim ou não)
-18. Cidade onde o contrato será assinado
-19. Estado (UF)`,
+16. Valor da multa por violação (ex: R$ 50.000,00)
+17. Além da multa, haverá cobrança de perdas e danos? (sim ou não)
+${ASSINATURA_INSTRUCTION}`,
 
   'trabalho-freelancer': `
 CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
@@ -624,25 +690,24 @@ CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 6. Número de telefone do FREELANCER
 7. Email do FREELANCER
 8. CPF do FREELANCER
-9. O freelancer atua como MEI, pessoa jurídica com CNPJ próprio ou pessoa física sem CNPJ?
-10. Haverá retenção de impostos na nota fiscal emitida pelo freelancer (ISS, PIS, COFINS, CSLL, IR)? Quem é responsável pelo recolhimento — contratante ou freelancer?
-11. Escopo detalhado do trabalho (o que será entregue)
-12. Quantas rodadas de revisão estão inclusas no valor? (ex: 2 revisões, 3 revisões, ilimitadas)
-13. O freelancer poderá exibir este trabalho em seu portfólio pessoal ou divulgá-lo nas redes sociais após a conclusão? (sim ou não — se não, por quanto tempo essa restrição vale)
-14. A cessão dos direitos autorais sobre o trabalho é total e definitiva (o contratante passa a ser o único titular) ou é apenas uma licença de uso? Se licença, informe o prazo e o território.
-15. O contratante fornecerá um briefing formal por escrito antes do início do trabalho? Em qual prazo após a assinatura do contrato?
-16. Caso o contratante não aprove a entrega sem apresentar justificativa técnica objetiva, após quantas tentativas de ajuste o freelancer poderá considerar o trabalho entregue e exigir o pagamento integral?
-17. Em caso de cancelamento pelo contratante após início do trabalho, como ficam os direitos sobre o material produzido até então? (ex: o freelancer retém os direitos / o contratante recebe o que foi produzido proporcionalmente ao valor pago)
-18. O freelancer utilizará ferramentas, softwares ou licenças pagas especificamente para executar este trabalho? Se sim, quem arca com esses custos — o freelancer ou o contratante? (se não houver custos extras, informe "sem custos operacionais adicionais")
-19. Durante a execução deste projeto, o freelancer pode trabalhar em projetos concorrentes ou similares para outros clientes? (sim ou não — se não, informe por quanto tempo essa restrição vale após o término)
+9. O freelancer atua como MEI, PJ com CNPJ ou pessoa física?
+10. Haverá retenção de impostos? Quem recolhe?
+11. Escopo detalhado do trabalho
+12. Quantas rodadas de revisão estão inclusas?
+13. O freelancer pode exibir o trabalho em portfólio? (sim ou não)
+14. A cessão dos direitos autorais é total ou apenas licença de uso?
+15. O contratante fornecerá briefing formal? Em qual prazo?
+16. Após quantas tentativas sem aprovação justificada o trabalho é considerado entregue?
+17. Em caso de cancelamento, como ficam os direitos sobre o material produzido?
+18. Haverá custos operacionais extras? Quem paga?
+19. O freelancer pode trabalhar para concorrentes durante o projeto? (sim ou não)
 20. Valor do projeto (ex: R$ 3.000,00)
-21. Forma de pagamento (ex: 50% na assinatura e 50% na entrega)
-22. Prazo de entrega (ex: 30 dias após assinatura)
-23. Percentual de multa por atraso na entrega, por dia (ex: 0,5% ao dia)
-24. Percentual de multa por atraso no pagamento pelo contratante, por dia (ex: 0,5% ao dia)
+21. Forma de pagamento
+22. Prazo de entrega
+23. Multa por atraso na entrega, por dia (ex: 0,5% ao dia)
+24. Multa por atraso no pagamento pelo contratante, por dia
 25. Percentual de multa por rescisão antecipada (ex: 20%)
-26. Cidade onde o contrato será assinado
-27. Estado (UF)`,
+${ASSINATURA_INSTRUCTION}`,
 
   'compra-venda': `
 CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
@@ -654,24 +719,23 @@ CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 6. Número de telefone do COMPRADOR
 7. Email do COMPRADOR
 8. CPF/CNPJ do COMPRADOR
-9. Qual é a categoria do bem sendo vendido? (ex: imóvel, veículo, equipamento, maquinário, eletrônico, mercadoria, outro — descreva)
-10. Descrição detalhada do bem (o que está sendo vendido)
-11. Estado de conservação do bem (ex: novo, seminovo, usado em bom estado, usado com desgaste)
-12. Existem defeitos conhecidos no bem? Se sim, descreva-os. Se não, informe "nenhum defeito conhecido".
-13. O bem possui alienação fiduciária, financiamento em aberto, penhora, hipoteca ou qualquer outro ônus ou gravame? (sim ou não — se sim, descreva e informe se será regularizado antes ou na data da transferência)
-14. O bem é de propriedade exclusiva do vendedor, ou há coproprietários, herdeiros ou cônjuge que também precisará assinar? (se houver, informe os dados)
+9. Qual é a categoria do bem sendo vendido?
+10. Descrição detalhada do bem
+11. Estado de conservação do bem
+12. Existem defeitos conhecidos? Se sim, descreva. Se não, informe "nenhum".
+13. O bem possui ônus ou gravames? (sim ou não — se sim, descreva)
+14. O bem é de propriedade exclusiva do vendedor, ou há coproprietários?
 15. Valor total da venda
 16. Forma de pagamento
-17. Haverá pagamento de sinal (arras) no ato da assinatura? Se sim, qual o valor? Essas arras são confirmatórias (apenas garantem o negócio) ou penitenciais (quem desistir perde o sinal ou devolve em dobro)? (se não houver sinal, informe "sem arras")
-18. Quem arca com as despesas de transferência e regularização do bem? (ex: vendedor, comprador ou dividido entre ambos)
-19. Prazo para entrega do bem (ex: na assinatura, 7 dias, 30 dias)
-20. Quais documentos serão entregues junto com o bem para comprovar sua regularidade e titularidade? (descreva livremente conforme o tipo do bem)
-21. Será realizada vistoria ou inspeção formal do bem antes da assinatura, com laudo descritivo? (sim ou não)
-22. Haverá garantia contratual além da garantia legal? Se sim, por quanto tempo e o que ela cobre? (ex: sim, 6 meses cobrindo defeitos de funcionamento / somente garantia legal)
-23. Percentual de multa por atraso no pagamento, por dia (ex: 0,5% ao dia)
-24. Percentual de multa por desistência/rescisão (ex: 20% do valor)
-25. Cidade onde o contrato será assinado
-26. Estado (UF)`,
+17. Haverá pagamento de sinal (arras)? Se sim, qual o valor e o tipo (confirmatórias ou penitenciais)?
+18. Quem arca com as despesas de transferência?
+19. Prazo para entrega do bem
+20. Quais documentos serão entregues com o bem?
+21. Será realizada vistoria formal? (sim ou não)
+22. Haverá garantia contratual além da legal? Se sim, por quanto tempo e o que cobre?
+23. Multa por atraso no pagamento, por dia (ex: 0,5% ao dia)
+24. Percentual de multa por desistência/rescisão (ex: 20%)
+${ASSINATURA_INSTRUCTION}`,
 
   'empreitada': `
 CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
@@ -679,31 +743,30 @@ CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 2. Número de telefone do CONTRATANTE
 3. Email do CONTRATANTE
 4. CPF ou CNPJ do CONTRATANTE
-5. Nome completo do EMPREITEIRO (quem vai executar a obra)
+5. Nome completo do EMPREITEIRO
 6. Número de telefone do EMPREITEIRO
 7. Email do EMPREITEIRO
 8. CPF ou CNPJ do EMPREITEIRO
-9. O empreiteiro possui registro profissional? Se sim, informe o número e o conselho (ex: CREA, CAU). Se não, informe "sem registro".
-10. Qual é o tipo de obra ou serviço? (ex: construção de casa, reforma de escritório, instalação elétrica, pintura, demolição)
-11. Descreva detalhadamente o que será feito na obra
-12. Qual o endereço onde a obra será executada?
-13. Esta empreitada é por preço global (valor fechado para tudo) ou por medição/etapas (paga conforme o avanço da obra)?
-14. Quem fornece os materiais de construção — o contratante, o empreiteiro, ou cada um é responsável por uma parte? (descreva)
-15. Quem fornece os equipamentos e ferramentas necessários para a obra — o contratante ou o empreiteiro?
-16. O empreiteiro pode contratar outros profissionais ou empresas para ajudar na obra (subempreitada)? (sim ou não)
-17. Quem é responsável por emitir a ART ou RRT (documento técnico de responsabilidade pela obra) — o empreiteiro ou o contratante? (ex: empreiteiro arca com o custo e emite em seu nome)
-18. Haverá seguro de obra durante a execução? Se sim, quem contrata e paga? (se não houver, informe "sem seguro de obra")
-19. Quem é responsável por obter as licenças e alvarás necessários para a obra junto à prefeitura — o contratante ou o empreiteiro?
-20. Qual o valor total da empreitada? (ex: R$ 50.000,00)
-21. Qual a forma de pagamento? (ex: 30% na assinatura, 40% na metade da obra, 30% na entrega)
-22. Como será feita a medição do avanço da obra para liberar os pagamentos por etapa? (ex: vistorias mensais, entrega de cada fase definida em cronograma — se for preço global, informe "pagamento único ou conforme acordado")
-23. Qual o prazo total para conclusão da obra? (ex: 90 dias, 6 meses)
-24. Qual o prazo de garantia da obra após a entrega? (ex: 5 anos para estrutura conforme o Código Civil, 1 ano para acabamento)
-25. Percentual de multa por atraso na entrega da obra, por dia (ex: 0,5% ao dia)
-26. Limite máximo da multa por atraso (ex: 10% do valor total)
-27. Percentual de multa por rescisão antecipada (ex: 20%)
-28. Cidade onde o contrato será assinado
-29. Estado (UF)`,
+9. O empreiteiro possui registro profissional (CREA, CAU)? Se sim, informe o número.
+10. Qual é o tipo de obra ou serviço?
+11. Descrição detalhada da obra
+12. Endereço onde a obra será executada
+13. A empreitada é por preço global ou por medição/etapas?
+14. Quem fornece os materiais?
+15. Quem fornece os equipamentos?
+16. É permitida subempreitada? (sim ou não)
+17. Quem emite a ART ou RRT?
+18. Haverá seguro de obra? Quem contrata?
+19. Quem obtém as licenças e alvarás?
+20. Valor total da empreitada
+21. Forma de pagamento
+22. Como será feita a medição do avanço?
+23. Prazo total para conclusão da obra
+24. Prazo de garantia da obra após entrega
+25. Multa por atraso na entrega, por dia
+26. Limite máximo da multa por atraso
+27. Percentual de multa por rescisão antecipada
+${ASSINATURA_INSTRUCTION}`,
 
   'sociedade': `
 CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
@@ -712,86 +775,83 @@ CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 3. Estado civil do SÓCIO A
 4. Número de telefone do SÓCIO A
 5. Email do SÓCIO A
-6. Qual o percentual de participação (quota) do SÓCIO A na sociedade? (ex: 50%)
+6. Percentual de quota do SÓCIO A (ex: 50%)
 7. Nome completo do SÓCIO B
 8. CPF do SÓCIO B
 9. Estado civil do SÓCIO B
 10. Número de telefone do SÓCIO B
 11. Email do SÓCIO B
-12. Qual o percentual de participação (quota) do SÓCIO B na sociedade? (ex: 50%)
-13. Há mais sócios além do A e B? Se sim, informe nome, CPF, telefone, email e percentual de cada um. Se não, informe "apenas dois sócios".
-14. Qual será a razão social da empresa? (nome oficial registrado)
-15. Qual será o nome fantasia? (nome usado no dia a dia — se não houver, informe "sem nome fantasia")
-16. Qual é o objeto social? (o que a empresa vai fazer — descreva as atividades)
-17. Qual o endereço da sede da empresa?
-18. Qual o valor do capital social? (o dinheiro ou bens que os sócios colocam para abrir a empresa — ex: R$ 10.000,00)
-19. Como o capital social será integralizado? (ex: 100% em dinheiro no ato da assinatura / 50% agora e 50% em 30 dias / parte em dinheiro e parte em equipamentos)
-20. Quem vai administrar a empresa no dia a dia? (pode ser um dos sócios ou todos — informe o nome)
-21. Quais os poderes do administrador? (ex: assinar contratos até R$ 10.000 sozinho, acima disso precisa de aprovação de todos os sócios)
-22. Os sócios que trabalham na empresa receberão pró-labore (salário mensal)? Se sim, qual o valor para cada um? (se não, informe "sem pró-labore")
-23. Como será feita a distribuição dos lucros entre os sócios? (ex: proporcional às quotas, ou de outra forma)
-24. Como serão distribuídas as perdas entre os sócios em caso de prejuízo? (ex: proporcional às quotas)
-25. O que acontece se um sócio quiser sair da sociedade? Qual o prazo de aviso prévio e como será calculado o valor da sua parte?
-26. Um sócio pode vender ou transferir sua quota para outra pessoa sem a aprovação dos demais sócios? (sim ou não — se não, como funciona o direito de preferência dos outros sócios)
+12. Percentual de quota do SÓCIO B (ex: 50%)
+13. Há mais sócios além do A e B? Se sim, informe os dados de cada um.
+14. Razão social da empresa
+15. Nome fantasia (se não houver, informe "sem nome fantasia")
+16. Objeto social (o que a empresa vai fazer)
+17. Endereço da sede
+18. Valor do capital social
+19. Como o capital será integralizado?
+20. Quem administrará a empresa?
+21. Quais os poderes do administrador?
+22. Haverá pró-labore? Se sim, qual o valor para cada sócio?
+23. Como será feita a distribuição dos lucros?
+24. Como serão distribuídas as perdas?
+25. O que acontece se um sócio quiser sair? Qual o prazo de aviso e como se calcula a sua parte?
+26. Um sócio pode transferir sua quota sem aprovação dos demais? (sim ou não)
 27. Qual o prazo de duração da sociedade? (ex: indeterminado, 5 anos)
-28. Os sócios ficam proibidos de abrir ou participar de empresas concorrentes enquanto forem sócios? Por quanto tempo essa restrição vale após a saída? (ex: sim, proibido durante a sociedade e por 2 anos após a saída)
-29. Cidade onde o contrato será assinado
-30. Estado (UF)`,
+28. Haverá proibição de concorrência? Por quanto tempo após a saída?
+${ASSINATURA_INSTRUCTION}`,
 
   'representacao-comercial': `
 CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
-1. Nome completo ou razão social da empresa REPRESENTADA (quem fabrica ou vende o produto)
+1. Nome ou razão social da empresa REPRESENTADA
 2. CNPJ da REPRESENTADA
 3. Número de telefone da REPRESENTADA
 4. Email da REPRESENTADA
-5. Nome completo ou razão social do REPRESENTANTE COMERCIAL (quem vai vender)
+5. Nome do REPRESENTANTE COMERCIAL
 6. CPF ou CNPJ do REPRESENTANTE
-7. O representante possui registro no CORE (Conselho dos Representantes Comerciais)? Se sim, informe o número. Se não, informe "sem registro CORE".
+7. O representante possui registro no CORE? Se sim, informe o número.
 8. Número de telefone do REPRESENTANTE
 9. Email do REPRESENTANTE
-10. Quais produtos ou serviços o representante irá vender? (descreva)
-11. Qual o território de atuação do representante? (ex: estado de São Paulo, região Sul do Brasil, todo o Brasil)
-12. O representante terá exclusividade nesse território — ou seja, a representada não poderá contratar outros representantes para a mesma área? (sim ou não)
-13. Há clientes ou contas que ficam fora da representação — ou seja, que o representante não pode atender e a empresa atende diretamente? Se sim, liste-os. Se não, informe "sem clientes excluídos".
-14. Qual o percentual de comissão do representante? (ex: 5%)
-15. Essa comissão é calculada sobre o quê — valor bruto do pedido, valor líquido, valor faturado ou valor recebido? (ex: sobre o valor faturado e recebido pelo cliente)
-16. Em qual prazo a comissão será paga ao representante após a venda ser confirmada ou o cliente pagar? (ex: até o dia 10 do mês seguinte ao recebimento)
-17. Se o cliente não pagar a compra, a comissão do representante será estornada (devolvida)? (sim ou não)
-18. Haverá meta mínima de vendas que o representante deve atingir? Se sim, qual o valor ou volume por período? (se não houver meta, informe "sem meta mínima")
-19. O que acontece se o representante não atingir a meta? (ex: rescisão do contrato, redução de território, advertência — se não houver meta, informe "não aplicável")
-20. Qual o prazo de duração do contrato? (ex: 12 meses, indeterminado)
-21. Qual o prazo de aviso prévio para encerrar o contrato? (ex: 30 dias — a Lei 4.886/65 exige aviso prévio mínimo de 30 dias para contratos com mais de 6 meses)
-22. Em caso de rescisão sem justa causa pela representada, haverá indenização ao representante? Se sim, qual o critério? (ex: 1/12 das comissões dos últimos 12 meses por ano de contrato, conforme a lei)
-23. Percentual de multa por descumprimento das obrigações contratuais (ex: 20% do valor das comissões dos últimos 12 meses)
-24. Cidade onde o contrato será assinado
-25. Estado (UF)`,
+10. Quais produtos ou serviços serão representados?
+11. Qual o território de atuação?
+12. O representante terá exclusividade territorial? (sim ou não)
+13. Há clientes excluídos da representação? Se sim, liste-os.
+14. Percentual de comissão (ex: 5%)
+15. A comissão é calculada sobre o quê?
+16. Em qual prazo a comissão será paga?
+17. Se o cliente não pagar, a comissão será estornada? (sim ou não)
+18. Haverá meta mínima de vendas? Se sim, qual?
+19. O que acontece se a meta não for atingida?
+20. Prazo de duração do contrato
+21. Prazo de aviso prévio para encerramento
+22. Em caso de rescisão sem justa causa, haverá indenização? Se sim, qual o critério?
+23. Percentual de multa por descumprimento
+${ASSINATURA_INSTRUCTION}`,
 
   'comodato': `
 CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
-1. Nome completo do COMODANTE (quem empresta o bem — o dono)
+1. Nome completo do COMODANTE (dono do bem)
 2. Número de telefone do COMODANTE
 3. Email do COMODANTE
 4. CPF ou CNPJ do COMODANTE
-5. Nome completo do COMODATÁRIO (quem recebe o bem emprestado)
+5. Nome completo do COMODATÁRIO
 6. Número de telefone do COMODATÁRIO
 7. Email do COMODATÁRIO
 8. CPF ou CNPJ do COMODATÁRIO
-9. O que está sendo emprestado? Descreva o bem com detalhes (ex: notebook Dell Inspiron, número de série XYZ / veículo Ford Ka 2020 placa ABC-1234 / impressora HP modelo X)
-10. Qual o estado de conservação do bem no momento da entrega? (ex: bom estado, com arranhão na lateral, funcionando perfeitamente)
-11. Para qual finalidade o comodatário irá usar o bem? (ex: uso em trabalho home office, para exposição em evento, para uso na obra da rua X)
-12. Onde o bem ficará guardado ou será utilizado durante o comodato? (ex: na residência do comodatário, no escritório da empresa, em obra específica)
-13. Será realizada vistoria formal do bem na entrega, com laudo descritivo ou fotos? (sim ou não)
-14. Qual o prazo do empréstimo? (ex: 30 dias, 6 meses, indeterminado)
-15. O contrato se renova automaticamente se nenhuma das partes se manifestar? (sim ou não)
-16. Com quanto tempo de antecedência o comodatário deve avisar que vai devolver o bem? (ex: 15 dias antes — se o prazo for fixo, informe "devolução na data de término")
-17. Quem é responsável pela manutenção e consertos do bem durante o período de empréstimo — o comodante ou o comodatário? (ex: manutenção ordinária fica com o comodatário e reparos maiores com o comodante)
-18. Haverá seguro para o bem durante o comodato? Se sim, quem contrata e paga? (se não houver, informe "sem seguro")
-19. O comodatário pode emprestar o bem para outra pessoa (subempréstimo)? (sim ou não)
-20. O comodatário pode fazer modificações, adaptações ou melhorias no bem? (sim ou não — se sim, descreva o que é permitido)
-21. Em caso de dano ao bem por culpa do comodatário, como será calculado o valor da indenização? (ex: valor de mercado do bem na data do dano, custo do reparo, valor declarado na vistoria)
-22. Percentual de multa por dia de atraso na devolução do bem (ex: 0,5% ao dia sobre o valor do bem)
-23. Cidade onde o contrato será assinado
-24. Estado (UF)`
+9. O que está sendo emprestado? Descreva com detalhes.
+10. Estado de conservação do bem na entrega
+11. Para qual finalidade o comodatário usará o bem?
+12. Onde o bem ficará durante o comodato?
+13. Será realizada vistoria formal na entrega? (sim ou não)
+14. Prazo do empréstimo (ex: 30 dias, 6 meses, indeterminado)
+15. O contrato se renova automaticamente? (sim ou não)
+16. Com quanto tempo de antecedência o comodatário deve avisar a devolução?
+17. Quem é responsável pela manutenção do bem?
+18. Haverá seguro? Quem contrata?
+19. É permitido subempréstimo? (sim ou não)
+20. É permitido fazer modificações no bem? (sim ou não)
+21. Como será calculada a indenização em caso de dano?
+22. Percentual de multa por dia de atraso na devolução
+${ASSINATURA_INSTRUCTION}`
 };
 
 // ============================================================
@@ -1031,7 +1091,11 @@ REGRAS DE CONDUÇÃO — NUNCA VIOLE:
 5. Quando coletar TODOS os campos da lista, pergunte: "Deseja adicionar algo a mais para por no contrato?"
 6. Se o usuário disser "não" ou "nada", responda EXATAMENTE: "Perfeito! Vou gerar seu contrato agora."
 7. Se o usuário quiser adicionar algo, colete e repita a pergunta do passo 5
-8. NUNCA encerre sem ter coletado todos os campos, incluindo telefone e email de todas as partes`;
+8. NUNCA encerre sem ter coletado todos os campos, incluindo telefone e email de todas as partes
+9. VALIDAÇÃO: Se o usuário fornecer um CPF com menos de 11 dígitos, CNPJ com menos de 14 dígitos, ou email sem "@", peça gentilmente que corrija antes de continuar
+10. CONFIRMAÇÃO: Após coletar todos os campos e antes de perguntar "Deseja adicionar algo a mais?", faça um breve resumo dos dados principais (nomes das partes, valor, prazo) e pergunte: "Esses dados estão corretos? Posso confirmar e prosseguir?"
+11. Se o usuário confirmar, aí sim pergunte "Deseja adicionar algo a mais para por no contrato?"
+12. REGRA DE ASSINATURA: Sempre pergunte se a assinatura será presencial ou online ANTES de pedir cidade e estado. Se o usuário responder online, NÃO peça cidade nem estado — pule direto para a pergunta "Deseja adicionar algo a mais?"`;
 
 // ============================================================
 // PROMPT INICIAL — sem markdown
@@ -1107,8 +1171,8 @@ export const sendMessageToIA = async (messages, contractType) => {
   const fieldsInstruction = REQUIRED_FIELDS_INSTRUCTION[contractType] || '';
 
   let progressNote = '';
-  if (userResponses >= totalFields - 1) {
-    progressNote = `\n\n⚠️ ATENÇÃO: Você já recebeu ${userResponses} respostas. O total de campos é ${totalFields}. Verifique se TODOS foram coletados antes de perguntar sobre informações adicionais. NÃO encerre antes de coletar todos, incluindo telefone e email de cada parte.`;
+  if (userResponses >= totalFields - 2) {
+    progressNote = `\n\n⚠️ ATENÇÃO: Você já recebeu ${userResponses} respostas. O total de campos é ${totalFields}. Verifique se TODOS foram coletados. Lembre-se: pergunte sobre modalidade de assinatura (presencial ou online) ANTES de pedir cidade e estado. Se online, NÃO peça cidade nem estado.`;
   }
 
   try {
@@ -1170,13 +1234,13 @@ REGRAS ABSOLUTAS:
 2. Para cada campo, use o contexto da pergunta do assistente para identificar a qual campo pertence a resposta do usuário
 3. Se um campo não foi respondido, use string vazia ""
 4. NÃO invente valores — use apenas exatamente o que o usuário disse
-5. Os campos "cidade" e "estado" são SOMENTE para eleição de foro — não confunda com endereço da obra, sede ou imóvel
-6. Os campos de telefone e email devem ser extraídos corretamente para cada parte
-7. O campo "modalidade_empreitada" deve ser "preço global" ou "por medição/etapas" conforme informado
-8. O campo "modalidade_nda" deve ser "unilateral" ou "bilateral/mútuo" conforme informado
-9. O campo "socios_adicionais" deve conter os dados completos de sócios além de A e B, ou "apenas dois sócios"
-10. O campo "exclusividade_territorial" deve refletir exatamente se há ou não exclusividade territorial no contrato de representação
-11. Campos de garantia, prazo e multa devem ser extraídos com precisão sem alterar os valores informados
+5. O campo "modalidade_assinatura" deve ser "presencial" ou "online" conforme informado pelo usuário
+6. Se a modalidade for "online", os campos "cidade" e "estado" devem ser "não aplicável"
+7. Se a modalidade for "presencial", extraia cidade e estado normalmente
+8. Os campos de telefone e email devem ser extraídos corretamente para cada parte
+9. O campo "modalidade_empreitada" deve ser "preço global" ou "por medição/etapas" conforme informado
+10. O campo "modalidade_nda" deve ser "unilateral" ou "bilateral/mútuo" conforme informado
+11. Campos de garantia, prazo e multa devem ser extraídos com precisão
 
 Formato de saída esperado (exemplo):
 {"campo1":"valor respondido","campo2":"outro valor","campo3":""}`;
@@ -1193,7 +1257,7 @@ Formato de saída esperado (exemplo):
         messages: [
           {
             role: 'system',
-            content: 'Você é um extrator de dados preciso. Leia conversas e extraia valores para campos específicos, incluindo telefone e email de cada parte. Retorne APENAS JSON válido, sem nenhum texto adicional, sem markdown.'
+            content: 'Você é um extrator de dados preciso. Leia conversas e extraia valores para campos específicos. Retorne APENAS JSON válido, sem nenhum texto adicional, sem markdown.'
           },
           { role: 'user', content: extractionPrompt }
         ],
@@ -1241,6 +1305,8 @@ export const generateContractFromConversation = async (messages, contractType) =
     year: 'numeric',
   });
 
+  const isOnline = answers.modalidade_assinatura?.toLowerCase().includes('online');
+
   let filledTemplate = selectedTemplate.template;
   Object.keys(answers).forEach(key => {
     filledTemplate = filledTemplate.replace(new RegExp(`{${key}}`, 'g'), answers[key] || '');
@@ -1255,6 +1321,10 @@ export const generateContractFromConversation = async (messages, contractType) =
   const clausulasList = (CONTRACT_CLAUSES[contractType] || [])
     .map(c => `   - ${c}`)
     .join('\n');
+
+  const foroInstrucao = isOnline
+    ? `A assinatura será realizada de forma ONLINE/DIGITAL. Na cláusula de foro de eleição, informe que as partes elegem o foro do domicílio do réu para dirimir quaisquer controvérsias, uma vez que a assinatura foi realizada por meio digital.`
+    : `A assinatura será PRESENCIAL na cidade de ${answers.cidade || ''}, Estado do ${answers.estado || ''}. Use esses dados na cláusula de eleição de foro.`;
 
   const prompt = `Você é um Advogado Sênior especialista em Direito Civil e Empresarial Brasileiro. Elabore o instrumento contratual abaixo com rigor técnico-jurídico, vocabulário formal e estrutura de escritório de advocacia de alto padrão.
 
@@ -1278,29 +1348,27 @@ INSTRUÇÕES OBRIGATÓRIAS DE REDAÇÃO
 1. USE SOMENTE os dados fornecidos — JAMAIS invente valores, nomes ou percentuais
 2. NÃO utilize placeholders — substitua TUDO pelos valores reais informados
 3. NUNCA coloque CPF/CNPJ no campo de nome, nem endereço no campo de cidade
-4. "cidade" e "estado" destinam-se EXCLUSIVAMENTE à cláusula de eleição de foro
-5. As cláusulas de penalidades DEVEM refletir com precisão os valores de multa informados
-6. No PREÂMBULO, inclua telefone e email de cada parte na qualificação completa
-7. Para contratos de empreitada, referencie o art. 618 do CC na cláusula de garantia da obra (5 anos para solidez e segurança, prazo decadencial de 180 dias para reclamar)
-8. Para contratos de sociedade, referencie os arts. 997 a 1.038 do CC e oriente que o documento deve ser registrado na Junta Comercial ou Cartório competente
-9. Para contratos de representação comercial, referencie expressamente a Lei 4.886/65 e a Lei 8.420/92 nas cláusulas de rescisão e indenização
-10. Para contratos de comodato, referencie os arts. 579 a 585 do CC e deixe claro o caráter gratuito e a responsabilidade do comodatário pelos riscos do bem
-11. Para contratos de compra e venda, adapte integralmente as cláusulas ao tipo específico de bem informado
-12. Para contratos de aluguel, referencie expressamente a Lei 8.245/91 nas cláusulas de preferência (art. 27) e rescisão (art. 4º)
-13. CADA CLÁUSULA deve ser redigida de forma EXTENSA e DETALHADA, com:
+4. As cláusulas de penalidades DEVEM refletir com precisão os valores de multa informados
+5. No PREÂMBULO, inclua telefone e email de cada parte na qualificação completa
+6. Para contratos de empreitada, referencie o art. 618 do CC na cláusula de garantia da obra
+7. Para contratos de sociedade, referencie os arts. 997 a 1.038 do CC
+8. Para contratos de representação comercial, referencie a Lei 4.886/65 e a Lei 8.420/92
+9. Para contratos de comodato, referencie os arts. 579 a 585 do CC
+10. Para contratos de compra e venda, adapte as cláusulas ao tipo específico de bem informado
+11. Para contratos de aluguel, referencie a Lei 8.245/91
+12. CADA CLÁUSULA deve ser redigida de forma EXTENSA e DETALHADA, com:
     - Cabeçalho em NEGRITO e CAIXA ALTA (ex: **CLÁUSULA 1ª — DO OBJETO**)
     - Corpo jurídico completo com parágrafos numerados (§1º, §2º, §3º...)
-    - Terminologia técnica: "mora", "vencimento antecipado", "caráter irretratável", "sub-rogação", "solidariedade", "notificação extrajudicial", "perdas e danos"
+    - Terminologia técnica: "mora", "vencimento antecipado", "caráter irretratável", "perdas e danos"
     - Referência explícita aos dispositivos legais aplicáveis
-
-14. CLÁUSULA DE LGPD: obrigações de controlador/operador, finalidade, base legal (art. 7º Lei 13.709/18), direitos dos titulares e medidas de segurança
-15. CLÁUSULA DE ANTICORRUPÇÃO: referenciar Lei 12.846/2013, proibir suborno e pagamentos indevidos, prever rescisão imediata
-16. CLÁUSULA DE FORÇA MAIOR: definir hipóteses, prazo de comunicação (máximo 5 dias úteis) e consequências
-17. Inicie com PREÂMBULO completo: nome, CPF/CNPJ, telefone, email, estado civil (se PF), sede (se PJ) de todas as partes, e declaração de livre vontade
-18. 18. NÃO inclua seção de assinaturas ou testemunhas
-19. NUNCA mencione testemunhas em nenhuma parte do contrato — nem no preâmbulo, nem nas cláusulas, nem na conclusão. O contrato NÃO requer testemunhas.
-20. A frase de encerramento deve ser apenas: "E, por estarem assim justas e contratadas, as partes firmam o presente instrumento." — SEM qualquer menção a testemunhas ou "2 (duas) testemunhas".
-21. NUNCA mencione testemunhas. O contrato não requer testemunhas.
+13. CLÁUSULA DE LGPD: obrigações de controlador/operador, finalidade, base legal (art. 7º Lei 13.709/18)
+14. CLÁUSULA DE ANTICORRUPÇÃO: referenciar Lei 12.846/2013, proibir suborno, prever rescisão imediata
+15. CLÁUSULA DE FORÇA MAIOR: definir hipóteses, prazo de comunicação (máximo 5 dias úteis)
+16. Inicie com PREÂMBULO completo: nome, CPF/CNPJ, telefone, email, estado civil (se PF), sede (se PJ)
+17. NÃO inclua seção de assinaturas ou testemunhas
+18. NUNCA mencione testemunhas em nenhuma parte do contrato
+19. A frase de encerramento deve ser apenas: "E, por estarem assim justas e contratadas, as partes firmam o presente instrumento."
+20. ${foroInstrucao}
 
 ESTRUTURA OBRIGATÓRIA:
 ${clausulasList}
@@ -1319,12 +1387,12 @@ REDIJA O INSTRUMENTO CONTRATUAL COMPLETO AGORA, sem resumos, sem omissões e sem
         messages: [
           {
             role: 'system',
-            content: `Você é um Advogado Sênior especialista em Direito Civil e Empresarial com 20+ anos de experiência. Redija contratos profissionais, extensos e juridicamente impecáveis, com linguagem técnica formal, parágrafos numerados e referências legais precisas. NUNCA use placeholders. NUNCA invente dados. Use terminologia jurídica brasileira de alto padrão. Cada cláusula deve ter pelo menos 3 parágrafos detalhados. Para empreitada, aplique o art. 618 CC. Para sociedade, aplique os arts. 997-1038 CC. Para representação comercial, aplique a Lei 4.886/65. Para comodato, aplique os arts. 579-585 CC.`
+            content: `Você é um Advogado Sênior especialista em Direito Civil e Empresarial com 20+ anos de experiência. Redija contratos profissionais, extensos e juridicamente impecáveis, com linguagem técnica formal, parágrafos numerados e referências legais precisas. NUNCA use placeholders. NUNCA invente dados. NUNCA mencione testemunhas. Use terminologia jurídica brasileira de alto padrão. Cada cláusula deve ter pelo menos 3 parágrafos detalhados.`
           },
           { role: 'user', content: prompt }
         ],
         temperature: 0.2,
-        max_tokens: 4000,
+        max_tokens: 8000,
       }),
     });
 
