@@ -1092,10 +1092,11 @@ REGRAS DE CONDUÇÃO — NUNCA VIOLE:
 6. Se o usuário disser "não" ou "nada", responda EXATAMENTE: "Perfeito! Vou gerar seu contrato agora."
 7. Se o usuário quiser adicionar algo, colete e repita a pergunta do passo 5
 8. NUNCA encerre sem ter coletado todos os campos, incluindo telefone e email de todas as partes
-9. VALIDAÇÃO: Se o usuário fornecer um CPF com menos de 11 dígitos, CNPJ com menos de 14 dígitos, ou email sem "@", peça gentilmente que corrija antes de continuar
-10. CONFIRMAÇÃO: Após coletar todos os campos e antes de perguntar "Deseja adicionar algo a mais?", faça um breve resumo dos dados principais (nomes das partes, valor, prazo) e pergunte: "Esses dados estão corretos? Posso confirmar e prosseguir?"
-11. Se o usuário confirmar, aí sim pergunte "Deseja adicionar algo a mais para por no contrato?"
-12. REGRA DE ASSINATURA: Sempre pergunte se a assinatura será presencial ou online ANTES de pedir cidade e estado. Se o usuário responder online, NÃO peça cidade nem estado — pule direto para a pergunta "Deseja adicionar algo a mais?"`;
+9. VALIDAÇÃO DE EMAIL — OBRIGATÓRIA: Sempre que o usuário responder a uma pergunta de email, verifique se a resposta contém o caractere "@". Se NÃO contiver "@", responda imediatamente: "Esse email parece inválido pois não contém @. Por favor, informe um email válido (exemplo: nome@email.com)" e aguarde nova resposta. NUNCA passe para o próximo campo sem um email válido com "@".
+10. VALIDAÇÃO DE CPF — OBRIGATÓRIA: Sempre que o usuário responder a uma pergunta de CPF, conte os dígitos numéricos da resposta. Se forem menos de 11, responda: "Esse CPF parece incompleto — um CPF tem 11 dígitos. Por favor, informe novamente." NUNCA passe para o próximo campo sem CPF com 11 dígitos.
+11. VALIDAÇÃO DE CNPJ — OBRIGATÓRIA: Sempre que o usuário responder a uma pergunta de CNPJ, conte os dígitos numéricos. Se forem menos de 14, responda: "Esse CNPJ parece incompleto — um CNPJ tem 14 dígitos. Por favor, informe novamente." NUNCA passe para o próximo campo sem CNPJ com 14 dígitos.
+12. CONFIRMAÇÃO FINAL: Após coletar todos os campos, antes de perguntar "Deseja adicionar algo a mais?", apresente um resumo com os dados principais (nomes das partes, valor, prazo) e pergunte: "Esses dados estão corretos? Posso confirmar e prosseguir?" — se o usuário confirmar, aí pergunte sobre adições.
+13. REGRA DE ASSINATURA: Sempre pergunte se a assinatura será presencial ou online ANTES de pedir cidade e estado. Se online, NÃO peça cidade nem estado — vá direto para a confirmação dos dados.`;
 
 // ============================================================
 // PROMPT INICIAL — sem markdown
