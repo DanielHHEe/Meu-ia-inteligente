@@ -1294,7 +1294,8 @@ Formato de saída esperado (exemplo):
 export const generateContractFromConversation = async (messages, contractType) => {
   if (!API_CONFIG.openaiApiKey) throw new Error('Chave da API não configurada');
 
-  const answers = await extractAnswersFromConversation(messages, contractType);
+  const rawAnswers = await extractAnswersFromConversation(messages, contractType);
+  const answers = formatAnswers(rawAnswers); // formata CPF, CNPJ e telefone automaticamente
   const selectedTemplate = CONTRACT_TEMPLATES[contractType] || CONTRACT_TEMPLATES['prestacao-servicos'];
   const contractTitle = selectedTemplate.title.toUpperCase();
   const legalRef = LEGAL_REF[contractType] || 'segundo o Código Civil Brasileiro';
