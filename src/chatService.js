@@ -26,9 +26,9 @@ const detectFieldType = (lastAssistantMsg) => {
   return null;
 };
 
-const validateUserInput = (userMessage, lastAssistantMsg) => {
+const validateUserInput = (userMessage, fieldType) => {
   const digits = userMessage.replace(/\D/g, '');
-  const field = detectFieldType(lastAssistantMsg);
+  const field = fieldType;
 
   // Validação de email
   if (
@@ -70,6 +70,7 @@ export class ChatService {
     this.isComplete = false;
     this.askedForExtras = false;
     this.confirmedData = false;
+    this.currentFieldType = null; // guarda o tipo do campo sendo validado
   }
 
   async startChat() {
@@ -82,12 +83,14 @@ export class ChatService {
   }
 
   async sendUserMessage(userMessage) {
-    // Valida localmente antes de enviar para a IA
+    // Detecta o campo atual — usa o guardado (se em correção) ou detecta do último msg
     const lastMsg = getLastAssistantMessage(this.messages);
-    const validationError = validateUserInput(userMessage, lastMsg);
+    const fieldType = this.currentFieldType || detectFieldType(lastMsg);
+    const validationError = validateUserInput(userMessage, fieldType);
+
     if (validationError) {
-      // Adiciona a mensagem de erro ao histórico para manter o contexto correto
-      // na próxima tentativa do usuário
+      // Guarda o tipo do campo para a próxima tentativa
+      this.currentFieldType = fieldType;
       this.messages.push({ role: 'assistant', content: validationError });
       return {
         message: validationError,
@@ -96,6 +99,8 @@ export class ChatService {
       };
     }
 
+    // Passou na validação — limpa o campo guardado
+    this.currentFieldType = null;
     this.messages.push({ role: 'user', content: userMessage });
 
     try {
