@@ -1228,19 +1228,19 @@ const Chat = () => {
 
         // Título principal
         if (/^(CONTRATO|TERMO|ACORDO|INSTRUMENTO)\s+DE\s+/i.test(stripped) && stripped === stripped.toUpperCase()) {
-          html += `<p style="text-align:center;font-weight:bold;font-size:14px;letter-spacing:1px;text-transform:uppercase;color:#111827;margin:0 0 28px;padding-bottom:20px;border-bottom:1px solid #e5e7eb;line-height:1.6;font-family:Georgia,serif;page-break-after:avoid">${stripped}</p>`;
+          html += `<p style="text-align:center;font-weight:bold;font-size:14px;letter-spacing:1px;text-transform:uppercase;color:#111827;margin:0 0 28px;padding-bottom:20px;border-bottom:1px solid #e5e7eb;line-height:1.6;font-family:Georgia,serif">${stripped}</p>`;
           i++; continue;
         }
 
         // Preâmbulo
         if (/^PREÂMBULO$/i.test(stripped)) {
-          html += `<p style="text-align:center;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#9ca3af;margin:24px 0 16px;font-family:Arial,sans-serif;page-break-after:avoid">${stripped}</p>`;
+          html += `<p style="text-align:center;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#9ca3af;margin:24px 0 16px;font-family:Arial,sans-serif">${stripped}</p>`;
           i++; continue;
         }
 
-        // Cabeçalho de cláusula — page-break-inside:avoid garante que não corta
+        // Cabeçalho de cláusula
         if (/^CL[ÁA]USULA\s+[\dIVXLC]/i.test(stripped)) {
-          html += `<div style="page-break-inside:avoid"><p style="font-size:10px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;color:#374151;font-family:Arial,sans-serif;margin:32px 0 12px;padding:10px 14px;background:#f9fafb;border-left:3px solid #059669;line-height:1.5;page-break-after:avoid">${stripped}</p>`;
+          html += `<div style=""><p style="font-size:10px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;color:#374151;font-family:Arial,sans-serif;margin:32px 0 12px;padding:10px 14px;background:#f9fafb;border-left:3px solid #059669;line-height:1.5">${stripped}</p>`;
           // Inclui os próximos parágrafos da cláusula no mesmo bloco
           i++;
           while (i < lines.length) {
@@ -1429,9 +1429,8 @@ const Chat = () => {
           margin: [15, 15, 15, 15],
           filename: fileName,
           image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+          html2canvas: { scale: 2, useCORS: true, letterRendering: true, scrollY: 0 },
           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-          pagebreak: { mode: ['avoid-all', 'css'] },
         };
         window.html2pdf().set(opt).from(wrapper).save();
       })
