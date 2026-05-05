@@ -82,14 +82,28 @@ export class ChatService {
     return initialMessage.content;
   }
 
+  // Retorna a última pergunta REAL da IA (ignora mensagens de erro de validação)
+  getLastRealQuestion() {
+    const errorPhrases = ['parece incompleto', 'parece inválido', 'está incorreto', 'por favor, informe'];
+    for (let i = this.messages.length - 1; i >= 0; i--) {
+      const msg = this.messages[i];
+      if (msg.role === 'assistant') {
+        const lower = msg.content.toLowerCase();
+        const isError = errorPhrases.some(p => lower.includes(p));
+        if (!isError) return lower;
+      }
+    }
+    return '';
+  }
+
   async sendUserMessage(userMessage) {
-    // Detecta o campo atual — usa o guardado (se em correção) ou detecta do último msg
-    const lastMsg = getLastAssistantMessage(this.messages);
-    const fieldType = this.currentFieldType || detectFieldType(lastMsg);
+    // Sempre usa a última pergunta REAL da IA para detectar o campo
+    // isso evita que mensagens de erro anteriores confundam a detecção
+    const realQuestion = this.getLastRealQuestion();
+    const fieldType = this.currentFieldType || detectFieldType(realQuestion);
     const validationError = validateUserInput(userMessage, fieldType);
 
     if (validationError) {
-      // Guarda o tipo do campo para a próxima tentativa
       this.currentFieldType = fieldType;
       this.messages.push({ role: 'assistant', content: validationError });
       return {
@@ -99,7 +113,6 @@ export class ChatService {
       };
     }
 
-    // Passou na validação — limpa o campo guardado
     this.currentFieldType = null;
     this.messages.push({ role: 'user', content: userMessage });
 
