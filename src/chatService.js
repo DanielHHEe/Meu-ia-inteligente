@@ -90,6 +90,9 @@ export class ChatService {
     const lastMsg = getLastAssistantMessage(this.messages);
     const validationError = validateUserInput(userMessage, lastMsg);
     if (validationError) {
+      // Adiciona a mensagem de erro ao histórico para manter o contexto correto
+      // na próxima tentativa do usuário
+      this.messages.push({ role: 'assistant', content: validationError });
       return {
         message: validationError,
         isComplete: false,
