@@ -5,6 +5,68 @@ import {
   FIELD_ORDER_BY_CONTRACT
 } from './config/api';
 
+// ============================================================
+// Validação local — mais confiável que deixar a IA contar
+// ============================================================
+const getLastAssistantMessage = (messages) => {
+  for (let i = messages.length - 1; i >= 0; i--) {
+    if (messages[i].role === 'assistant') return messages[i].content.toLowerCase();
+  }
+  return '';
+};
+
+const validateUserInput = (userMessage, lastAssistantMsg) => {
+  const digits = userMessage.replace(/\D/g, '');
+
+  // Validação de email
+  if (
+    (lastAssistantMsg.includes('email') || lastAssistantMsg.includes('e-mail')) &&
+    !lastAssistantMsg.includes('não contém @') &&
+    !userMessage.includes('@') &&
+    userMessage.length > 3 &&
+    !/^(sim|não|nao|ok|s|n)$/i.test(userMessage.trim())
+  ) {
+    return 'Esse email parece inválido pois não contém @. Por favor, informe um email válido (exemplo: nome@email.com)';
+  }
+
+  // Validação de CPF puro
+  if (
+    /\bcpf\b/.test(lastAssistantMsg) &&
+    !/cnpj/.test(lastAssistantMsg) &&
+    digits.length > 0 && digits.length < 11
+  ) {
+    return `Esse CPF parece incompleto — um CPF tem 11 dígitos e você informou ${digits.length}. Por favor, informe novamente.`;
+  }
+
+  // Validação de CNPJ puro
+  if (
+    /\bcnpj\b/.test(lastAssistantMsg) &&
+    !/cpf ou cnpj|cpf\/cnpj/.test(lastAssistantMsg) &&
+    digits.length > 0 && digits.length < 14
+  ) {
+    return `Esse CNPJ parece incompleto — um CNPJ tem 14 dígitos e você informou ${digits.length}. Por favor, informe novamente.`;
+  }
+
+  // Validação de CPF ou CNPJ (campo misto)
+  if (
+    /cpf ou cnpj|cpf\/cnpj/.test(lastAssistantMsg) &&
+    digits.length > 0 &&
+    digits.length !== 11 && digits.length !== 14
+  ) {
+    return `CPF tem 11 dígitos e CNPJ tem 14 dígitos. Você informou ${digits.length} dígito(s). Por favor, informe novamente.`;
+  }
+
+  // Validação de telefone
+  if (
+    lastAssistantMsg.includes('telefone') &&
+    digits.length > 0 && digits.length < 10
+  ) {
+    return `Esse telefone parece incompleto — um número de telefone tem 10 ou 11 dígitos (com DDD). Você informou ${digits.length}. Por favor, informe novamente.`;
+  }
+
+  return null;
+};
+
 export class ChatService {
   constructor(contractType) {
     this.contractType = contractType;
@@ -24,6 +86,17 @@ export class ChatService {
   }
 
   async sendUserMessage(userMessage) {
+    // Valida localmente antes de enviar para a IA
+    const lastMsg = getLastAssistantMessage(this.messages);
+    const validationError = validateUserInput(userMessage, lastMsg);
+    if (validationError) {
+      return {
+        message: validationError,
+        isComplete: false,
+        isValidationError: true,
+      };
+    }
+
     this.messages.push({ role: 'user', content: userMessage });
 
     try {
