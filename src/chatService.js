@@ -11,6 +11,7 @@ export class ChatService {
     this.messages = [];
     this.isComplete = false;
     this.askedForExtras = false;
+    this.confirmedData = false;
   }
 
   async startChat() {
@@ -29,16 +30,19 @@ export class ChatService {
       const nextQuestion = await sendMessageToIA(this.messages, this.contractType);
       this.messages.push({ role: 'assistant', content: nextQuestion });
 
-      // Marca se a IA perguntou sobre adicionar mais
+      // Detecta confirmação de dados ("Esses dados estão corretos?")
+      if (!this.confirmedData && this.checkAskedConfirmation(nextQuestion)) {
+        this.confirmedData = true;
+      }
+
+      // Detecta pergunta "deseja adicionar mais?"
       if (!this.askedForExtras && this.checkAskedForExtras(nextQuestion)) {
         this.askedForExtras = true;
       }
 
-      // Só conclui se:
-      // 1. A IA já perguntou "deseja adicionar mais?" (askedForExtras = true)
-      // 2. E a resposta atual da IA confirma que vai gerar
-      // 3. E o número mínimo de respostas do usuário foi atingido
-      if (this.askedForExtras && this.checkIfComplete(nextQuestion) && this.hasMinimumAnswers()) {
+      // Conclui quando a IA diz que vai gerar
+      // Não exige mais hasMinimumAnswers — a IA já validou durante a coleta
+      if (this.checkIfComplete(nextQuestion)) {
         this.isComplete = true;
       }
 
@@ -52,13 +56,18 @@ export class ChatService {
     }
   }
 
-  // Verifica se o usuário deu respostas suficientes (pelo menos 80% dos campos)
-  hasMinimumAnswers() {
-    const totalFields = (FIELD_ORDER_BY_CONTRACT[this.contractType] || []).length;
-    const userAnswers = this.messages.filter(m => m.role === 'user').length;
-    // Subtrai 1 para descontar a resposta "não" ao "deseja adicionar mais?"
-    const dataAnswers = userAnswers - 1;
-    return dataAnswers >= Math.floor(totalFields * 0.8);
+  // Detecta se a IA pediu confirmação dos dados
+  checkAskedConfirmation(aiMessage) {
+    const indicators = [
+      'esses dados estão corretos',
+      'os dados estão corretos',
+      'posso confirmar e prosseguir',
+      'confirma os dados',
+      'dados estão certos',
+      'está tudo correto',
+    ];
+    const lower = aiMessage.toLowerCase();
+    return indicators.some(i => lower.includes(i));
   }
 
   // Detecta se a IA perguntou "deseja adicionar mais?"
@@ -72,12 +81,14 @@ export class ChatService {
       'gostaria de adicionar',
       'tem mais alguma',
       'há mais alguma',
+      'algo a mais',
+      'adicionar algo',
     ];
     const lower = aiMessage.toLowerCase();
     return indicators.some(i => lower.includes(i));
   }
 
-  // Só encerra quando a IA diz explicitamente que vai gerar
+  // Encerra quando a IA diz explicitamente que vai gerar
   checkIfComplete(aiMessage) {
     const indicators = [
       'vou gerar seu contrato agora',
@@ -88,6 +99,7 @@ export class ChatService {
       'perfeito! vou gerar',
       'ótimo! vou gerar',
       'pronto! vou gerar',
+      'perfeito! vou gerar seu contrato',
     ];
     const lower = aiMessage.toLowerCase();
     return indicators.some(i => lower.includes(i));
@@ -111,7 +123,7 @@ export class ChatService {
     }
   }
 
-  // Remove a troca "deseja adicionar mais?" + resposta final do usuário
+  // Remove a troca "deseja adicionar mais?" + resposta final
   // para não poluir a extração de dados com ruído
   getMessagesForExtraction() {
     const msgs = [...this.messages];
