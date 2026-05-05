@@ -29,31 +29,31 @@ const validateUserInput = (userMessage, lastAssistantMsg) => {
     return 'Esse email parece inválido pois não contém @. Por favor, informe um email válido (exemplo: nome@email.com)';
   }
 
-  // Validação de CPF puro
+  // Validação de CPF ou CNPJ (campo misto — verificar PRIMEIRO)
   if (
-    /\bcpf\b/.test(lastAssistantMsg) &&
-    !/cnpj/.test(lastAssistantMsg) &&
+    /cpf ou cnpj|cpf\/cnpj|cpf\/cnpj/i.test(lastAssistantMsg) &&
+    digits.length > 0 &&
+    digits.length !== 11 && digits.length !== 14
+  ) {
+    return `CPF tem 11 dígitos e CNPJ tem 14 dígitos. Você informou ${digits.length} dígito(s). Por favor, informe novamente.`;
+  }
+
+  // Validação de CPF puro (só quando a pergunta NÃO menciona CNPJ)
+  if (
+    /cpf/i.test(lastAssistantMsg) &&
+    !/cnpj/i.test(lastAssistantMsg) &&
     digits.length > 0 && digits.length < 11
   ) {
     return `Esse CPF parece incompleto — um CPF tem 11 dígitos e você informou ${digits.length}. Por favor, informe novamente.`;
   }
 
-  // Validação de CNPJ puro
+  // Validação de CNPJ puro (só quando a pergunta NÃO menciona CPF)
   if (
-    /\bcnpj\b/.test(lastAssistantMsg) &&
-    !/cpf ou cnpj|cpf\/cnpj/.test(lastAssistantMsg) &&
+    /cnpj/i.test(lastAssistantMsg) &&
+    !/cpf/i.test(lastAssistantMsg) &&
     digits.length > 0 && digits.length < 14
   ) {
     return `Esse CNPJ parece incompleto — um CNPJ tem 14 dígitos e você informou ${digits.length}. Por favor, informe novamente.`;
-  }
-
-  // Validação de CPF ou CNPJ (campo misto)
-  if (
-    /cpf ou cnpj|cpf\/cnpj/.test(lastAssistantMsg) &&
-    digits.length > 0 &&
-    digits.length !== 11 && digits.length !== 14
-  ) {
-    return `CPF tem 11 dígitos e CNPJ tem 14 dígitos. Você informou ${digits.length} dígito(s). Por favor, informe novamente.`;
   }
 
   // Validação de telefone
