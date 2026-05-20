@@ -1013,7 +1013,7 @@ const ProgressSidebar = ({ currentStep, contractType }) => {
           <img src="/rob.png" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
         </div>
         <span style={{ fontSize: '15px', fontWeight: '700', color: 'white' }}>
-          Contrate<span style={{ color: '#10b981' }}>-me</span>
+          Contrati<span style={{ color: '#10b981' }}>fy</span>
         </span>
       </div>
 
@@ -1055,7 +1055,7 @@ const ProgressSidebar = ({ currentStep, contractType }) => {
           <Clock size={14} color="#10b981" />
           <span style={{ fontSize: '12px', fontWeight: '600', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Tempo estimado</span>
         </div>
-        <p style={{ fontSize: '26px', fontWeight: '800', color: 'white', letterSpacing: '-0.02em' }}>~3 min</p>
+        <p style={{ fontSize: '26px', fontWeight: '400', color: 'white', letterSpacing: '-0.02em' }}>3 min</p>
       </div>
     </div>
   );

@@ -210,7 +210,7 @@ const ParallaxBanner = () => {
       </motion.div>
       <motion.div style={{ scale, opacity }} className="relative z-10 text-center px-6">
         <p className="text-xs font-bold text-emerald-400 uppercase tracking-[0.25em] mb-3">Simples assim</p>
-        <h3 className="text-3xl md:text-5xl font-black text-white leading-tight" style={{ fontFamily: "'Syne', sans-serif" }}>
+        <h3 className="text-3xl md:text-5xl font-black text-white leading-tight" style={{ fontFamily: "'Parkinsans', sans-serif" }}>
           Contrato profissional<br />
           <span style={{ background: "linear-gradient(135deg, #10b981, #34d399, #6ee7b7)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>por R$ 29,90.</span>
         </h3>
@@ -266,17 +266,19 @@ const Header = ({ onCreateContract, onOpenAuth }) => {
 
   return (
     <motion.header initial={{ y: -100, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.6 }}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled ? "bg-[#080d14]/95 backdrop-blur-xl shadow-2xl shadow-black/30 border-b border-white/5" : "bg-transparent"}`}>
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled || isMenuOpen ? "bg-[#080d14]/98 backdrop-blur-xl shadow-2xl shadow-black/30 border-b border-white/5" : "bg-transparent"}`}>
       <div className="max-w-7xl mx-auto px-6 md:px-10">
-        <div className="flex items-center justify-between h-20">
-          <a href="#" className="flex items-center gap-3">
-            <motion.div whileHover={{ rotate: 10, scale: 1.1 }} className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center overflow-hidden shadow-lg shadow-emerald-500/30">
-              <img src="/rob.png" alt="Logo" className="w-full h-full object-cover" />
-            </motion.div>
-            <span className="text-lg font-semibold text-white tracking-tight">Contrate<span className="text-emerald-400">-me</span></span>
+        <div className="flex items-center justify-between h-16 md:h-20 lg:h-24">
+          <a href="#" className="flex items-center flex-shrink-0">
+            <motion.img
+              src="/contrati.png"
+              alt="Contratify"
+              whileHover={{ scale: 1.05 }}
+              className="h-7 md:h-9 lg:h-12 w-auto object-contain"
+            />
           </a>
 
-          <nav className="hidden md:flex items-center gap-8">
+          <nav className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
             {navLinks.map((link, i) => (
               <motion.a key={link.href} href={link.href} onClick={(e) => smoothScrollTo(e, link.href)}
                 initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 * i }}
@@ -312,7 +314,7 @@ const Header = ({ onCreateContract, onOpenAuth }) => {
 
         <AnimatePresence>
           {isMenuOpen && (
-            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="md:hidden border-t border-white/10 py-4">
+            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="md:hidden border-t border-white/10 py-4" style={{ background: "#080d14" }}>
               <nav className="flex flex-col gap-2">
                 {navLinks.map((link) => (
                   <a key={link.href} href={link.href} className="text-sm font-medium text-white/60 hover:text-white px-3 py-3 rounded-lg hover:bg-white/5 transition-all"
@@ -354,7 +356,6 @@ const HeroSection = ({ onCreateContract }) => {
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#080d14]">
       <motion.div style={{ y: gridY }} className="absolute inset-0 pointer-events-none">
         <div className="absolute inset-0 opacity-20" style={{ backgroundImage: `linear-gradient(rgba(16,185,129,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(16,185,129,0.15) 1px, transparent 1px)`, backgroundSize: "60px 60px" }} />
-        {/* Partículas só no desktop */}
         {!isMobileDevice() && <FloatingParticles />}
       </motion.div>
       <motion.div style={{ y: blob1Y, x: blob1X }} className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full pointer-events-none">
@@ -370,7 +371,7 @@ const HeroSection = ({ onCreateContract }) => {
               <motion.span animate={{ scale: [1, 1.4, 1] }} transition={{ duration: 1.5, repeat: Infinity }} className="w-2 h-2 rounded-full bg-emerald-400" />
               <span className="text-sm font-medium text-emerald-400 tracking-wide">Gerado por Inteligência Artificial</span>
             </motion.div>
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white leading-[1.05] mb-6 tracking-tight" style={{ fontFamily: "'Syne', sans-serif" }}>
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white leading-[1.05] mb-6 tracking-tight" style={{ fontFamily: "'Parkinsans', sans-serif" }}>
               {["Seu contrato", "profissional", "em 2 minutos."].map((line, i) => (
                 <motion.span key={i} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + i * 0.12, duration: 0.6 }} className="block"
                   style={i === 1 ? { background: "linear-gradient(135deg, #10b981 0%, #34d399 50%, #6ee7b7 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" } : {}}>
@@ -390,9 +391,9 @@ const HeroSection = ({ onCreateContract }) => {
               ))}
             </div>
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.85 }}>
-              <motion.button onClick={onCreateContract} whileHover={{ scale: 1.05, y: -3, boxShadow: "0 0 60px rgba(16,185,129,0.5)" }} whileTap={{ scale: 0.97 }}
-                className="group relative px-8 py-4 text-white font-semibold rounded-2xl flex items-center gap-2 overflow-hidden"
-                style={{ background: "linear-gradient(135deg, #10b981, #059669)", boxShadow: "0 0 40px rgba(16,185,129,0.35), 0 4px 20px rgba(0,0,0,0.3)" }}>
+              <motion.button onClick={onCreateContract} whileHover={{ scale: 1.05, y: -3, boxShadow: "0 0 60px rgba(34,197,94,0.5)" }} whileTap={{ scale: 0.97 }}
+                className="group relative px-8 py-4 font-semibold rounded-2xl flex items-center gap-2 overflow-hidden"
+                style={{ background: "linear-gradient(135deg, #22c55e, #a3e635)", color: "#0d2010", boxShadow: "0 0 40px rgba(34,197,94,0.35), 0 4px 20px rgba(0,0,0,0.3)" }}>
                 <motion.span className="absolute inset-0 bg-white/10" initial={{ x: "-100%" }} whileHover={{ x: "100%" }} transition={{ duration: 0.4 }} />
                 <span className="relative">Criar Meu Contrato</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform relative" />
@@ -435,7 +436,7 @@ const HowItWorksSection = () => {
       <div className="max-w-7xl mx-auto px-6 md:px-10 relative z-10">
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mb-20">
           <span className="inline-block text-xs font-bold text-emerald-400 uppercase tracking-[0.2em] mb-4">Simples e Rápido</span>
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight" style={{ fontFamily: "'Syne', sans-serif" }}>Como Funciona</h2>
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight" style={{ fontFamily: "'Parkinsans', sans-serif" }}>Como Funciona</h2>
         </motion.div>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-px bg-white/5 rounded-3xl overflow-hidden border border-white/5">
           {steps.map((step, index) => (
@@ -445,7 +446,7 @@ const HowItWorksSection = () => {
               transition={{ duration: 0.5, delay: index * 0.08, ease: [0.16, 1, 0.3, 1] }}
               className="relative bg-[#0d1520] p-8 lg:p-10 group hover:bg-[#0f1c2a] transition-colors duration-300"
               style={{ willChange: "opacity, transform" }}>
-              <div className="absolute top-6 right-6 text-6xl font-black opacity-[0.04] select-none" style={{ fontFamily: "'Syne', sans-serif" }}>{step.number}</div>
+              <div className="absolute top-6 right-6 text-6xl font-black opacity-[0.04] select-none" style={{ fontFamily: "'Parkinsans', sans-serif" }}>{step.number}</div>
               <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-8 group-hover:border-emerald-500/40 group-hover:bg-emerald-500/15 transition-colors duration-300">
                 <step.icon className="w-5 h-5 text-emerald-400" />
               </div>
@@ -466,14 +467,13 @@ const HowItWorksSection = () => {
 };
 
 // ─────────────────────────────────────────────
-// BENEFIT CARD — sem animação lateral no mobile
+// BENEFIT CARD
 // ─────────────────────────────────────────────
 const BenefitCard = ({ benefit, index }) => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-60px" });
   const mobile = isMobileDevice();
 
-  // No mobile: apenas fade simples (sem deslocamento lateral)
   const initial = mobile
     ? { opacity: 0 }
     : { opacity: 0, x: index % 2 === 0 ? -60 : 60 };
@@ -532,9 +532,9 @@ const BenefitsSection = () => {
         <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8 mb-20">
           <motion.div initial={{ opacity: 0, x: isMobile ? 0 : -40 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}>
             <span className="inline-block text-xs font-bold text-emerald-400 uppercase tracking-[0.2em] mb-4">Por que escolher</span>
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight" style={{ fontFamily: "'Syne', sans-serif" }}>
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight" style={{ fontFamily: "'Parkinsans', sans-serif" }}>
               Vantagens do<br />
-              <span style={{ background: "linear-gradient(135deg, #10b981, #34d399)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>Contrate-me</span>
+              <span style={{ background: "linear-gradient(135deg, #10b981, #34d399)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>Contratify</span>
             </h2>
           </motion.div>
           <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.7, delay: 0.1 }} className="text-white/40 max-w-xs leading-relaxed text-sm lg:text-right">
@@ -555,11 +555,11 @@ const BenefitsSection = () => {
 const TestimonialsSection = () => {
   const testimonials = [
     { name: "Mariana Costa", role: "Designer Freelancer", avatar: "MC", rating: 5, text: "Incrível! Precisava de um contrato para um cliente grande e em menos de 3 minutos já tinha tudo pronto. Economizei muito comparado a contratar um advogado.", contractType: "Prestação de Serviços", date: "há 2 dias", color: "from-purple-500 to-pink-500" },
-    { name: "Rafael Mendonça", role: "Desenvolvedor Web", avatar: "RM", rating: 5, text: "Uso o Contrate-me todo mês para novos projetos. Simplesmente perfeito. O contrato é profissional e os clientes ficam impressionados com a qualidade.", contractType: "Contrato de TI", date: "há 5 dias", color: "from-blue-500 to-cyan-500" },
+    { name: "Rafael Mendonça", role: "Desenvolvedor Web", avatar: "RM", rating: 5, text: "Uso o Contratify todo mês para novos projetos. Simplesmente perfeito. O contrato é profissional e os clientes ficam impressionados com a qualidade.", contractType: "Contrato de TI", date: "há 5 dias", color: "from-blue-500 to-cyan-500" },
     { name: "Juliana Ferreira", role: "Consultora de Marketing", avatar: "JF", rating: 5, text: "Finalmente um serviço que realmente funciona! O processo é super intuitivo, o pagamento via Pix é instantâneo e o PDF ficou impecável. Super recomendo!", contractType: "Consultoria", date: "há 1 semana", color: "from-emerald-500 to-teal-500" },
-    { name: "Carlos Albuquerque", role: "Fotógrafo Profissional", avatar: "CA", rating: 5, text: "Já tive problemas com clientes que não pagavam por falta de contrato. Com o Contrate-me isso acabou. Rápido, barato e juridicamente sólido!", contractType: "Fotografia", date: "há 2 semanas", color: "from-orange-500 to-red-500" },
+    { name: "Carlos Albuquerque", role: "Fotógrafo Profissional", avatar: "CA", rating: 5, text: "Já tive problemas com clientes que não pagavam por falta de contrato. Com o Contratify isso acabou. Rápido, barato e juridicamente sólido!", contractType: "Fotografia", date: "há 2 semanas", color: "from-orange-500 to-red-500" },
     { name: "Fernanda Lima", role: "Arquiteta", avatar: "FL", rating: 5, text: "Minha advogada cobrava R$500 por contrato básico. Aqui paguei R$29,90 e recebi algo ainda mais completo e personalizado. Não tem como não usar!", contractType: "Projeto Arquitetônico", date: "há 3 semanas", color: "from-violet-500 to-purple-500" },
-    { name: "Thiago Nunes", role: "Professor Particular", avatar: "TN", rating: 5, text: "Precisava formalizar meus contratos com alunos e pais. O Contrate-me gerou algo perfeito, com todas as cláusulas que eu precisava. Ótimo serviço!", contractType: "Contrato Educacional", date: "há 1 mês", color: "from-amber-500 to-orange-500" },
+    { name: "Thiago Nunes", role: "Professor Particular", avatar: "TN", rating: 5, text: "Precisava formalizar meus contratos com alunos e pais. O Contratify gerou algo perfeito, com todas as cláusulas que eu precisava. Ótimo serviço!", contractType: "Contrato Educacional", date: "há 1 mês", color: "from-amber-500 to-orange-500" },
     { name: "Beatriz Rocha", role: "Nutricionista", avatar: "BR", rating: 5, text: "Prático demais! Gerei contratos para minha clínica em minutos. A linguagem jurídica é clara e os pacientes ficam mais tranquilos assinando.", contractType: "Atendimento Clínico", date: "há 1 mês", color: "from-rose-500 to-pink-500" },
     { name: "Lucas Pimentel", role: "Social Media", avatar: "LP", rating: 5, text: "Comecei a usar e não largo mais. Para quem é freelancer como eu, ter um contrato profissional rápido e barato é essencial. Melhor custo-benefício!", contractType: "Gestão de Redes", date: "há 2 meses", color: "from-sky-500 to-blue-500" },
   ];
@@ -573,7 +573,7 @@ const TestimonialsSection = () => {
       <div className="max-w-7xl mx-auto px-6 md:px-10 relative z-10 mb-14">
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center">
           <span className="inline-block text-xs font-bold text-emerald-400 uppercase tracking-[0.2em] mb-4">Depoimentos</span>
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4" style={{ fontFamily: "'Syne', sans-serif" }}>
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4" style={{ fontFamily: "'Parkinsans', sans-serif" }}>
             O que nossos clientes<br />
             <span style={{ background: "linear-gradient(135deg, #10b981, #34d399)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>estão dizendo</span>
           </h2>
@@ -624,38 +624,110 @@ const PricingSection = ({ onCreateContract, onOpenAuth }) => {
       <div className="max-w-7xl mx-auto px-6 md:px-10 relative z-10">
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-20">
           <span className="inline-block text-xs font-bold text-emerald-400 uppercase tracking-[0.2em] mb-4">Preços Transparentes</span>
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4" style={{ fontFamily: "'Syne', sans-serif" }}>Escolha o Melhor Plano</h2>
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4" style={{ fontFamily: "'Parkinsans', sans-serif" }}>Escolha o Melhor Plano</h2>
           <p className="text-white/40 max-w-lg mx-auto">Sem mensalidades. Sem surpresas. Pague apenas pelo que usar.</p>
         </motion.div>
-        <div className="flex justify-center max-w-md mx-auto">
-          <motion.div initial={{ opacity: 0, y: 30, scale: 0.95 }} whileInView={{ opacity: 1, y: 0, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.5 }} className="w-full">
-            <motion.div whileHover={{ boxShadow: "0 0 80px rgba(16,185,129,0.2)" }} className="relative rounded-3xl p-8 border border-emerald-500/40 bg-emerald-500/5 transition-all duration-300 h-full" style={{ boxShadow: "0 0 60px rgba(16,185,129,0.12), inset 0 1px 0 rgba(255,255,255,0.05)" }}>
-              <div className="absolute inset-0 rounded-3xl pointer-events-none" style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(16,185,129,0.08) 0%, transparent 60%)" }} />
+
+        <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+
+          {/* PLANO BÁSICO */}
+          <motion.div initial={{ opacity: 0, y: 30, scale: 0.95 }} whileInView={{ opacity: 1, y: 0, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.5 }}>
+            <motion.div whileHover={{ boxShadow: "0 0 60px rgba(255,255,255,0.05)" }} className="relative rounded-3xl p-8 border border-white/10 bg-white/[0.02] transition-all duration-300 h-full">
               <div className="relative">
-                <div className="mb-8 pt-3">
-                  <h3 className="text-lg font-bold text-white mb-1">Contrato Único</h3>
+                <div className="mb-6 pt-3">
+                  <h3 className="text-lg font-bold text-white mb-1" style={{ fontFamily: "'Parkinsans', sans-serif" }}>Contrato Padrão</h3>
                   <p className="text-sm text-white/40">Ideal para uma necessidade pontual</p>
                 </div>
-                <div className="mb-8">
+                <div className="mb-6">
                   <div className="flex items-baseline gap-1">
                     <span className="text-sm text-white/40 font-medium">R$</span>
-                    <motion.span initial={{ scale: 0.8 }} whileInView={{ scale: 1 }} transition={{ type: "spring", stiffness: 200 }} className="text-6xl font-black text-white leading-none" style={{ fontFamily: "'Syne', sans-serif" }}>29,90</motion.span>
+                    <motion.span initial={{ scale: 0.8 }} whileInView={{ scale: 1 }} transition={{ type: "spring", stiffness: 200 }} className="text-6xl font-black text-white leading-none" style={{ fontFamily: "'Parkinsans', sans-serif" }}>29,90</motion.span>
                   </div>
                 </div>
-                <div className="h-px bg-white/6 mb-8" />
+                <div className="h-px bg-white/6 mb-6" />
                 <ul className="space-y-3 mb-8">
-                  {["1 contrato personalizado", "Gerado por IA avançada", "Revisão jurídica incluída", "Download imediato em PDF", "Suporte por e-mail", "Suporte por whatsapp"].map((f, i) => (
-                    <motion.li key={f} initial={{ opacity: 0, x: -10 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.07 }} className="flex items-start gap-3">
-                      <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 bg-emerald-500/20 border border-emerald-500/30"><Check className="w-2.5 h-2.5 text-emerald-400" /></div>
-                      <span className="text-sm text-white/60">{f}</span>
+                  {[
+                    { text: "1 contrato personalizado", included: true },
+                    { text: "Gerado por IA avançada", included: true },
+                    { text: "Revisão jurídica incluída", included: true },
+                    { text: "Download imediato em PDF", included: true },
+                    { text: "Suporte por e-mail", included: true },
+                    { text: "Suporte por whatsapp", included: true },
+                    { text: "Logo da sua empresa no contrato", included: false },
+                    { text: "Cores e fontes da sua marca", included: false },
+                    { text: "Layout exclusivo personalizado", included: false },
+                    { text: "Marca d'água com seu nome", included: false },
+                    { text: "Preview antes de baixar", included: false },
+                  ].map((f, i) => (
+                    <motion.li key={f.text} initial={{ opacity: 0, x: -10 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }} className="flex items-start gap-3">
+                      {f.included ? (
+                        <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 bg-white/10 border border-white/20">
+                          <Check className="w-2.5 h-2.5 text-white/60" />
+                        </div>
+                      ) : (
+                        <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 bg-red-500/10 border border-red-500/30">
+                          <X className="w-2.5 h-2.5 text-red-400" />
+                        </div>
+                      )}
+                      <span className={`text-sm ${f.included ? "text-white/50" : "text-white/25 line-through"}`}>{f.text}</span>
                     </motion.li>
                   ))}
                 </ul>
-                <motion.button onClick={onCreateContract} whileHover={{ scale: 1.03, y: -2, boxShadow: "0 8px 40px rgba(16,185,129,0.5)" }} whileTap={{ scale: 0.98 }}
+                <motion.button onClick={onCreateContract} whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.98 }}
+                  className="w-full py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 border border-white/15 bg-white/5 text-white/80 hover:bg-white/10 transition-all">
+                  <span>Criar Contrato Padrão</span>
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+
+          {/* PLANO PREMIUM */}
+          <motion.div initial={{ opacity: 0, y: 30, scale: 0.95 }} whileInView={{ opacity: 1, y: 0, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.1 }} className="relative">
+            {/* Badge popular */}
+            <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
+              <span className="px-4 py-1.5 rounded-full text-xs font-bold tracking-wider" style={{ background: "linear-gradient(135deg, #22c55e, #a3e635)", color: "#0d2010" }}>✦ MAIS POPULAR</span>
+            </div>
+            <motion.div whileHover={{ boxShadow: "0 0 80px rgba(34,197,94,0.25)" }} className="relative rounded-3xl p-8 border border-emerald-500/40 bg-emerald-500/5 transition-all duration-300 h-full" style={{ boxShadow: "0 0 60px rgba(16,185,129,0.12), inset 0 1px 0 rgba(255,255,255,0.05)" }}>
+              <div className="absolute inset-0 rounded-3xl pointer-events-none" style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(16,185,129,0.08) 0%, transparent 60%)" }} />
+              <div className="relative">
+                <div className="mb-6 pt-3">
+                  <h3 className="text-lg font-bold text-white mb-1" style={{ fontFamily: "'Parkinsans', sans-serif" }}>Contrato com Sua Marca</h3>
+                  <p className="text-sm text-white/40">Contrato personalizado com a identidade da sua empresa</p>
+                </div>
+                <div className="mb-6">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-sm text-white/40 font-medium">R$</span>
+                    <motion.span initial={{ scale: 0.8 }} whileInView={{ scale: 1 }} transition={{ type: "spring", stiffness: 200 }} className="text-6xl font-black text-white leading-none" style={{ fontFamily: "'Parkinsans', sans-serif" }}>39,90</motion.span>
+                  </div>
+                </div>
+                <div className="h-px bg-white/6 mb-6" />
+                <ul className="space-y-3 mb-8">
+                  {[
+                    { text: "1 contrato personalizado" },
+                    { text: "Gerado por IA avançada" },
+                    { text: "Revisão jurídica incluída" },
+                    { text: "Download imediato em PDF" },
+                    { text: "Suporte por e-mail" },
+                    { text: "Suporte por whatsapp" },
+                    { text: "Logo da sua empresa no contrato" },
+                    { text: "Cores e fontes da sua marca" },
+                    { text: "Layout exclusivo personalizado" },
+                    { text: "Marca d'água com seu nome" },
+                    { text: "Preview antes de baixar" },
+                  ].map((f, i) => (
+                    <motion.li key={f.text} initial={{ opacity: 0, x: -10 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }} className="flex items-start gap-3">
+                      <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 bg-emerald-500/20 border border-emerald-500/30">
+                        <Check className="w-2.5 h-2.5 text-emerald-400" />
+                      </div>
+                      <span className="text-sm text-white/80">{f.text}</span>
+                    </motion.li>
+                  ))}
+                </ul>
+                <motion.button onClick={onCreateContract} whileHover={{ scale: 1.03, y: -2, boxShadow: "0 8px 40px rgba(34,197,94,0.5)" }} whileTap={{ scale: 0.98 }}
                   className="w-full py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 overflow-hidden relative"
-                  style={{ background: "linear-gradient(135deg, #10b981, #059669)", color: "white", boxShadow: "0 4px 24px rgba(16,185,129,0.3)" }}>
+                  style={{ background: "linear-gradient(135deg, #22c55e, #a3e635)", color: "#0d2010", boxShadow: "0 4px 24px rgba(34,197,94,0.3)" }}>
                   <motion.span className="absolute inset-0 bg-white/10" initial={{ x: "-100%" }} whileHover={{ x: "100%" }} transition={{ duration: 0.4 }} />
-                  <Sparkles className="w-4 h-4 relative" /><span className="relative">Criar Contrato</span>
+                  <Sparkles className="w-4 h-4 relative" /><span className="relative">Criar com Minha Marca</span>
                 </motion.button>
               </div>
             </motion.div>
@@ -681,34 +753,13 @@ const PricingSection = ({ onCreateContract, onOpenAuth }) => {
 const FAQSection = () => {
   const [openItem, setOpenItem] = useState(null);
   const faqs = [
-    { 
-      question: "Os contratos são válidos juridicamente?", 
-      answer: "Sim! Todos os nossos contratos são elaborados seguindo as normas do Código Civil Brasileiro e são revisados por especialistas jurídicos. Eles possuem validade legal para uso em acordos formais entre partes." 
-    },
-    { 
-      question: "Como funciona o pagamento via Pix?", 
-      answer: "Após preencher os dados do seu contrato, você receberá um QR Code ou código Pix para pagamento. A aprovação é instantânea e, assim que confirmado, seu contrato estará disponível para download imediatamente." 
-    },
-    { 
-      question: "Quais tipos de contratos posso gerar?", 
-      answer: "Oferecemos diversos modelos: Prestação de Serviços, Contrato de Aluguel, Acordo de Parceria, Contrato de Trabalho Freelancer, Termo de Confidencialidade (NDA), entre outros. Novos modelos são adicionados frequentemente." 
-    },
-    { 
-      question: "Esta IA é diferente do ChatGPT e Gemini?", 
-      answer: "Completamente diferente! Enquanto o ChatGPT e Gemini são IAs de propósito geral, nossa IA foi especificamente treinada com milhares de documentos jurídicos brasileiros, jurisprudências e a legislação nacional (Código Civil, CLT, LGPD, etc). Isso significa que ela entende profundamente as nuances legais do Brasil, gera cláusulas que realmente se aplicam à sua realidade e evita termos genéricos ou inadequados para o nosso sistema jurídico." 
-    },
-    { 
-      question: "Como a IA é treinada com leis brasileiras?", 
-      answer: "Nossa IA passou por um treinamento especializado com um vasto corpus de documentos legais brasileiros, incluindo contratos validados por advogados, decisões judiciais, doutrinas e a legislação atualizada. Diferente de IAs genéricas treinadas com dados da internet mundial, a nossa entende expressões como 'foro da comarca', 'multa contratual' e 'cláusulas resolutivas' no contexto correto do direito brasileiro, garantindo que cada contrato gerado esteja em conformidade com as leis do país." 
-    },
-    { 
-      question: "Posso editar o contrato depois de gerado?", 
-      answer: "Sim! O contrato é entregue em formato PDF editável. Você pode fazer ajustes menores diretamente no documento. Para alterações mais significativas, recomendamos gerar um novo contrato com as informações atualizadas." 
-    },
-    { 
-      question: "E se eu precisar de ajuda com meu contrato?", 
-      answer: "Nossa equipe de suporte está disponível por e-mail e por whatsapp para tirar dúvidas sobre o uso da plataforma e dos contratos gerados." 
-    },
+    { question: "Os contratos são válidos juridicamente?", answer: "Sim! Todos os nossos contratos são elaborados seguindo as normas do Código Civil Brasileiro e são revisados por especialistas jurídicos. Eles possuem validade legal para uso em acordos formais entre partes." },
+    { question: "Como funciona o pagamento via Pix?", answer: "Após preencher os dados do seu contrato, você receberá um QR Code ou código Pix para pagamento. A aprovação é instantânea e, assim que confirmado, seu contrato estará disponível para download imediatamente." },
+    { question: "Quais tipos de contratos posso gerar?", answer: "Oferecemos diversos modelos: Prestação de Serviços, Contrato de Aluguel, Acordo de Parceria, Contrato de Trabalho Freelancer, Termo de Confidencialidade (NDA), entre outros. Novos modelos são adicionados frequentemente." },
+    { question: "Esta IA é diferente do ChatGPT e Gemini?", answer: "Completamente diferente! Enquanto o ChatGPT e Gemini são IAs de propósito geral, nossa IA foi especificamente treinada com milhares de documentos jurídicos brasileiros, jurisprudências e a legislação nacional (Código Civil, CLT, LGPD, etc). Isso significa que ela entende profundamente as nuances legais do Brasil, gera cláusulas que realmente se aplicam à sua realidade e evita termos genéricos ou inadequados para o nosso sistema jurídico." },
+    { question: "Como a IA é treinada com leis brasileiras?", answer: "Nossa IA passou por um treinamento especializado com um vasto corpus de documentos legais brasileiros, incluindo contratos validados por advogados, decisões judiciais, doutrinas e a legislação atualizada. Diferente de IAs genéricas treinadas com dados da internet mundial, a nossa entende expressões como 'foro da comarca', 'multa contratual' e 'cláusulas resolutivas' no contexto correto do direito brasileiro, garantindo que cada contrato gerado esteja em conformidade com as leis do país." },
+    { question: "Posso editar o contrato depois de gerado?", answer: "Sim! O contrato é entregue em formato PDF editável. Você pode fazer ajustes menores diretamente no documento. Para alterações mais significativas, recomendamos gerar um novo contrato com as informações atualizadas." },
+    { question: "E se eu precisar de ajuda com meu contrato?", answer: "Nossa equipe de suporte está disponível por e-mail e por whatsapp para tirar dúvidas sobre o uso da plataforma e dos contratos gerados." },
   ];
   return (
     <section id="faq" className="py-28 md:py-40 bg-[#080d14] relative">
@@ -716,7 +767,7 @@ const FAQSection = () => {
         <div className="flex flex-col lg:flex-row gap-16 lg:gap-24">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="lg:w-72 flex-shrink-0">
             <span className="inline-block text-xs font-bold text-emerald-400 uppercase tracking-[0.2em] mb-4">Dúvidas Frequentes</span>
-            <h2 className="text-4xl md:text-5xl font-bold text-white leading-tight" style={{ fontFamily: "'Syne', sans-serif" }}>Perguntas e Respostas</h2>
+            <h2 className="text-4xl md:text-5xl font-bold text-white leading-tight" style={{ fontFamily: "'Parkinsans', sans-serif" }}>Perguntas e Respostas</h2>
             <p className="text-white/40 text-sm mt-4 leading-relaxed">Tire suas principais dúvidas sobre nossa plataforma e contratos.</p>
           </motion.div>
           <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="flex-1 space-y-3">
@@ -763,11 +814,11 @@ const CTASection = ({ onCreateContract }) => {
           <motion.div whileHover={{ scale: 1.05 }} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-8">
             <Sparkles className="w-4 h-4 text-emerald-400" /><span className="text-sm font-medium text-emerald-400">Comece agora mesmo</span>
           </motion.div>
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight" style={{ fontFamily: "'Syne', sans-serif" }}>
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight" style={{ fontFamily: "'Parkinsans', sans-serif" }}>
             Pronto para criar seu<br />
             <span style={{ background: "linear-gradient(135deg, #10b981, #34d399)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>contrato profissional?</span>
           </h2>
-          <p className="text-white/40 mb-12 max-w-lg mx-auto leading-relaxed">Junte-se a centenas de pessoas que já simplificaram a criação de contratos com o Contrate-me.</p>
+          <p className="text-white/40 mb-12 max-w-lg mx-auto leading-relaxed">Junte-se a centenas de pessoas que já simplificaram a criação de contratos com o Contratify.</p>
           <div className="flex flex-wrap justify-center gap-6 mb-12">
             {[{ icon: Shield, label: "100% Seguro" }, { icon: Clock, label: "Pronto em 2 minutos" }].map(({ icon: Icon, label }) => (
               <motion.div key={label} whileHover={{ y: -3 }} className="flex items-center gap-2">
@@ -776,9 +827,9 @@ const CTASection = ({ onCreateContract }) => {
               </motion.div>
             ))}
           </div>
-          <motion.button onClick={onCreateContract} whileHover={{ scale: 1.05, y: -4, boxShadow: "0 0 80px rgba(16,185,129,0.5)" }} whileTap={{ scale: 0.97 }}
-            className="group px-10 py-5 text-white font-bold rounded-2xl flex items-center justify-center mx-auto gap-2 text-base overflow-hidden relative"
-            style={{ background: "linear-gradient(135deg, #10b981, #059669)", boxShadow: "0 0 60px rgba(16,185,129,0.35), 0 4px 20px rgba(0,0,0,0.3)" }}>
+          <motion.button onClick={onCreateContract} whileHover={{ scale: 1.05, y: -4, boxShadow: "0 0 80px rgba(34,197,94,0.5)" }} whileTap={{ scale: 0.97 }}
+            className="group px-10 py-5 font-bold rounded-2xl flex items-center justify-center mx-auto gap-2 text-base overflow-hidden relative"
+            style={{ background: "linear-gradient(135deg, #22c55e, #a3e635)", color: "#0d2010", boxShadow: "0 0 60px rgba(34,197,94,0.35), 0 4px 20px rgba(0,0,0,0.3)" }}>
             <motion.span className="absolute inset-0 bg-white/10" initial={{ x: "-100%" }} whileHover={{ x: "100%" }} transition={{ duration: 0.4 }} />
             <span className="relative">Criar Meu Contrato Agora</span>
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform relative" />
@@ -805,11 +856,12 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto px-6 md:px-10">
         <div className="py-16 grid md:grid-cols-2 lg:grid-cols-4 gap-10">
           <div className="lg:col-span-1">
-            <a href="#" className="flex items-center gap-3 mb-5">
-              <div className="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center overflow-hidden">
-                <img src="/rob.png" alt="Logo" className="w-full h-full object-cover" />
-              </div>
-              <span className="text-lg font-semibold text-white">Contrate<span className="text-emerald-400">-me</span></span>
+            <a href="#" className="flex items-center mb-5">
+              <img
+                src="/contrati.png"
+                alt="Contratify"
+                style={{ height: "32px", width: "auto", objectFit: "contain" }}
+              />
             </a>
             <p className="text-white/30 text-sm leading-relaxed mb-6">Contratos profissionais gerados por IA. Rápido, seguro e acessível.</p>
           </div>
@@ -827,7 +879,7 @@ const Footer = () => {
           ))}
         </div>
         <div className="py-6 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-xs text-white/20">© {currentYear} Contrate-me. Todos os direitos reservados.</p>
+          <p className="text-xs text-white/20">© {currentYear} Contratify. Todos os direitos reservados.</p>
         </div>
       </div>
     </footer>
@@ -835,7 +887,7 @@ const Footer = () => {
 };
 
 // ─────────────────────────────────────────────
-// LANDING PAGE (composição final)
+// LANDING PAGE
 // ─────────────────────────────────────────────
 const LandingPage = ({ onOpenAuth }) => {
   const navigate = useNavigate();
