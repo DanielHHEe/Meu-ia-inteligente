@@ -6,7 +6,7 @@ import Chat from "./Chat";
 import { AuthProvider, useAuth } from "./config/AuthContext";
 import AuthModal from "./config/AuthModal";
 import LandingPage from "./Landingpage";
-import TermosDeUso from "./TermosDeUso.Jsx";
+import TermosDeUso from "./TermosDeUso.jsx";
 import PoliticaPrivacidade from "./PoliticaPrivacidade";
 import LGPD from "./LGPD";
 
