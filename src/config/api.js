@@ -1,11 +1,26 @@
 // ============================================================
-// CONFIG — chama o próprio backend (Vercel Serverless Functions)
-// A chave da OpenAI fica APENAS no servidor, nunca no frontend
+// CONFIG
 // ============================================================
 export const API_CONFIG = {
-  chatUrl: '/api/chat',
-  generateUrl: '/api/generate-contract',
   model: 'gpt-4o-mini',
+};
+
+// Em dev local (npm run dev), chama OpenAI direto usando VITE_OPENAI_API_KEY
+// Em produção (Vercel), chama as serverless functions /api/chat e /api/generate-contract
+const isLocalDev = typeof window !== 'undefined' &&
+  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
+const callAI = async (endpoint, body) => {
+  const url = isLocalDev ? 'https://api.openai.com/v1/chat/completions' : endpoint;
+  const headers = isLocalDev
+    ? { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}` }
+    : { 'Content-Type': 'application/json' };
+  const response = await fetch(url, { method: 'POST', headers, body: JSON.stringify(body) });
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.error?.message || err.error || 'Erro na API');
+  }
+  return response.json();
 };
 
 // ============================================================
@@ -557,18 +572,12 @@ export const FIELD_ORDER_BY_CONTRACT = {
   ]
 };
 
-// ============================================================
-// INSTRUÇÃO FINAL DE ASSINATURA
-// ============================================================
 const ASSINATURA_INSTRUCTION = `
 PERGUNTA FINAL OBRIGATÓRIA — faça SEMPRE como penúltima pergunta:
 - Pergunte: "A assinatura do contrato será presencial ou online (por plataforma digital)?"
 - Se o usuário responder PRESENCIAL: pergunte a cidade e depois o estado (UF) onde o contrato será assinado
 - Se o usuário responder ONLINE: NÃO pergunte cidade nem estado. Registre modalidade_assinatura como "online" e deixe cidade e estado como "não aplicável"`;
 
-// ============================================================
-// LISTA DE CAMPOS PARA O SYSTEM PROMPT DE COLETA
-// ============================================================
 const REQUIRED_FIELDS_INSTRUCTION = {
   'prestacao-servicos': `
 CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
@@ -597,7 +606,6 @@ CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 23. Limite máximo da multa por atraso (ex: 10% do valor total)
 24. Percentual de multa por rescisão antecipada (ex: 20% do valor total)
 ${ASSINATURA_INSTRUCTION}`,
-
   'aluguel': `
 CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 1. Nome completo do LOCADOR (proprietário)
@@ -633,7 +641,6 @@ CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 31. Índice de correção monetária anual (ex: IGPM, IPCA)
 32. Prazo de tolerância para pagamento em dias (ex: 5 dias)
 ${ASSINATURA_INSTRUCTION}`,
-
   'parceria': `
 CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 1. Nome completo da PARTE A
@@ -662,7 +669,6 @@ CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 24. Percentual de multa por descumprimento (ex: 10%)
 25. Percentual de multa por rescisão antecipada (ex: 15%)
 ${ASSINATURA_INSTRUCTION}`,
-
   'confidencialidade': `
 CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 1. Este acordo é unilateral ou bilateral/mútuo?
@@ -683,7 +689,6 @@ CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 16. Valor da multa por violação (ex: R$ 50.000,00)
 17. Além da multa, haverá cobrança de perdas e danos? (sim ou não)
 ${ASSINATURA_INSTRUCTION}`,
-
   'trabalho-freelancer': `
 CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 1. Nome completo do CONTRATANTE (cliente)
@@ -712,7 +717,6 @@ CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 24. Multa por atraso no pagamento pelo contratante, por dia
 25. Percentual de multa por rescisão antecipada (ex: 20%)
 ${ASSINATURA_INSTRUCTION}`,
-
   'compra-venda': `
 CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 1. Nome completo do VENDEDOR
@@ -731,7 +735,7 @@ CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 14. O bem é de propriedade exclusiva do vendedor, ou há coproprietários?
 15. Valor total da venda
 16. Forma de pagamento
-17. Haverá pagamento de sinal (arras)? Se sim, qual o valor e o tipo (confirmatórias ou penitenciais)?
+17. Haverá pagamento de sinal (arras)? Se sim, qual o valor e o tipo?
 18. Quem arca com as despesas de transferência?
 19. Prazo para entrega do bem
 20. Quais documentos serão entregues com o bem?
@@ -740,7 +744,6 @@ CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 23. Multa por atraso no pagamento, por dia (ex: 0,5% ao dia)
 24. Percentual de multa por desistência/rescisão (ex: 20%)
 ${ASSINATURA_INSTRUCTION}`,
-
   'empreitada': `
 CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 1. Nome completo do CONTRATANTE (dono da obra)
@@ -771,7 +774,6 @@ CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 26. Limite máximo da multa por atraso
 27. Percentual de multa por rescisão antecipada
 ${ASSINATURA_INSTRUCTION}`,
-
   'sociedade': `
 CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 1. Nome completo do SÓCIO A
@@ -798,12 +800,11 @@ CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 22. Haverá pró-labore? Se sim, qual o valor para cada sócio?
 23. Como será feita a distribuição dos lucros?
 24. Como serão distribuídas as perdas?
-25. O que acontece se um sócio quiser sair? Qual o prazo de aviso e como se calcula a sua parte?
+25. O que acontece se um sócio quiser sair?
 26. Um sócio pode transferir sua quota sem aprovação dos demais? (sim ou não)
 27. Qual o prazo de duração da sociedade? (ex: indeterminado, 5 anos)
 28. Haverá proibição de concorrência? Por quanto tempo após a saída?
 ${ASSINATURA_INSTRUCTION}`,
-
   'representacao-comercial': `
 CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 1. Nome ou razão social da empresa REPRESENTADA
@@ -830,7 +831,6 @@ CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 22. Em caso de rescisão sem justa causa, haverá indenização? Se sim, qual o critério?
 23. Percentual de multa por descumprimento
 ${ASSINATURA_INSTRUCTION}`,
-
   'comodato': `
 CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 1. Nome completo do COMODANTE (dono do bem)
@@ -858,9 +858,6 @@ CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
 ${ASSINATURA_INSTRUCTION}`
 };
 
-// ============================================================
-// CLÁUSULAS PROFISSIONAIS POR CONTRATO
-// ============================================================
 const CONTRACT_CLAUSES = {
   'prestacao-servicos': [
     'CLÁUSULA 1ª — DO OBJETO E DO ESCOPO DOS SERVIÇOS',
@@ -1075,9 +1072,6 @@ const LEGAL_REF = {
   'comodato': 'segundo o Código Civil Brasileiro (arts. 579 a 585)'
 };
 
-// ============================================================
-// SYSTEM PROMPT
-// ============================================================
 const SYSTEM_PROMPT = `Você é um advogado experiente que está ajudando uma pessoa a montar um contrato.
 
 Seu trabalho é fazer perguntas simples e diretas, uma de cada vez, para coletar as informações necessárias. Fale como se estivesse conversando com alguém que não é da área jurídica — use palavras do dia a dia, frases curtas e evite termos difíceis. Quando precisar usar um termo técnico, explique brevemente o que ele significa.
@@ -1100,9 +1094,6 @@ REGRAS DE CONDUÇÃO — NUNCA VIOLE:
 10. REGRA DE ASSINATURA: Sempre pergunte se a assinatura será presencial ou online ANTES de pedir cidade e estado. Se online, NÃO peça cidade nem estado — vá direto para a confirmação dos dados.
 11. IMPORTANTE — NÃO valide email, CPF nem CNPJ: Aceite sempre a resposta do usuário para esses campos e passe imediatamente para a próxima pergunta.`;
 
-// ============================================================
-// PROMPT INICIAL
-// ============================================================
 export const getInitialPrompt = (contractType) => {
   const prompts = {
     'prestacao-servicos': `Ótimo! Você escolheu o Contrato de Prestação de Serviços. Vou fazer algumas perguntas para montar seu contrato completo.\n\nQual o nome completo do CONTRATANTE (quem vai pagar pelo serviço)?`,
@@ -1119,9 +1110,6 @@ export const getInitialPrompt = (contractType) => {
   return prompts[contractType] || `Ótimo! Vamos montar seu contrato.\n\nQual o nome completo da parte contratante?`;
 };
 
-// ============================================================
-// HELPER — remove markdown residual
-// ============================================================
 const stripMarkdown = (text) => {
   return text
     .replace(/\*\*(.*?)\*\*/g, '$1')
@@ -1132,61 +1120,32 @@ const stripMarkdown = (text) => {
     .replace(/`{1,3}[^`]*`{1,3}/gs, (match) => match.replace(/`/g, ''));
 };
 
-// ============================================================
-// ENVIO DE MENSAGEM PARA A IA — agora via /api/chat
-// ============================================================
 export const sendMessageToIA = async (messages, contractType) => {
   const userResponses = messages.filter(m => m.role === 'user').length;
   const totalFields = (FIELD_ORDER_BY_CONTRACT[contractType] || []).length;
   const fieldsInstruction = REQUIRED_FIELDS_INSTRUCTION[contractType] || '';
-
   let progressNote = '';
   if (userResponses >= totalFields - 2) {
     progressNote = `\n\n⚠️ ATENÇÃO: Você já recebeu ${userResponses} respostas. O total de campos é ${totalFields}. Verifique se TODOS foram coletados.`;
   }
-
-  try {
-    const response = await fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: API_CONFIG.model,
-        messages: [
-          {
-            role: 'system',
-            content: `${SYSTEM_PROMPT}${progressNote}\n\nTipo de contrato: ${contractType}\n${fieldsInstruction}`
-          },
-          ...messages
-        ],
-        temperature: 0.5,
-        max_tokens: 500,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Erro ao comunicar com a IA');
-    }
-
-    const data = await response.json();
-    return stripMarkdown(data.choices[0].message.content);
-  } catch (error) {
-    console.error('Erro na IA:', error);
-    throw error;
-  }
+  const data = await callAI('/api/chat', {
+    model: API_CONFIG.model,
+    messages: [
+      { role: 'system', content: `${SYSTEM_PROMPT}${progressNote}\n\nTipo de contrato: ${contractType}\n${fieldsInstruction}` },
+      ...messages
+    ],
+    temperature: 0.5,
+    max_tokens: 500,
+  });
+  return stripMarkdown(data.choices[0].message.content);
 };
 
-// ============================================================
-// EXTRAÇÃO DE DADOS VIA IA — agora via /api/chat
-// ============================================================
 export const extractAnswersFromConversation = async (messages, contractType) => {
   const fieldOrder = FIELD_ORDER_BY_CONTRACT[contractType] || [];
-
   const conversationText = messages
     .filter(m => m.role === 'user' || m.role === 'assistant')
     .map(m => `${m.role === 'assistant' ? 'ASSISTENTE' : 'USUÁRIO'}: ${m.content}`)
     .join('\n\n');
-
   const extractionPrompt = `Leia a conversa abaixo entre um assistente jurídico e um usuário.
 Extraia EXATAMENTE os valores fornecidos pelo usuário para cada campo listado.
 
@@ -1206,33 +1165,19 @@ REGRAS ABSOLUTAS:
 7. Se a modalidade for "presencial", extraia cidade e estado normalmente
 
 Formato de saída esperado: {"campo1":"valor","campo2":"outro valor"}`;
-
   try {
-    const response = await fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: API_CONFIG.model,
-        messages: [
-          {
-            role: 'system',
-            content: 'Você é um extrator de dados preciso. Retorne APENAS JSON válido, sem nenhum texto adicional, sem markdown.'
-          },
-          { role: 'user', content: extractionPrompt }
-        ],
-        temperature: 0,
-        max_tokens: 1500,
-      }),
+    const data = await callAI('/api/chat', {
+      model: API_CONFIG.model,
+      messages: [
+        { role: 'system', content: 'Você é um extrator de dados preciso. Retorne APENAS JSON válido, sem nenhum texto adicional, sem markdown.' },
+        { role: 'user', content: extractionPrompt }
+      ],
+      temperature: 0,
+      max_tokens: 1500,
     });
-
-    if (!response.ok) throw new Error('Erro na extração de dados');
-
-    const data = await response.json();
     let raw = data.choices[0].message.content.trim();
     raw = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '').trim();
-
-    const answers = JSON.parse(raw);
-    return answers;
+    return JSON.parse(raw);
   } catch (err) {
     console.error('[extractAnswers] Fallback por posição:', err);
     const answers = {};
@@ -1244,42 +1189,28 @@ Formato de saída esperado: {"campo1":"valor","campo2":"outro valor"}`;
   }
 };
 
-// ============================================================
-// GERAÇÃO DO CONTRATO FINAL — agora via /api/generate-contract
-// ============================================================
 export const generateContractFromConversation = async (messages, contractType) => {
   const rawAnswers = await extractAnswersFromConversation(messages, contractType);
   const answers = formatAnswers(rawAnswers);
   const selectedTemplate = CONTRACT_TEMPLATES[contractType] || CONTRACT_TEMPLATES['prestacao-servicos'];
   const contractTitle = selectedTemplate.title.toUpperCase();
   const legalRef = LEGAL_REF[contractType] || 'segundo o Código Civil Brasileiro';
-
   const hoje = new Date();
-  const dataAtual = hoje.toLocaleDateString('pt-BR', {
-    day: 'numeric', month: 'long', year: 'numeric',
-  });
-
+  const dataAtual = hoje.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
   const isOnline = answers.modalidade_assinatura?.toLowerCase().includes('online');
-
   let filledTemplate = selectedTemplate.template;
   Object.keys(answers).forEach(key => {
     filledTemplate = filledTemplate.replace(new RegExp(`{${key}}`, 'g'), answers[key] || '');
   });
   filledTemplate = filledTemplate.replace(/{[^}]+}/g, '');
-
   const dataBlock = Object.entries(answers)
     .filter(([, v]) => v && v.trim() !== '')
     .map(([k, v]) => `• ${k}: ${v}`)
     .join('\n');
-
-  const clausulasList = (CONTRACT_CLAUSES[contractType] || [])
-    .map(c => `   - ${c}`)
-    .join('\n');
-
+  const clausulasList = (CONTRACT_CLAUSES[contractType] || []).map(c => `   - ${c}`).join('\n');
   const foroInstrucao = isOnline
     ? `A assinatura será realizada de forma ONLINE/DIGITAL. Na cláusula de foro de eleição, informe que as partes elegem o foro do domicílio do réu.`
     : `A assinatura será PRESENCIAL na cidade de ${answers.cidade || ''}, Estado do ${answers.estado || ''}. Use esses dados na cláusula de eleição de foro.`;
-
   const prompt = `Você é um Advogado Sênior especialista em Direito Civil e Empresarial Brasileiro. Elabore o instrumento contratual abaixo com rigor técnico-jurídico.
 
 ⚠️ DATA OBRIGATÓRIA: A data de assinatura deste contrato é ${dataAtual}. USE EXATAMENTE ESTA DATA.
@@ -1305,44 +1236,22 @@ ESTRUTURA OBRIGATÓRIA:
 ${clausulasList}
 
 REDIJA O CONTRATO COMPLETO AGORA.`;
-
-  try {
-    const response = await fetch('/api/generate-contract', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: API_CONFIG.model,
-        messages: [
-          {
-            role: 'system',
-            content: 'Você é um Advogado Sênior especialista em Direito Civil e Empresarial com 20+ anos de experiência. Redija contratos profissionais, extensos e juridicamente impecáveis. NUNCA use placeholders. NUNCA invente dados. NUNCA mencione testemunhas.'
-          },
-          { role: 'user', content: prompt }
-        ],
-        temperature: 0.2,
-        max_tokens: 8000,
-      }),
-    });
-
-    if (!response.ok) throw new Error('Erro ao gerar contrato');
-
-    const data = await response.json();
-    let contract = data.choices[0].message.content;
-
-    contract = contract.replace(/\[[A-ZÁÉÍÓÚÂÊÎÔÛÃÕÇ\s_]+\]/gi, '');
-    contract = contract.replace(/\{[^}]+\}/g, '');
-
-    Object.keys(answers).forEach(key => {
-      const value = answers[key] || '';
-      [
-        new RegExp(`{${key}}`, 'gi'),
-        new RegExp(`\\[${key}\\]`, 'gi'),
-      ].forEach(p => { contract = contract.replace(p, value); });
-    });
-
-    return contract;
-  } catch (error) {
-    console.error('Erro na geração:', error);
-    throw error;
-  }
+  const data = await callAI('/api/generate-contract', {
+    model: API_CONFIG.model,
+    messages: [
+      { role: 'system', content: 'Você é um Advogado Sênior especialista em Direito Civil e Empresarial com 20+ anos de experiência. Redija contratos profissionais, extensos e juridicamente impecáveis. NUNCA use placeholders. NUNCA invente dados. NUNCA mencione testemunhas.' },
+      { role: 'user', content: prompt }
+    ],
+    temperature: 0.2,
+    max_tokens: 8000,
+  });
+  let contract = data.choices[0].message.content;
+  contract = contract.replace(/\[[A-ZÁÉÍÓÚÂÊÎÔÛÃÕÇ\s_]+\]/gi, '');
+  contract = contract.replace(/\{[^}]+\}/g, '');
+  Object.keys(answers).forEach(key => {
+    const value = answers[key] || '';
+    [new RegExp(`{${key}}`, 'gi'), new RegExp(`\\[${key}\\]`, 'gi')]
+      .forEach(p => { contract = contract.replace(p, value); });
+  });
+  return contract;
 };
