@@ -1,8 +1,13 @@
+// ============================================================
+// CONFIG — chama o próprio backend (Vercel Serverless Functions)
+// A chave da OpenAI fica APENAS no servidor, nunca no frontend
+// ============================================================
 export const API_CONFIG = {
-  openaiApiKey: import.meta.env.VITE_OPENAI_API_KEY || '',
-  apiUrl: 'https://api.openai.com/v1/chat/completions',
+  chatUrl: '/api/chat',
+  generateUrl: '/api/generate-contract',
   model: 'gpt-4o-mini',
 };
+
 // ============================================================
 // FORMATADORES — CPF, CNPJ, telefone
 // ============================================================
@@ -54,9 +59,8 @@ const formatAnswers = (answers) => {
   return out;
 };
 
-
 // ============================================================
-// TEMPLATES — espelham exatamente todos os campos coletados
+// TEMPLATES
 // ============================================================
 export const CONTRACT_TEMPLATES = {
   'prestacao-servicos': {
@@ -554,7 +558,7 @@ export const FIELD_ORDER_BY_CONTRACT = {
 };
 
 // ============================================================
-// INSTRUÇÃO FINAL DE ASSINATURA — igual para todos os contratos
+// INSTRUÇÃO FINAL DE ASSINATURA
 // ============================================================
 const ASSINATURA_INSTRUCTION = `
 PERGUNTA FINAL OBRIGATÓRIA — faça SEMPRE como penúltima pergunta:
@@ -1072,7 +1076,7 @@ const LEGAL_REF = {
 };
 
 // ============================================================
-// SYSTEM PROMPT — coleta de dados
+// SYSTEM PROMPT
 // ============================================================
 const SYSTEM_PROMPT = `Você é um advogado experiente que está ajudando uma pessoa a montar um contrato.
 
@@ -1092,62 +1096,31 @@ REGRAS DE CONDUÇÃO — NUNCA VIOLE:
 6. Se o usuário disser "não" ou "nada", responda EXATAMENTE: "Perfeito! Vou gerar seu contrato agora."
 7. Se o usuário quiser adicionar algo, colete e repita a pergunta do passo 5
 8. NUNCA encerre sem ter coletado todos os campos, incluindo telefone e email de todas as partes
-9. VALIDAÇÃO DE EMAIL — OBRIGATÓRIA: Sempre que o usuário responder a uma pergunta de email, verifique se a resposta contém o caractere "@". Se NÃO contiver "@", responda imediatamente: "Esse email parece inválido pois não contém @. Por favor, informe um email válido (exemplo: nome@email.com)" e aguarde nova resposta. NUNCA passe para o próximo campo sem um email válido com "@".
-10. VALIDAÇÃO DE CPF — OBRIGATÓRIA: Sempre que o usuário responder a uma pergunta de CPF, conte os dígitos numéricos da resposta. Se forem menos de 11, responda: "Esse CPF parece incompleto — um CPF tem 11 dígitos. Por favor, informe novamente." NUNCA passe para o próximo campo sem CPF com 11 dígitos.
-11. VALIDAÇÃO DE CNPJ — OBRIGATÓRIA: Sempre que o usuário responder a uma pergunta de CNPJ, conte os dígitos numéricos. Se forem menos de 14, responda: "Esse CNPJ parece incompleto — um CNPJ tem 14 dígitos. Por favor, informe novamente." NUNCA passe para o próximo campo sem CNPJ com 14 dígitos.
-12. CONFIRMAÇÃO FINAL: Após coletar todos os campos, antes de perguntar "Deseja adicionar algo a mais?", apresente um resumo com os dados principais (nomes das partes, valor, prazo) e pergunte: "Esses dados estão corretos? Posso confirmar e prosseguir?" — se o usuário confirmar, aí pergunte sobre adições.
-13. REGRA DE ASSINATURA: Sempre pergunte se a assinatura será presencial ou online ANTES de pedir cidade e estado. Se online, NÃO peça cidade nem estado — vá direto para a confirmação dos dados.`;
+9. CONFIRMAÇÃO FINAL: Após coletar todos os campos, antes de perguntar "Deseja adicionar algo a mais?", apresente um resumo com os dados principais (nomes das partes, valor, prazo) e pergunte: "Esses dados estão corretos? Posso confirmar e prosseguir?" — se o usuário confirmar, aí pergunte sobre adições.
+10. REGRA DE ASSINATURA: Sempre pergunte se a assinatura será presencial ou online ANTES de pedir cidade e estado. Se online, NÃO peça cidade nem estado — vá direto para a confirmação dos dados.
+11. IMPORTANTE — NÃO valide email, CPF nem CNPJ: Aceite sempre a resposta do usuário para esses campos e passe imediatamente para a próxima pergunta.`;
 
 // ============================================================
-// PROMPT INICIAL — sem markdown
+// PROMPT INICIAL
 // ============================================================
 export const getInitialPrompt = (contractType) => {
   const prompts = {
-    'prestacao-servicos': `Ótimo! Você escolheu o Contrato de Prestação de Serviços. Vou fazer algumas perguntas para montar seu contrato completo.
-
-Qual o nome completo do CONTRATANTE (quem vai pagar pelo serviço)?`,
-
-    'aluguel': `Ótimo! Você escolheu o Contrato de Aluguel. Vou fazer algumas perguntas para montar seu contrato completo.
-
-Qual o nome completo do LOCADOR (proprietário do imóvel)?`,
-
-    'compra-venda': `Ótimo! Você escolheu o Contrato de Compra e Venda. Vou fazer algumas perguntas para montar seu contrato completo.
-
-Qual o nome completo do VENDEDOR?`,
-
-    'parceria': `Ótimo! Você escolheu o Contrato de Parceria. Vou fazer algumas perguntas para montar seu contrato completo.
-
-Qual o nome completo da PARTE A?`,
-
-    'confidencialidade': `Ótimo! Você escolheu o Termo de Confidencialidade (NDA). Vou fazer algumas perguntas para montar seu contrato completo.
-
-Este acordo será unilateral (apenas uma parte recebe informações confidenciais) ou bilateral/mútuo (ambas as partes trocarão informações entre si)?`,
-
-    'trabalho-freelancer': `Ótimo! Você escolheu o Contrato Freelancer. Vou fazer algumas perguntas para montar seu contrato completo.
-
-Qual o nome completo do CONTRATANTE (o cliente que vai pagar)?`,
-
-    'empreitada': `Ótimo! Você escolheu o Contrato de Empreitada. Vou fazer algumas perguntas para montar seu contrato completo.
-
-Qual o nome completo do CONTRATANTE (o dono da obra)?`,
-
-    'sociedade': `Ótimo! Você escolheu o Contrato Social de Sociedade. Vou fazer algumas perguntas para montar seu contrato completo.
-
-Qual o nome completo do SÓCIO A?`,
-
-    'representacao-comercial': `Ótimo! Você escolheu o Contrato de Representação Comercial. Vou fazer algumas perguntas para montar seu contrato completo.
-
-Qual o nome ou razão social da empresa REPRESENTADA (quem fabrica ou vende o produto)?`,
-
-    'comodato': `Ótimo! Você escolheu o Contrato de Comodato. Comodato é um empréstimo gratuito de um bem — o dono empresta sem cobrar nada por isso. Vou fazer algumas perguntas para montar seu contrato completo.
-
-Qual o nome completo do COMODANTE (o dono do bem que vai emprestar)?`
+    'prestacao-servicos': `Ótimo! Você escolheu o Contrato de Prestação de Serviços. Vou fazer algumas perguntas para montar seu contrato completo.\n\nQual o nome completo do CONTRATANTE (quem vai pagar pelo serviço)?`,
+    'aluguel': `Ótimo! Você escolheu o Contrato de Aluguel. Vou fazer algumas perguntas para montar seu contrato completo.\n\nQual o nome completo do LOCADOR (proprietário do imóvel)?`,
+    'compra-venda': `Ótimo! Você escolheu o Contrato de Compra e Venda. Vou fazer algumas perguntas para montar seu contrato completo.\n\nQual o nome completo do VENDEDOR?`,
+    'parceria': `Ótimo! Você escolheu o Contrato de Parceria. Vou fazer algumas perguntas para montar seu contrato completo.\n\nQual o nome completo da PARTE A?`,
+    'confidencialidade': `Ótimo! Você escolheu o Termo de Confidencialidade (NDA). Vou fazer algumas perguntas para montar seu contrato completo.\n\nEste acordo será unilateral (apenas uma parte recebe informações confidenciais) ou bilateral/mútuo (ambas as partes trocarão informações entre si)?`,
+    'trabalho-freelancer': `Ótimo! Você escolheu o Contrato Freelancer. Vou fazer algumas perguntas para montar seu contrato completo.\n\nQual o nome completo do CONTRATANTE (o cliente que vai pagar)?`,
+    'empreitada': `Ótimo! Você escolheu o Contrato de Empreitada. Vou fazer algumas perguntas para montar seu contrato completo.\n\nQual o nome completo do CONTRATANTE (o dono da obra)?`,
+    'sociedade': `Ótimo! Você escolheu o Contrato Social de Sociedade. Vou fazer algumas perguntas para montar seu contrato completo.\n\nQual o nome completo do SÓCIO A?`,
+    'representacao-comercial': `Ótimo! Você escolheu o Contrato de Representação Comercial. Vou fazer algumas perguntas para montar seu contrato completo.\n\nQual o nome ou razão social da empresa REPRESENTADA (quem fabrica ou vende o produto)?`,
+    'comodato': `Ótimo! Você escolheu o Contrato de Comodato. Comodato é um empréstimo gratuito de um bem — o dono empresta sem cobrar nada por isso. Vou fazer algumas perguntas para montar seu contrato completo.\n\nQual o nome completo do COMODANTE (o dono do bem que vai emprestar)?`
   };
   return prompts[contractType] || `Ótimo! Vamos montar seu contrato.\n\nQual o nome completo da parte contratante?`;
 };
 
 // ============================================================
-// HELPER — remove markdown residual da resposta da IA
+// HELPER — remove markdown residual
 // ============================================================
 const stripMarkdown = (text) => {
   return text
@@ -1160,29 +1133,22 @@ const stripMarkdown = (text) => {
 };
 
 // ============================================================
-// ENVIO DE MENSAGEM PARA A IA (coleta)
+// ENVIO DE MENSAGEM PARA A IA — agora via /api/chat
 // ============================================================
 export const sendMessageToIA = async (messages, contractType) => {
-  if (!API_CONFIG.openaiApiKey) {
-    throw new Error('Chave da API não configurada. Verifique o arquivo .env');
-  }
-
   const userResponses = messages.filter(m => m.role === 'user').length;
   const totalFields = (FIELD_ORDER_BY_CONTRACT[contractType] || []).length;
   const fieldsInstruction = REQUIRED_FIELDS_INSTRUCTION[contractType] || '';
 
   let progressNote = '';
   if (userResponses >= totalFields - 2) {
-    progressNote = `\n\n⚠️ ATENÇÃO: Você já recebeu ${userResponses} respostas. O total de campos é ${totalFields}. Verifique se TODOS foram coletados. Lembre-se: pergunte sobre modalidade de assinatura (presencial ou online) ANTES de pedir cidade e estado. Se online, NÃO peça cidade nem estado.`;
+    progressNote = `\n\n⚠️ ATENÇÃO: Você já recebeu ${userResponses} respostas. O total de campos é ${totalFields}. Verifique se TODOS foram coletados.`;
   }
 
   try {
-    const response = await fetch(API_CONFIG.apiUrl, {
+    const response = await fetch('/api/chat', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${API_CONFIG.openaiApiKey}`,
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: API_CONFIG.model,
         messages: [
@@ -1199,7 +1165,7 @@ export const sendMessageToIA = async (messages, contractType) => {
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.error?.message || 'Erro ao comunicar com a IA');
+      throw new Error(errorData.error || 'Erro ao comunicar com a IA');
     }
 
     const data = await response.json();
@@ -1211,7 +1177,7 @@ export const sendMessageToIA = async (messages, contractType) => {
 };
 
 // ============================================================
-// EXTRAÇÃO DE DADOS VIA IA (JSON estruturado)
+// EXTRAÇÃO DE DADOS VIA IA — agora via /api/chat
 // ============================================================
 export const extractAnswersFromConversation = async (messages, contractType) => {
   const fieldOrder = FIELD_ORDER_BY_CONTRACT[contractType] || [];
@@ -1238,27 +1204,19 @@ REGRAS ABSOLUTAS:
 5. O campo "modalidade_assinatura" deve ser "presencial" ou "online" conforme informado pelo usuário
 6. Se a modalidade for "online", os campos "cidade" e "estado" devem ser "não aplicável"
 7. Se a modalidade for "presencial", extraia cidade e estado normalmente
-8. Os campos de telefone e email devem ser extraídos corretamente para cada parte
-9. O campo "modalidade_empreitada" deve ser "preço global" ou "por medição/etapas" conforme informado
-10. O campo "modalidade_nda" deve ser "unilateral" ou "bilateral/mútuo" conforme informado
-11. Campos de garantia, prazo e multa devem ser extraídos com precisão
 
-Formato de saída esperado (exemplo):
-{"campo1":"valor respondido","campo2":"outro valor","campo3":""}`;
+Formato de saída esperado: {"campo1":"valor","campo2":"outro valor"}`;
 
   try {
-    const response = await fetch(API_CONFIG.apiUrl, {
+    const response = await fetch('/api/chat', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${API_CONFIG.openaiApiKey}`,
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: API_CONFIG.model,
         messages: [
           {
             role: 'system',
-            content: 'Você é um extrator de dados preciso. Leia conversas e extraia valores para campos específicos. Retorne APENAS JSON válido, sem nenhum texto adicional, sem markdown.'
+            content: 'Você é um extrator de dados preciso. Retorne APENAS JSON válido, sem nenhum texto adicional, sem markdown.'
           },
           { role: 'user', content: extractionPrompt }
         ],
@@ -1274,11 +1232,9 @@ Formato de saída esperado (exemplo):
     raw = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '').trim();
 
     const answers = JSON.parse(raw);
-    console.log('[extractAnswers] answers:', answers);
     return answers;
-
   } catch (err) {
-    console.error('[extractAnswers] Falha na extração via IA — fallback por posição:', err);
+    console.error('[extractAnswers] Fallback por posição:', err);
     const answers = {};
     const userMessages = messages.filter(m => m.role === 'user').map(m => m.content);
     fieldOrder.forEach((field, index) => {
@@ -1289,22 +1245,18 @@ Formato de saída esperado (exemplo):
 };
 
 // ============================================================
-// GERAÇÃO DO CONTRATO FINAL — NÍVEL ESCRITÓRIO SÊNIOR
+// GERAÇÃO DO CONTRATO FINAL — agora via /api/generate-contract
 // ============================================================
 export const generateContractFromConversation = async (messages, contractType) => {
-  if (!API_CONFIG.openaiApiKey) throw new Error('Chave da API não configurada');
-
   const rawAnswers = await extractAnswersFromConversation(messages, contractType);
-  const answers = formatAnswers(rawAnswers); // formata CPF, CNPJ e telefone automaticamente
+  const answers = formatAnswers(rawAnswers);
   const selectedTemplate = CONTRACT_TEMPLATES[contractType] || CONTRACT_TEMPLATES['prestacao-servicos'];
   const contractTitle = selectedTemplate.title.toUpperCase();
   const legalRef = LEGAL_REF[contractType] || 'segundo o Código Civil Brasileiro';
 
   const hoje = new Date();
   const dataAtual = hoje.toLocaleDateString('pt-BR', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
+    day: 'numeric', month: 'long', year: 'numeric',
   });
 
   const isOnline = answers.modalidade_assinatura?.toLowerCase().includes('online');
@@ -1325,71 +1277,45 @@ export const generateContractFromConversation = async (messages, contractType) =
     .join('\n');
 
   const foroInstrucao = isOnline
-    ? `A assinatura será realizada de forma ONLINE/DIGITAL. Na cláusula de foro de eleição, informe que as partes elegem o foro do domicílio do réu para dirimir quaisquer controvérsias, uma vez que a assinatura foi realizada por meio digital.`
+    ? `A assinatura será realizada de forma ONLINE/DIGITAL. Na cláusula de foro de eleição, informe que as partes elegem o foro do domicílio do réu.`
     : `A assinatura será PRESENCIAL na cidade de ${answers.cidade || ''}, Estado do ${answers.estado || ''}. Use esses dados na cláusula de eleição de foro.`;
 
-  const prompt = `Você é um Advogado Sênior especialista em Direito Civil e Empresarial Brasileiro. Elabore o instrumento contratual abaixo com rigor técnico-jurídico, vocabulário formal e estrutura de escritório de advocacia de alto padrão.
+  const prompt = `Você é um Advogado Sênior especialista em Direito Civil e Empresarial Brasileiro. Elabore o instrumento contratual abaixo com rigor técnico-jurídico.
 
-⚠️ DATA OBRIGATÓRIA: A data de assinatura deste contrato é ${dataAtual}. USE EXATAMENTE ESTA DATA. NUNCA invente outra data.
+⚠️ DATA OBRIGATÓRIA: A data de assinatura deste contrato é ${dataAtual}. USE EXATAMENTE ESTA DATA.
 
-Com base nas informações abaixo, redija um ${contractTitle} completo, robusto e juridicamente impecável, ${legalRef}.
+Com base nas informações abaixo, redija um ${contractTitle} completo, ${legalRef}.
 
-═══════════════════════════════════════════════════
-DADOS DO CONTRATO (USE EXATAMENTE ESTES VALORES)
-═══════════════════════════════════════════════════
+DADOS DO CONTRATO:
 ${dataBlock}
 
-═══════════════════════════════════════════════════
-TEMPLATE DE REFERÊNCIA
-═══════════════════════════════════════════════════
+TEMPLATE DE REFERÊNCIA:
 ${filledTemplate}
 
-═══════════════════════════════════════════════════
-INSTRUÇÕES OBRIGATÓRIAS DE REDAÇÃO
-═══════════════════════════════════════════════════
-1. USE SOMENTE os dados fornecidos — JAMAIS invente valores, nomes ou percentuais
-2. NÃO utilize placeholders — substitua TUDO pelos valores reais informados
-3. NUNCA coloque CPF/CNPJ no campo de nome, nem endereço no campo de cidade
-4. As cláusulas de penalidades DEVEM refletir com precisão os valores de multa informados
-5. No PREÂMBULO, inclua telefone e email de cada parte na qualificação completa
-6. Para contratos de empreitada, referencie o art. 618 do CC na cláusula de garantia da obra
-7. Para contratos de sociedade, referencie os arts. 997 a 1.038 do CC
-8. Para contratos de representação comercial, referencie a Lei 4.886/65 e a Lei 8.420/92
-9. Para contratos de comodato, referencie os arts. 579 a 585 do CC
-10. Para contratos de compra e venda, adapte as cláusulas ao tipo específico de bem informado
-11. Para contratos de aluguel, referencie a Lei 8.245/91
-12. CADA CLÁUSULA deve ser redigida de forma EXTENSA e DETALHADA, com:
-    - Cabeçalho em NEGRITO e CAIXA ALTA (ex: **CLÁUSULA 1ª — DO OBJETO**)
-    - Corpo jurídico completo com parágrafos numerados (§1º, §2º, §3º...)
-    - Terminologia técnica: "mora", "vencimento antecipado", "caráter irretratável", "perdas e danos"
-    - Referência explícita aos dispositivos legais aplicáveis
-13. CLÁUSULA DE LGPD: obrigações de controlador/operador, finalidade, base legal (art. 7º Lei 13.709/18)
-14. CLÁUSULA DE ANTICORRUPÇÃO: referenciar Lei 12.846/2013, proibir suborno, prever rescisão imediata
-15. CLÁUSULA DE FORÇA MAIOR: definir hipóteses, prazo de comunicação (máximo 5 dias úteis)
-16. Inicie com PREÂMBULO completo: nome, CPF/CNPJ, telefone, email, estado civil (se PF), sede (se PJ)
-17. NÃO inclua seção de assinaturas ou testemunhas
-18. NUNCA mencione testemunhas em nenhuma parte do contrato
-19. A frase de encerramento deve ser apenas: "E, por estarem assim justas e contratadas, as partes firmam o presente instrumento."
-20. ${foroInstrucao}
+INSTRUÇÕES OBRIGATÓRIAS:
+1. USE SOMENTE os dados fornecidos — JAMAIS invente valores
+2. NÃO utilize placeholders — substitua TUDO pelos valores reais
+3. CADA CLÁUSULA deve ter cabeçalho em NEGRITO e CAIXA ALTA, parágrafos numerados (§1º, §2º...)
+4. Inclua LGPD, Anticorrupção e Força Maior
+5. NÃO inclua seção de assinaturas ou testemunhas
+6. A frase de encerramento: "E, por estarem assim justas e contratadas, as partes firmam o presente instrumento."
+7. ${foroInstrucao}
 
 ESTRUTURA OBRIGATÓRIA:
 ${clausulasList}
 
-REDIJA O INSTRUMENTO CONTRATUAL COMPLETO AGORA, sem resumos, sem omissões e sem placeholders.`;
+REDIJA O CONTRATO COMPLETO AGORA.`;
 
   try {
-    const response = await fetch(API_CONFIG.apiUrl, {
+    const response = await fetch('/api/generate-contract', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${API_CONFIG.openaiApiKey}`,
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: API_CONFIG.model,
         messages: [
           {
             role: 'system',
-            content: `Você é um Advogado Sênior especialista em Direito Civil e Empresarial com 20+ anos de experiência. Redija contratos profissionais, extensos e juridicamente impecáveis, com linguagem técnica formal, parágrafos numerados e referências legais precisas. NUNCA use placeholders. NUNCA invente dados. NUNCA mencione testemunhas. Use terminologia jurídica brasileira de alto padrão. Cada cláusula deve ter pelo menos 3 parágrafos detalhados.`
+            content: 'Você é um Advogado Sênior especialista em Direito Civil e Empresarial com 20+ anos de experiência. Redija contratos profissionais, extensos e juridicamente impecáveis. NUNCA use placeholders. NUNCA invente dados. NUNCA mencione testemunhas.'
           },
           { role: 'user', content: prompt }
         ],
@@ -1411,7 +1337,6 @@ REDIJA O INSTRUMENTO CONTRATUAL COMPLETO AGORA, sem resumos, sem omissões e sem
       [
         new RegExp(`{${key}}`, 'gi'),
         new RegExp(`\\[${key}\\]`, 'gi'),
-        new RegExp(`\\[${key.replace(/_/g, ' ')}\\]`, 'gi'),
       ].forEach(p => { contract = contract.replace(p, value); });
     });
 

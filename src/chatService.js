@@ -15,44 +15,54 @@ const getLastAssistantMessage = (messages) => {
   return '';
 };
 
-// Detecta o TIPO de campo da pergunta, ignorando mensagens de erro anteriores
 const detectFieldType = (lastAssistantMsg) => {
-  // Se for mensagem de erro nossa, identificar pelo conteúdo
+  // CPF/CNPJ — detecta perguntas específicas sobre documentos
   if (lastAssistantMsg.includes('cpf ou cnpj') || lastAssistantMsg.includes('cpf/cnpj')) return 'cpf_cnpj';
   if (lastAssistantMsg.includes('cnpj') && !lastAssistantMsg.includes('cpf')) return 'cnpj';
   if (lastAssistantMsg.includes('cpf') && !lastAssistantMsg.includes('cnpj')) return 'cpf';
-  if (lastAssistantMsg.includes('email') || lastAssistantMsg.includes('e-mail')) return 'email';
-  if (lastAssistantMsg.includes('telefone')) return 'telefone';
+
+  // Email — só detecta se a pergunta for ESPECIFICAMENTE sobre email
+  // Ignora perguntas que citam "email" apenas como exemplo (ex: email, WhatsApp)
+  const isAskingForEmail = (
+    /qual.*(o |seu |o seu )?e?-?mail/i.test(lastAssistantMsg) ||
+    /informe.*(o |seu )?e?-?mail/i.test(lastAssistantMsg) ||
+    /e?-?mail.*(do |da |de )?(contratante|contratado|locador|locatário|parte|vendedor|comprador|freelancer|revelador|receptor|comodante|comodatário|empreiteiro|representad|sócio)/i.test(lastAssistantMsg)
+  );
+  if (isAskingForEmail) return 'email';
+
+  // Telefone — só detecta se for pergunta específica sobre telefone
+  const isAskingForPhone = (
+    /qual.*(o |seu |o seu )?telefone/i.test(lastAssistantMsg) ||
+    /n[úu]mero.*(de )?telefone/i.test(lastAssistantMsg) ||
+    /telefone.*(do |da |de )?(contratante|contratado|locador|locatário|parte|vendedor|comprador|freelancer|revelador|receptor|comodante|comodatário|empreiteiro|representad|sócio)/i.test(lastAssistantMsg)
+  );
+  if (isAskingForPhone) return 'telefone';
+
   return null;
 };
 
 const validateUserInput = (userMessage, fieldType) => {
-  const digits = userMessage.replace(/\D/g, '');
+  const trimmed = userMessage.trim();
+  const digits = trimmed.replace(/\D/g, '');
   const field = fieldType;
 
-  // Validação de email
-  if (
-    field === 'email' &&
-    !userMessage.includes('@') &&
-    userMessage.length > 3 &&
-    !/^(sim|não|nao|ok|s|n)$/i.test(userMessage.trim())
-  ) {
-    return 'Esse email parece inválido pois não contém @. Por favor, informe um email válido (exemplo: nome@email.com)';
-  }
+  // Validação de email removida do frontend — a IA já aceita qualquer resposta
+  // para campos de email sem revalidar (corrigido no api.js)
+  if (field === 'email') return null;
 
   // Validação de CPF ou CNPJ (campo misto)
   if (field === 'cpf_cnpj' && digits.length > 0 && digits.length !== 11 && digits.length !== 14) {
     return `Esse CPF ou CNPJ está incorreto. CPF tem 11 dígitos e CNPJ tem 14. Você informou ${digits.length} dígito(s). Por favor, informe o CPF ou CNPJ novamente.`;
   }
 
-  // Validação de CPF puro
-  if (field === 'cpf' && digits.length > 0 && digits.length < 11) {
-    return `Esse CPF parece incompleto — um CPF tem 11 dígitos e você informou ${digits.length}. Por favor, informe novamente.`;
+  // Validação de CPF puro — valida se diferente de 11
+  if (field === 'cpf' && digits.length > 0 && digits.length !== 11) {
+    return `Esse CPF parece incorreto — um CPF tem exatamente 11 dígitos e você informou ${digits.length}. Por favor, informe novamente.`;
   }
 
-  // Validação de CNPJ puro
-  if (field === 'cnpj' && digits.length > 0 && digits.length < 14) {
-    return `Esse CNPJ parece incompleto — um CNPJ tem 14 dígitos e você informou ${digits.length}. Por favor, informe novamente.`;
+  // Validação de CNPJ puro — valida se diferente de 14
+  if (field === 'cnpj' && digits.length > 0 && digits.length !== 14) {
+    return `Esse CNPJ parece incorreto — um CNPJ tem exatamente 14 dígitos e você informou ${digits.length}. Por favor, informe novamente.`;
   }
 
   // Validação de telefone
@@ -63,6 +73,33 @@ const validateUserInput = (userMessage, fieldType) => {
   return null;
 };
 
+// Injeta instrução no histórico para a IA NÃO revalidar campo já validado localmente
+const buildMessagesWithHint = (messages, fieldType) => {
+  if (!fieldType) return messages;
+
+  const hints = {
+    cpf: 'O CPF informado pelo usuário foi validado localmente e possui exatamente 11 dígitos. Aceite-o como correto e passe para a próxima pergunta.',
+    cnpj: 'O CNPJ informado pelo usuário foi validado localmente e possui exatamente 14 dígitos. Aceite-o como correto e passe para a próxima pergunta.',
+    cpf_cnpj: 'O CPF/CNPJ informado pelo usuário foi validado localmente e possui a quantidade correta de dígitos. Aceite-o como correto e passe para a próxima pergunta.',
+    telefone: 'O telefone informado pelo usuário foi validado localmente. Aceite-o como correto e passe para a próxima pergunta.',
+    email: 'O email informado pelo usuário foi validado localmente. Aceite-o como correto e passe para a próxima pergunta.',
+  };
+
+  const hint = hints[fieldType];
+  if (!hint) return messages;
+
+  // Insere uma instrução de sistema antes da última mensagem do usuário
+  const copy = [...messages];
+  const lastUserIndex = copy.map(m => m.role).lastIndexOf('user');
+  if (lastUserIndex >= 0) {
+    copy.splice(lastUserIndex, 0, {
+      role: 'system',
+      content: hint,
+    });
+  }
+  return copy;
+};
+
 export class ChatService {
   constructor(contractType) {
     this.contractType = contractType;
@@ -70,7 +107,7 @@ export class ChatService {
     this.isComplete = false;
     this.askedForExtras = false;
     this.confirmedData = false;
-    this.currentFieldType = null; // guarda o tipo do campo sendo validado
+    this.currentFieldType = null;
   }
 
   async startChat() {
@@ -82,9 +119,8 @@ export class ChatService {
     return initialMessage.content;
   }
 
-  // Retorna a última pergunta REAL da IA (ignora mensagens de erro de validação)
   getLastRealQuestion() {
-    const errorPhrases = ['parece incompleto', 'parece inválido', 'está incorreto', 'por favor, informe'];
+    const errorPhrases = ['parece incompleto', 'parece inválido', 'está incorreto', 'por favor, informe', 'parece incorreto'];
     for (let i = this.messages.length - 1; i >= 0; i--) {
       const msg = this.messages[i];
       if (msg.role === 'assistant') {
@@ -97,10 +133,20 @@ export class ChatService {
   }
 
   async sendUserMessage(userMessage) {
-    // Sempre usa a última pergunta REAL da IA para detectar o campo
-    // isso evita que mensagens de erro anteriores confundam a detecção
     const realQuestion = this.getLastRealQuestion();
-    const fieldType = this.currentFieldType || detectFieldType(realQuestion);
+    // Detecta o campo sempre pela última pergunta real da IA
+    // NÃO reutiliza currentFieldType de validações anteriores de outro campo
+    const detectedFieldType = detectFieldType(realQuestion);
+    
+    // Se a pergunta real mudou de campo OU não é mais um campo validável,
+    // reseta currentFieldType para evitar validar campos errados
+    if (this.currentFieldType) {
+      if (!detectedFieldType || this.currentFieldType !== detectedFieldType) {
+        this.currentFieldType = null;
+      }
+    }
+
+    const fieldType = this.currentFieldType || detectedFieldType;
     const validationError = validateUserInput(userMessage, fieldType);
 
     if (validationError) {
@@ -113,25 +159,26 @@ export class ChatService {
       };
     }
 
+    // Validação passou — limpa o campo atual
+    const validatedFieldType = this.currentFieldType || fieldType;
     this.currentFieldType = null;
     this.messages.push({ role: 'user', content: userMessage });
 
     try {
-      const nextQuestion = await sendMessageToIA(this.messages, this.contractType);
+      // Se o campo foi validado localmente, injeta hint para a IA não revalidar
+      const messagesForIA = buildMessagesWithHint(this.messages, validatedFieldType);
+
+      const nextQuestion = await sendMessageToIA(messagesForIA, this.contractType);
       this.messages.push({ role: 'assistant', content: nextQuestion });
 
-      // Detecta confirmação de dados ("Esses dados estão corretos?")
       if (!this.confirmedData && this.checkAskedConfirmation(nextQuestion)) {
         this.confirmedData = true;
       }
 
-      // Detecta pergunta "deseja adicionar mais?"
       if (!this.askedForExtras && this.checkAskedForExtras(nextQuestion)) {
         this.askedForExtras = true;
       }
 
-      // Conclui quando a IA diz que vai gerar
-      // Não exige mais hasMinimumAnswers — a IA já validou durante a coleta
       if (this.checkIfComplete(nextQuestion)) {
         this.isComplete = true;
       }
@@ -146,7 +193,6 @@ export class ChatService {
     }
   }
 
-  // Detecta se a IA pediu confirmação dos dados
   checkAskedConfirmation(aiMessage) {
     const indicators = [
       'esses dados estão corretos',
@@ -160,7 +206,6 @@ export class ChatService {
     return indicators.some(i => lower.includes(i));
   }
 
-  // Detecta se a IA perguntou "deseja adicionar mais?"
   checkAskedForExtras(aiMessage) {
     const indicators = [
       'deseja adicionar',
@@ -178,7 +223,6 @@ export class ChatService {
     return indicators.some(i => lower.includes(i));
   }
 
-  // Encerra quando a IA diz explicitamente que vai gerar
   checkIfComplete(aiMessage) {
     const indicators = [
       'vou gerar seu contrato agora',
@@ -213,11 +257,8 @@ export class ChatService {
     }
   }
 
-  // Remove a troca "deseja adicionar mais?" + resposta final
-  // para não poluir a extração de dados com ruído
   getMessagesForExtraction() {
     const msgs = [...this.messages];
-
     let extrasIndex = -1;
     for (let i = msgs.length - 1; i >= 0; i--) {
       if (msgs[i].role === 'assistant' && this.checkAskedForExtras(msgs[i].content)) {
@@ -225,11 +266,7 @@ export class ChatService {
         break;
       }
     }
-
-    if (extrasIndex !== -1) {
-      return msgs.slice(0, extrasIndex);
-    }
-
+    if (extrasIndex !== -1) return msgs.slice(0, extrasIndex);
     return msgs;
   }
 

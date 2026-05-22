@@ -212,7 +212,7 @@ const ParallaxBanner = () => {
         <p className="text-xs font-bold text-emerald-400 uppercase tracking-[0.25em] mb-3">Simples assim</p>
         <h3 className="text-3xl md:text-5xl font-black text-white leading-tight" style={{ fontFamily: "'Parkinsans', sans-serif" }}>
           Contrato profissional<br />
-          <span style={{ background: "linear-gradient(135deg, #10b981, #34d399, #6ee7b7)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>por R$ 29,90.</span>
+          <span style={{ background: "linear-gradient(135deg, #10b981, #34d399, #6ee7b7)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>a partir de R$ 39,90.</span>
         </h3>
       </motion.div>
       <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: `linear-gradient(rgba(16,185,129,1) 1px, transparent 1px), linear-gradient(90deg, rgba(16,185,129,1) 1px, transparent 1px)`, backgroundSize: "40px 40px" }} />
@@ -390,15 +390,7 @@ const HeroSection = ({ onCreateContract }) => {
                 </motion.div>
               ))}
             </div>
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.85 }}>
-              <motion.button onClick={onCreateContract} whileHover={{ scale: 1.05, y: -3, boxShadow: "0 0 60px rgba(34,197,94,0.5)" }} whileTap={{ scale: 0.97 }}
-                className="group relative px-8 py-4 font-semibold rounded-2xl flex items-center gap-2 overflow-hidden"
-                style={{ background: "linear-gradient(135deg, #22c55e, #a3e635)", color: "#0d2010", boxShadow: "0 0 40px rgba(34,197,94,0.35), 0 4px 20px rgba(0,0,0,0.3)" }}>
-                <motion.span className="absolute inset-0 bg-white/10" initial={{ x: "-100%" }} whileHover={{ x: "100%" }} transition={{ duration: 0.4 }} />
-                <span className="relative">Criar Meu Contrato</span>
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform relative" />
-              </motion.button>
-            </motion.div>
+
             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.1 }} className="mt-8 text-sm text-white/30">
               <span className="text-emerald-400 font-semibold">Já temos +{count} contratos</span> gerados com sucesso
             </motion.p>
@@ -558,7 +550,7 @@ const TestimonialsSection = () => {
     { name: "Rafael Mendonça", role: "Desenvolvedor Web", avatar: "RM", rating: 5, text: "Uso o Contratify todo mês para novos projetos. Simplesmente perfeito. O contrato é profissional e os clientes ficam impressionados com a qualidade.", contractType: "Contrato de TI", date: "há 5 dias", color: "from-blue-500 to-cyan-500" },
     { name: "Juliana Ferreira", role: "Consultora de Marketing", avatar: "JF", rating: 5, text: "Finalmente um serviço que realmente funciona! O processo é super intuitivo, o pagamento via Pix é instantâneo e o PDF ficou impecável. Super recomendo!", contractType: "Consultoria", date: "há 1 semana", color: "from-emerald-500 to-teal-500" },
     { name: "Carlos Albuquerque", role: "Fotógrafo Profissional", avatar: "CA", rating: 5, text: "Já tive problemas com clientes que não pagavam por falta de contrato. Com o Contratify isso acabou. Rápido, barato e juridicamente sólido!", contractType: "Fotografia", date: "há 2 semanas", color: "from-orange-500 to-red-500" },
-    { name: "Fernanda Lima", role: "Arquiteta", avatar: "FL", rating: 5, text: "Minha advogada cobrava R$500 por contrato básico. Aqui paguei R$29,90 e recebi algo ainda mais completo e personalizado. Não tem como não usar!", contractType: "Projeto Arquitetônico", date: "há 3 semanas", color: "from-violet-500 to-purple-500" },
+    { name: "Fernanda Lima", role: "Arquiteta", avatar: "FL", rating: 5, text: "Minha advogada cobrava R$500 por contrato básico. Aqui paguei R$39,90 e recebi algo ainda mais completo e personalizado. Não tem como não usar!", contractType: "Projeto Arquitetônico", date: "há 3 semanas", color: "from-violet-500 to-purple-500" },
     { name: "Thiago Nunes", role: "Professor Particular", avatar: "TN", rating: 5, text: "Precisava formalizar meus contratos com alunos e pais. O Contratify gerou algo perfeito, com todas as cláusulas que eu precisava. Ótimo serviço!", contractType: "Contrato Educacional", date: "há 1 mês", color: "from-amber-500 to-orange-500" },
     { name: "Beatriz Rocha", role: "Nutricionista", avatar: "BR", rating: 5, text: "Prático demais! Gerei contratos para minha clínica em minutos. A linguagem jurídica é clara e os pacientes ficam mais tranquilos assinando.", contractType: "Atendimento Clínico", date: "há 1 mês", color: "from-rose-500 to-pink-500" },
     { name: "Lucas Pimentel", role: "Social Media", avatar: "LP", rating: 5, text: "Comecei a usar e não largo mais. Para quem é freelancer como eu, ter um contrato profissional rápido e barato é essencial. Melhor custo-benefício!", contractType: "Gestão de Redes", date: "há 2 meses", color: "from-sky-500 to-blue-500" },
@@ -641,7 +633,7 @@ const PricingSection = ({ onCreateContract, onOpenAuth }) => {
                 <div className="mb-6">
                   <div className="flex items-baseline gap-1">
                     <span className="text-sm text-white/40 font-medium">R$</span>
-                    <motion.span initial={{ scale: 0.8 }} whileInView={{ scale: 1 }} transition={{ type: "spring", stiffness: 200 }} className="text-6xl font-black text-white leading-none" style={{ fontFamily: "'Parkinsans', sans-serif" }}>29,90</motion.span>
+                    <motion.span initial={{ scale: 0.8 }} whileInView={{ scale: 1 }} transition={{ type: "spring", stiffness: 200 }} className="text-6xl font-black text-white leading-none" style={{ fontFamily: "'Parkinsans', sans-serif" }}>39,90</motion.span>
                   </div>
                 </div>
                 <div className="h-px bg-white/6 mb-6" />
@@ -673,7 +665,7 @@ const PricingSection = ({ onCreateContract, onOpenAuth }) => {
                     </motion.li>
                   ))}
                 </ul>
-                <motion.button onClick={onCreateContract} whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.98 }}
+                <motion.button onClick={() => onCreateContract("standard")} whileHover={{ scale: 1.03, y: -2 }} whileTap={{ scale: 0.98 }}
                   className="w-full py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 border border-white/15 bg-white/5 text-white/80 hover:bg-white/10 transition-all">
                   <span>Criar Contrato Padrão</span>
                 </motion.button>
@@ -697,7 +689,7 @@ const PricingSection = ({ onCreateContract, onOpenAuth }) => {
                 <div className="mb-6">
                   <div className="flex items-baseline gap-1">
                     <span className="text-sm text-white/40 font-medium">R$</span>
-                    <motion.span initial={{ scale: 0.8 }} whileInView={{ scale: 1 }} transition={{ type: "spring", stiffness: 200 }} className="text-6xl font-black text-white leading-none" style={{ fontFamily: "'Parkinsans', sans-serif" }}>39,90</motion.span>
+                    <motion.span initial={{ scale: 0.8 }} whileInView={{ scale: 1 }} transition={{ type: "spring", stiffness: 200 }} className="text-6xl font-black text-white leading-none" style={{ fontFamily: "'Parkinsans', sans-serif" }}>49,90</motion.span>
                   </div>
                 </div>
                 <div className="h-px bg-white/6 mb-6" />
@@ -723,7 +715,7 @@ const PricingSection = ({ onCreateContract, onOpenAuth }) => {
                     </motion.li>
                   ))}
                 </ul>
-                <motion.button onClick={onCreateContract} whileHover={{ scale: 1.03, y: -2, boxShadow: "0 8px 40px rgba(34,197,94,0.5)" }} whileTap={{ scale: 0.98 }}
+                <motion.button onClick={() => onCreateContract("premium")} whileHover={{ scale: 1.03, y: -2, boxShadow: "0 8px 40px rgba(34,197,94,0.5)" }} whileTap={{ scale: 0.98 }}
                   className="w-full py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 overflow-hidden relative"
                   style={{ background: "linear-gradient(135deg, #22c55e, #a3e635)", color: "#0d2010", boxShadow: "0 4px 24px rgba(34,197,94,0.3)" }}>
                   <motion.span className="absolute inset-0 bg-white/10" initial={{ x: "-100%" }} whileHover={{ x: "100%" }} transition={{ duration: 0.4 }} />
@@ -834,7 +826,7 @@ const CTASection = ({ onCreateContract }) => {
             <span className="relative">Criar Meu Contrato Agora</span>
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform relative" />
           </motion.button>
-          <p className="mt-6 text-sm text-white/25">A partir de R$ 29,90 • Pagamento via Pix</p>
+          <p className="mt-6 text-sm text-white/25">A partir de R$ 39,90 • Pagamento via Pix</p>
         </motion.div>
       </div>
     </section>
@@ -848,8 +840,7 @@ const Footer = () => {
   const currentYear = new Date().getFullYear();
   const links = {
     produto: [{ label: "Como Funciona", href: "#como-funciona" }, { label: "Preços", href: "#precos" }, { label: "FAQ", href: "#faq" }],
-    legal: [{ label: "Termos de Uso", href: "#" }, { label: "Política de Privacidade", href: "#" }, { label: "LGPD", href: "#" }],
-    contato: [{ label: "contato@contrate-me.com.br", href: "mailto:contato@contrate-me.com.br" }],
+    legal: [{ label: "Termos de Uso", href: "/termos-de-uso" }, { label: "Política de Privacidade", href: "/politica-de-privacidade" }, { label: "LGPD", href: "/lgpd" }],
   };
   return (
     <footer className="bg-[#060b11] border-t border-white/5">
@@ -857,15 +848,11 @@ const Footer = () => {
         <div className="py-16 grid md:grid-cols-2 lg:grid-cols-4 gap-10">
           <div className="lg:col-span-1">
             <a href="#" className="flex items-center mb-5">
-              <img
-                src="/contrati.png"
-                alt="Contratify"
-                style={{ height: "32px", width: "auto", objectFit: "contain" }}
-              />
+              <img src="/contrati.png" alt="Contratify" style={{ height: "32px", width: "auto", objectFit: "contain" }} />
             </a>
             <p className="text-white/30 text-sm leading-relaxed mb-6">Contratos profissionais gerados por IA. Rápido, seguro e acessível.</p>
           </div>
-          {[{ title: "Produto", items: links.produto }, { title: "Legal", items: links.legal }, { title: "Contato", items: links.contato }].map(({ title, items }) => (
+          {[{ title: "Produto", items: links.produto }, { title: "Legal", items: links.legal }].map(({ title, items }) => (
             <div key={title}>
               <h4 className="text-xs font-bold text-white/50 uppercase tracking-[0.15em] mb-5">{title}</h4>
               <ul className="space-y-3">
@@ -877,9 +864,28 @@ const Footer = () => {
               </ul>
             </div>
           ))}
+          <div>
+            <h4 className="text-xs font-bold text-white/50 uppercase tracking-[0.15em] mb-5">Contato</h4>
+            <ul className="space-y-3">
+              <li className="flex items-center gap-2.5 text-sm text-white/30">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 opacity-60"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                contratify2026@mail.com
+              </li>
+              <li className="flex items-center gap-2.5 text-sm text-white/30">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 opacity-60"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.64 1.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6.06 6.06l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7a2 2 0 0 1 1.72 2.01z"/></svg>
+                (99) 991999125
+              </li>
+              <li>
+                <a href="https://instagram.com/contratify_" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 text-sm text-white/30 hover:text-white/70 transition-colors group">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 opacity-60 group-hover:opacity-100 transition-opacity"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
+                  @contratify_
+                </a>
+              </li>
+            </ul>
+          </div>
         </div>
         <div className="py-6 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-xs text-white/20">© {currentYear} Contratify. Todos os direitos reservados.</p>
+          <p className="text-xs text-white/20">© {currentYear} Contratify. Todos os direitos reservados. · CNPJ 63.590.748/0001-01</p>
         </div>
       </div>
     </footer>
@@ -893,9 +899,9 @@ const LandingPage = ({ onOpenAuth }) => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
 
-  const handleCreateContract = () => {
+  const handleCreateContract = (plan = "standard") => {
     if (isAuthenticated) {
-      navigate("/chat");
+      navigate("/chat", { state: { plan } });
     } else {
       onOpenAuth("signup");
     }
@@ -903,9 +909,9 @@ const LandingPage = ({ onOpenAuth }) => {
 
   return (
     <div className="min-h-screen bg-[#080d14]">
-      <Header onCreateContract={handleCreateContract} onOpenAuth={onOpenAuth} />
+      <Header onCreateContract={() => handleCreateContract("standard")} onOpenAuth={onOpenAuth} />
       <main>
-        <HeroSection onCreateContract={handleCreateContract} />
+        <HeroSection onCreateContract={() => handleCreateContract("standard")} />
         <HowItWorksSection />
         <ParallaxBanner />
         <BenefitsSection />
@@ -915,7 +921,7 @@ const LandingPage = ({ onOpenAuth }) => {
           onOpenAuth={onOpenAuth} 
         />
         <FAQSection />
-        <CTASection onCreateContract={handleCreateContract} />
+        <CTASection onCreateContract={() => handleCreateContract("standard")} />
       </main>
       <Footer />
       <WhatsAppButton />

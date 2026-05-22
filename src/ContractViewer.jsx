@@ -703,7 +703,7 @@ const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
             ) : isPaid ? (
               <><Download size={14} /><span>Baixar PDF</span></>
             ) : (
-              <><Lock size={14} /><span>Pagar R$ 29,90</span></>
+              <><Lock size={14} /><span>Pagar R$ 49,90</span></>
             )}
           </button>
         </motion.div>
@@ -719,7 +719,7 @@ const ContractViewer = ({ contract, contractType, onBack, onDownload }) => {
             <>
               <div className="cv-notice-left">
                 <Lock size={13} />
-                <span>Contrato pronto! Pague R$ 29,90 via Pix para liberar o download.</span>
+                <span>Contrato pronto! Pague R$ 49,90 via Pix para liberar o download.</span>
               </div>
               <button className="cv-notice-pay-btn" onClick={() => setShowPayment(true)}>
                 Pagar agora

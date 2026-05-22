@@ -6,8 +6,9 @@ import Chat from "./Chat";
 import { AuthProvider, useAuth } from "./config/AuthContext";
 import AuthModal from "./config/AuthModal";
 import LandingPage from "./Landingpage";
-
-
+import TermosDeUso from "./TermosDeUso.Jsx";
+import PoliticaPrivacidade from "./PoliticaPrivacidade";
+import LGPD from "./LGPD";
 
 // ─────────────────────────────────────────────
 // PROTECTED ROUTE
@@ -48,13 +49,9 @@ const AppContent = () => {
   return (
     <>
       <Routes>
-        <Route 
-          path="/" 
-          element={
-            <LandingPage 
-              onOpenAuth={openAuth} 
-            />
-          } 
+        <Route
+          path="/"
+          element={<LandingPage onOpenAuth={openAuth} />}
         />
         <Route
           path="/chat"
@@ -64,6 +61,10 @@ const AppContent = () => {
             </ProtectedRoute>
           }
         />
+        <Route path="/termos-de-uso" element={<TermosDeUso />} />
+        <Route path="/politica-de-privacidade" element={<PoliticaPrivacidade />} />
+        <Route path="/lgpd" element={<LGPD />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 
       <AuthModal
@@ -75,8 +76,6 @@ const AppContent = () => {
           window.location.href = "/chat";
         }}
       />
-
-     
     </>
   );
 };
