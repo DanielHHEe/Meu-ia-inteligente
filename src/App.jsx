@@ -8,7 +8,7 @@ import AuthModal from "./config/AuthModal";
 import LandingPage from "./Landingpage";
 import TermosDeUso from "./TermosDeUso.jsx";
 import PoliticaPrivacidade from "./PoliticaPrivacidade";
-import LGPD from "./LGPD";
+import LGPD from "./Lgpd.jsx";
 
 // ─────────────────────────────────────────────
 // PROTECTED ROUTE
