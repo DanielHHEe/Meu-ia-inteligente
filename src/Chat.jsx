@@ -10,6 +10,7 @@ import { ChatService } from './chatService';
 import { useAuth } from "./config/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import PersonalizationScreen from "./PersonalizationScreen";
+import { supabase } from "./config/supabase";
 
 // ==================== TYPING ====================
 const TypingText = ({ text, onComplete, speed = 15 }) => {
@@ -67,21 +68,6 @@ const contractTypes = [
     icon: Briefcase,
     description: "Ideal para freelancers e prestadores de serviço",
     popular: true,
-    questions: [
-      { id: "contratante_nome", question: "Qual o nome completo do CONTRATANTE (quem vai pagar pelo serviço)?", type: "text" },
-      { id: "contratante_cpf_cnpj", question: "Qual o CPF ou CNPJ do CONTRATANTE?", type: "text" },
-      { id: "contratado_nome", question: "Qual o nome completo do CONTRATADO (quem vai prestar o serviço)?", type: "text" },
-      { id: "contratado_cpf_cnpj", question: "Qual o CPF ou CNPJ do CONTRATADO?", type: "text" },
-      { id: "descricao_servico", question: "Descreva detalhadamente o serviço a ser prestado:", type: "textarea" },
-      { id: "valor_total", question: "Qual o valor total do serviço? (Ex: R$ 5.000,00)", type: "text" },
-      { id: "forma_pagamento", question: "Qual a forma de pagamento? (Ex: PIX à vista, 50% entrada + 50% entrega)", type: "text" },
-      { id: "prazo_execucao", question: "Qual o prazo para execução do serviço? (Ex: 30 dias)", type: "text" },
-      { id: "multa_atraso_contratado", question: "Qual o percentual de multa por dia de atraso na entrega? (Ex: 0,5% ao dia)", type: "text" },
-      { id: "multa_limite", question: "Qual o limite máximo da multa por atraso? (Ex: 10% do valor total)", type: "text" },
-      { id: "multa_rescisao", question: "Qual o percentual de multa por rescisão antecipada? (Ex: 20%)", type: "text" },
-      { id: "cidade", question: "Em qual cidade o contrato será assinado?", type: "text" },
-      { id: "estado", question: "Qual o Estado (UF)?", type: "text" },
-    ],
   },
   {
     id: "aluguel",
@@ -89,24 +75,6 @@ const contractTypes = [
     icon: Home,
     description: "Para locação de imóveis",
     popular: true,
-    questions: [
-      { id: "locador_nome", question: "Qual o nome completo do LOCADOR (proprietário)?", type: "text" },
-      { id: "locador_cpf_cnpj", question: "Qual o CPF ou CNPJ do LOCADOR?", type: "text" },
-      { id: "locatario_nome", question: "Qual o nome completo do LOCATÁRIO (inquilino)?", type: "text" },
-      { id: "locatario_cpf_cnpj", question: "Qual o CPF ou CNPJ do LOCATÁRIO?", type: "text" },
-      { id: "descricao_imovel", question: "Descreva o imóvel (tipo, número de cômodos, características):", type: "textarea" },
-      { id: "endereco_imovel", question: "Qual o endereço completo do imóvel?", type: "text" },
-      { id: "valor_aluguel", question: "Qual o valor mensal do aluguel?", type: "text" },
-      { id: "dia_vencimento", question: "Qual o dia do mês para vencimento? (Ex: dia 10)", type: "text" },
-      { id: "data_inicio", question: "Qual a data de início da locação? (Ex: 01/04/2025)", type: "text" },
-      { id: "prazo_locacao", question: "Qual o prazo da locação em meses? (Ex: 12 meses)", type: "text" },
-      { id: "multa_atraso", question: "Qual o percentual de multa por atraso no pagamento? (Ex: 10%)", type: "text" },
-      { id: "juros_atraso", question: "Qual o percentual de juros ao mês por atraso? (Ex: 1% ao mês)", type: "text" },
-      { id: "correcao_monetaria", question: "Qual o índice de correção monetária anual? (Ex: IGPM, IPCA)", type: "text" },
-      { id: "prazo_tolerancia", question: "Qual o prazo de tolerância para pagamento em dias? (Ex: 5 dias)", type: "text" },
-      { id: "cidade", question: "Em qual cidade o contrato será assinado?", type: "text" },
-      { id: "estado", question: "Qual o Estado (UF)?", type: "text" },
-    ],
   },
   {
     id: "parceria",
@@ -114,21 +82,6 @@ const contractTypes = [
     icon: Users,
     description: "Para parcerias comerciais",
     popular: false,
-    questions: [
-      { id: "parte_a_nome", question: "Qual o nome completo da PARTE A?", type: "text" },
-      { id: "parte_a_cpf_cnpj", question: "Qual o CPF/CNPJ da PARTE A?", type: "text" },
-      { id: "parte_b_nome", question: "Qual o nome completo da PARTE B?", type: "text" },
-      { id: "parte_b_cpf_cnpj", question: "Qual o CPF/CNPJ da PARTE B?", type: "text" },
-      { id: "objeto_parceria", question: "Qual o objeto da parceria? (descreva o que será feito em conjunto)", type: "textarea" },
-      { id: "contribuicao_a", question: "Qual a contribuição da PARTE A? (o que ela entra com)", type: "text" },
-      { id: "contribuicao_b", question: "Qual a contribuição da PARTE B? (o que ela entra com)", type: "text" },
-      { id: "participacao_resultados", question: "Como será a divisão dos resultados? (Ex: 50%/50%)", type: "text" },
-      { id: "prazo_parceria", question: "Qual o prazo da parceria? (Ex: 12 meses, 2 anos, indeterminado)", type: "text" },
-      { id: "multa_descumprimento", question: "Percentual de multa por descumprimento das obrigações? (Ex: 10%)", type: "text" },
-      { id: "multa_rescisao", question: "Percentual de multa por rescisão antecipada? (Ex: 15%)", type: "text" },
-      { id: "cidade", question: "Em qual cidade o contrato será assinado?", type: "text" },
-      { id: "estado", question: "Qual o Estado (UF)?", type: "text" },
-    ],
   },
   {
     id: "confidencialidade",
@@ -136,18 +89,6 @@ const contractTypes = [
     icon: Shield,
     description: "Proteção de informações sigilosas",
     popular: true,
-    questions: [
-      { id: "revelador_nome", question: "Qual o nome completo da parte REVELADORA?", type: "text" },
-      { id: "revelador_cpf_cnpj", question: "Qual o CPF/CNPJ da parte REVELADORA?", type: "text" },
-      { id: "receptor_nome", question: "Qual o nome completo da parte RECEPTORA?", type: "text" },
-      { id: "receptor_cpf_cnpj", question: "Qual o CPF/CNPJ da parte RECEPTORA?", type: "text" },
-      { id: "informacoes_confidenciais", question: "Quais informações serão consideradas confidenciais? Descreva:", type: "textarea" },
-      { id: "prazo_confidencialidade", question: "Qual o prazo de confidencialidade? (Ex: 2 anos, 5 anos)", type: "text" },
-      { id: "multa_violacao", question: "Valor da multa em caso de violação? (Ex: R$ 50.000,00)", type: "text" },
-      { id: "perdas_danos", question: "Além da multa, haverá cobrança de perdas e danos? (Sim ou Não)", type: "text" },
-      { id: "cidade", question: "Em qual cidade o contrato será assinado?", type: "text" },
-      { id: "estado", question: "Qual o Estado (UF)?", type: "text" },
-    ],
   },
   {
     id: "trabalho-freelancer",
@@ -155,21 +96,6 @@ const contractTypes = [
     icon: FileSignature,
     description: "Para profissionais autônomos",
     popular: false,
-    questions: [
-      { id: "contratante_nome", question: "Qual o nome completo do CONTRATANTE (o cliente)?", type: "text" },
-      { id: "contratante_cpf_cnpj", question: "Qual o CPF/CNPJ do CONTRATANTE?", type: "text" },
-      { id: "freelancer_nome", question: "Qual o nome completo do FREELANCER?", type: "text" },
-      { id: "freelancer_cpf", question: "Qual o CPF do FREELANCER?", type: "text" },
-      { id: "escopo_trabalho", question: "Descreva detalhadamente o escopo do trabalho (o que será entregue):", type: "textarea" },
-      { id: "valor_projeto", question: "Qual o valor total do projeto? (Ex: R$ 3.000,00)", type: "text" },
-      { id: "forma_pagamento", question: "Qual a forma de pagamento?", type: "text" },
-      { id: "prazo_entrega", question: "Qual o prazo de entrega?", type: "text" },
-      { id: "multa_atraso_entrega", question: "Multa por atraso na entrega pelo freelancer, por dia? (Ex: 0,5%)", type: "text" },
-      { id: "multa_atraso_pagamento", question: "Multa por atraso no pagamento pelo contratante, por dia? (Ex: 0,5%)", type: "text" },
-      { id: "multa_rescisao", question: "Percentual de multa por rescisão antecipada? (Ex: 20%)", type: "text" },
-      { id: "cidade", question: "Em qual cidade o contrato será assinado?", type: "text" },
-      { id: "estado", question: "Qual o Estado (UF)?", type: "text" },
-    ],
   },
   {
     id: "compra-venda",
@@ -177,20 +103,6 @@ const contractTypes = [
     icon: Building2,
     description: "Para transações de bens",
     popular: false,
-    questions: [
-      { id: "vendedor_nome", question: "Qual o nome completo do VENDEDOR?", type: "text" },
-      { id: "vendedor_cpf_cnpj", question: "Qual o CPF/CNPJ do VENDEDOR?", type: "text" },
-      { id: "comprador_nome", question: "Qual o nome completo do COMPRADOR?", type: "text" },
-      { id: "comprador_cpf_cnpj", question: "Qual o CPF/CNPJ do COMPRADOR?", type: "text" },
-      { id: "descricao_bem", question: "Descreva detalhadamente o bem sendo vendido:", type: "textarea" },
-      { id: "valor_venda", question: "Qual o valor total da venda?", type: "text" },
-      { id: "forma_pagamento", question: "Qual a forma de pagamento?", type: "text" },
-      { id: "prazo_entrega_bem", question: "Qual o prazo para entrega do bem?", type: "text" },
-      { id: "multa_atraso_pagamento", question: "Multa por atraso no pagamento, por dia? (Ex: 0,5% ao dia)", type: "text" },
-      { id: "multa_desistencia", question: "Percentual de multa por desistência/rescisão? (Ex: 20% do valor)", type: "text" },
-      { id: "cidade", question: "Em qual cidade o contrato será assinado?", type: "text" },
-      { id: "estado", question: "Qual o Estado (UF)?", type: "text" },
-    ],
   },
   {
     id: "empreitada",
@@ -198,25 +110,6 @@ const contractTypes = [
     icon: Building2,
     description: "Obras e construção civil — art. 618 CC",
     popular: false,
-    questions: [
-      { id: "contratante_nome", question: "Qual o nome completo do CONTRATANTE (dono da obra)?", type: "text" },
-      { id: "contratante_cpf_cnpj", question: "Qual o CPF ou CNPJ do CONTRATANTE?", type: "text" },
-      { id: "empreiteiro_nome", question: "Qual o nome completo do EMPREITEIRO (quem vai executar a obra)?", type: "text" },
-      { id: "empreiteiro_cpf_cnpj", question: "Qual o CPF ou CNPJ do EMPREITEIRO?", type: "text" },
-      { id: "tipo_obra", question: "Qual é o tipo de obra ou serviço? (Ex: construção, reforma, instalação elétrica)", type: "text" },
-      { id: "descricao_obra", question: "Descreva detalhadamente o que será feito na obra:", type: "textarea" },
-      { id: "endereco_obra", question: "Qual o endereço onde a obra será executada?", type: "text" },
-      { id: "modalidade_empreitada", question: "A empreitada é por preço global (valor fechado) ou por medição/etapas?", type: "text" },
-      { id: "valor_total", question: "Qual o valor total da empreitada? (Ex: R$ 50.000,00)", type: "text" },
-      { id: "forma_pagamento", question: "Qual a forma de pagamento? (Ex: 30% na assinatura, 40% na metade, 30% na entrega)", type: "text" },
-      { id: "prazo_execucao", question: "Qual o prazo total para conclusão da obra? (Ex: 90 dias, 6 meses)", type: "text" },
-      { id: "prazo_garantia", question: "Qual o prazo de garantia da obra após a entrega? (Ex: 5 anos para estrutura)", type: "text" },
-      { id: "multa_atraso", question: "Percentual de multa por atraso na entrega da obra, por dia? (Ex: 0,5% ao dia)", type: "text" },
-      { id: "multa_limite", question: "Limite máximo da multa por atraso? (Ex: 10% do valor total)", type: "text" },
-      { id: "multa_rescisao", question: "Percentual de multa por rescisão antecipada? (Ex: 20%)", type: "text" },
-      { id: "cidade", question: "Em qual cidade o contrato será assinado?", type: "text" },
-      { id: "estado", question: "Qual o Estado (UF)?", type: "text" },
-    ],
   },
   {
     id: "sociedade",
@@ -224,23 +117,6 @@ const contractTypes = [
     icon: Users,
     description: "Abertura de empresa entre sócios — CC arts. 997-1038",
     popular: false,
-    questions: [
-      { id: "socio_a_nome", question: "Qual o nome completo do SÓCIO A?", type: "text" },
-      { id: "socio_a_cpf", question: "Qual o CPF do SÓCIO A?", type: "text" },
-      { id: "socio_a_quota", question: "Qual o percentual de participação (quota) do SÓCIO A? (Ex: 50%)", type: "text" },
-      { id: "socio_b_nome", question: "Qual o nome completo do SÓCIO B?", type: "text" },
-      { id: "socio_b_cpf", question: "Qual o CPF do SÓCIO B?", type: "text" },
-      { id: "socio_b_quota", question: "Qual o percentual de participação (quota) do SÓCIO B? (Ex: 50%)", type: "text" },
-      { id: "razao_social", question: "Qual será a razão social da empresa? (nome oficial registrado)", type: "text" },
-      { id: "nome_fantasia", question: "Qual será o nome fantasia? (se não houver, informe 'sem nome fantasia')", type: "text" },
-      { id: "objeto_social", question: "Qual é o objeto social? (o que a empresa vai fazer — descreva as atividades)", type: "textarea" },
-      { id: "endereco_sede", question: "Qual o endereço da sede da empresa?", type: "text" },
-      { id: "capital_social", question: "Qual o valor do capital social? (Ex: R$ 10.000,00)", type: "text" },
-      { id: "distribuicao_lucros", question: "Como será feita a distribuição dos lucros entre os sócios? (Ex: proporcional às quotas)", type: "text" },
-      { id: "multa_rescisao", question: "Percentual de multa por rescisão antecipada ou descumprimento? (Ex: 20%)", type: "text" },
-      { id: "cidade", question: "Em qual cidade o contrato será assinado?", type: "text" },
-      { id: "estado", question: "Qual o Estado (UF)?", type: "text" },
-    ],
   },
   {
     id: "representacao-comercial",
@@ -248,21 +124,6 @@ const contractTypes = [
     icon: Briefcase,
     description: "Representantes comerciais — Lei 4.886/65",
     popular: false,
-    questions: [
-      { id: "representada_nome", question: "Qual o nome ou razão social da empresa REPRESENTADA (quem fabrica/vende)?", type: "text" },
-      { id: "representada_cnpj", question: "Qual o CNPJ da REPRESENTADA?", type: "text" },
-      { id: "representante_nome", question: "Qual o nome completo ou razão social do REPRESENTANTE COMERCIAL?", type: "text" },
-      { id: "representante_cpf_cnpj", question: "Qual o CPF ou CNPJ do REPRESENTANTE?", type: "text" },
-      { id: "produtos_representados", question: "Quais produtos ou serviços o representante irá vender? (descreva)", type: "textarea" },
-      { id: "territorio_atuacao", question: "Qual o território de atuação do representante? (Ex: estado de SP, região Sul)", type: "text" },
-      { id: "exclusividade_territorial", question: "O representante terá exclusividade nesse território? (sim ou não)", type: "text" },
-      { id: "percentual_comissao", question: "Qual o percentual de comissão do representante? (Ex: 5%)", type: "text" },
-      { id: "base_calculo_comissao", question: "A comissão é calculada sobre o quê? (Ex: valor faturado e recebido)", type: "text" },
-      { id: "prazo_contrato", question: "Qual o prazo de duração do contrato? (Ex: 12 meses, indeterminado)", type: "text" },
-      { id: "multa_descumprimento", question: "Percentual de multa por descumprimento das obrigações? (Ex: 20%)", type: "text" },
-      { id: "cidade", question: "Em qual cidade o contrato será assinado?", type: "text" },
-      { id: "estado", question: "Qual o Estado (UF)?", type: "text" },
-    ],
   },
   {
     id: "comodato",
@@ -270,21 +131,6 @@ const contractTypes = [
     icon: FileText,
     description: "Empréstimo gratuito de bem — CC arts. 579-585",
     popular: false,
-    questions: [
-      { id: "comodante_nome", question: "Qual o nome completo do COMODANTE (dono do bem que vai emprestar)?", type: "text" },
-      { id: "comodante_cpf_cnpj", question: "Qual o CPF ou CNPJ do COMODANTE?", type: "text" },
-      { id: "comodatario_nome", question: "Qual o nome completo do COMODATÁRIO (quem recebe o bem emprestado)?", type: "text" },
-      { id: "comodatario_cpf_cnpj", question: "Qual o CPF ou CNPJ do COMODATÁRIO?", type: "text" },
-      { id: "descricao_bem", question: "O que está sendo emprestado? Descreva o bem com detalhes:", type: "textarea" },
-      { id: "estado_conservacao", question: "Qual o estado de conservação do bem no momento da entrega?", type: "text" },
-      { id: "finalidade_uso", question: "Para qual finalidade o comodatário irá usar o bem?", type: "text" },
-      { id: "prazo_comodato", question: "Qual o prazo do empréstimo? (Ex: 30 dias, 6 meses, indeterminado)", type: "text" },
-      { id: "responsavel_manutencao", question: "Quem é responsável pela manutenção do bem durante o empréstimo?", type: "text" },
-      { id: "multa_dano", question: "Como será calculada a indenização em caso de dano ao bem pelo comodatário?", type: "text" },
-      { id: "multa_atraso_devolucao", question: "Percentual de multa por dia de atraso na devolução do bem? (Ex: 0,5% ao dia)", type: "text" },
-      { id: "cidade", question: "Em qual cidade o contrato será assinado?", type: "text" },
-      { id: "estado", question: "Qual o Estado (UF)?", type: "text" },
-    ],
   },
 ];
 
@@ -909,6 +755,7 @@ const Chat = () => {
   const location = useLocation();
   const plan = location.state?.plan || 'standard';
   const price = plan === 'premium' ? 49.90 : 39.90;
+  const { user } = useAuth();
 
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedContract, setSelectedContract] = useState(null);
@@ -927,6 +774,7 @@ const Chat = () => {
 
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const contractIdRef = useRef(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
@@ -963,6 +811,56 @@ const Chat = () => {
     return () => window.removeEventListener('resize', h);
   }, []);
 
+  // ==================== SUPABASE HELPERS ====================
+  const saveContractToDB = async (contractType, tokensUsed = 0) => {
+    if (!user) return null;
+    try {
+      const { data, error } = await supabase
+        .from('contracts')
+        .insert({
+          user_id: user.id,
+          user_email: user.email,
+          contract_type: contractType.id,
+          plan: plan,
+          is_paid: false,
+          amount: price,
+          tokens_used: tokensUsed,
+        })
+        .select()
+        .single();
+      if (error) throw error;
+      contractIdRef.current = data.id;
+      return data.id;
+    } catch (e) {
+      console.error('Erro ao salvar contrato:', e);
+      return null;
+    }
+  };
+
+  const savePaymentToDB = async () => {
+    if (!user || !contractIdRef.current) return;
+    try {
+      await supabase
+        .from('contracts')
+        .update({ is_paid: true, paid_at: new Date().toISOString() })
+        .eq('id', contractIdRef.current);
+
+      await supabase
+        .from('payments')
+        .insert({
+          user_id: user.id,
+          user_email: user.email,
+          contract_id: contractIdRef.current,
+          contract_type: selectedContract?.id,
+          amount: price,
+          plan: plan,
+          payment_method: 'pix',
+        });
+    } catch (e) {
+      console.error('Erro ao salvar pagamento:', e);
+    }
+  };
+
   const focusInput = () => setTimeout(() => inputRef.current?.focus(), 50);
 
   const handleSelectContract = async (type) => {
@@ -973,6 +871,7 @@ const Chat = () => {
     setGeneratedContract(null);
     setBrandingData(null);
     setCompletedMessages(new Set());
+    contractIdRef.current = null;
     const service = new ChatService(type.id);
     setChatService(service);
     setIsTyping(true);
@@ -1004,6 +903,10 @@ const Chat = () => {
             const contract = await chatService.generateContract();
             setGeneratedContract(contract);
             setCurrentStep(3);
+
+            // ✅ Salva contrato no Supabase
+            await saveContractToDB(selectedContract);
+
             setMessages(prev => prev.map(m =>
               m.isGenerating ? { text: '__PDF_READY__', isBot: true, isPdfCard: true } : m
             ));
@@ -1024,7 +927,9 @@ const Chat = () => {
     }
   };
 
-  const handlePaymentConfirmed = () => {
+  // ✅ handlePaymentConfirmed agora é async e salva pagamento no Supabase
+  const handlePaymentConfirmed = async () => {
+    await savePaymentToDB();
     setShowPaymentModal(false);
     if (plan === 'premium') {
       setShowPersonalization(true);
