@@ -22,7 +22,6 @@ const fmtCurrency = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', c
 const fmtNum = (n) => new Intl.NumberFormat('pt-BR').format(n || 0);
 const CHART_COLORS = ['#94a3b8','#7dd3fc','#86efac','#fca5a5','#c4b5fd','#fdba74','#6ee7b7','#f9a8d4','#a5b4fc','#fde68a'];
 
-// ── SVG Icons ──────────────────────────────────────────────
 const Ic = ({ d, size = 16, color = 'currentColor', sw = 1.5 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
     stroke={color} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
@@ -47,10 +46,10 @@ const I = {
   user:    ['M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2','M12 11a4 4 0 100-8 4 4 0 000 8z'],
   check:   'M20 6L9 17l-5-5',
   star:    'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z',
-  cal:     ['M3 4h18v18H3z','M16 2v4M8 2v4M3 10h18'],
+  eye:     ['M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z','M12 9a3 3 0 100 6 3 3 0 000-6z'],
+  eyeOff:  ['M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24','M1 1l22 22'],
 };
 
-// ── Date Filter ────────────────────────────────────────────
 const DateFilter = ({ from, to, onFrom, onTo, onClear, th }) => (
   <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:18, flexWrap:'wrap' }}>
     <span style={{ fontSize:12, color:th.muted }}>De</span>
@@ -68,7 +67,6 @@ const DateFilter = ({ from, to, onFrom, onTo, onClear, th }) => (
   </div>
 );
 
-// ── Main ───────────────────────────────────────────────────
 export default function AdminDashboard() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
@@ -86,6 +84,7 @@ export default function AdminDashboard() {
   const [dark,      setDark]      = useState(false);
   const [chartRdy,  setChartRdy]  = useState(false);
   const [search,    setSearch]    = useState('');
+  const [hidden,    setHidden]    = useState(false); // ocultar valores
 
   const [oF,setOF]=useState(''); const [oT,setOT]=useState('');
   const [cF,setCF]=useState(''); const [cT,setCT]=useState('');
@@ -93,7 +92,6 @@ export default function AdminDashboard() {
   const [uF,setUF]=useState(''); const [uT,setUT]=useState('');
   const [tF,setTF]=useState(''); const [tT,setTT]=useState('');
 
-  // Theme
   const th = {
     bg:      dark?'#0f1419':'#f6f5f2',
     sidebar: dark?'#0a0e14':'#ffffff',
@@ -107,6 +105,18 @@ export default function AdminDashboard() {
     rowAlt:  dark?'#141c24':'#ffffff',
     input:   dark?'#111820':'#f0eeea',
   };
+
+  // Paleta de cores dos cards
+  const cardColors = {
+    green:  { val: dark?'#4ade80':'#16a34a', bg: dark?'rgba(74,222,128,0.1)':'rgba(22,163,74,0.08)', border: dark?'rgba(74,222,128,0.2)':'rgba(22,163,74,0.15)' },
+    blue:   { val: dark?'#60a5fa':'#2563eb', bg: dark?'rgba(96,165,250,0.1)':'rgba(37,99,235,0.07)', border: dark?'rgba(96,165,250,0.2)':'rgba(37,99,235,0.15)' },
+    amber:  { val: dark?'#fbbf24':'#d97706', bg: dark?'rgba(251,191,36,0.1)':'rgba(217,119,6,0.07)',  border: dark?'rgba(251,191,36,0.2)':'rgba(217,119,6,0.15)'  },
+    purple: { val: dark?'#a78bfa':'#7c3aed', bg: dark?'rgba(167,139,250,0.1)':'rgba(124,58,237,0.07)', border: dark?'rgba(167,139,250,0.2)':'rgba(124,58,237,0.15)' },
+    teal:   { val: dark?'#2dd4bf':'#0d9488', bg: dark?'rgba(45,212,191,0.1)':'rgba(13,148,136,0.07)', border: dark?'rgba(45,212,191,0.2)':'rgba(13,148,136,0.15)' },
+  };
+
+  const mask = (v) => hidden ? '••••••' : v;
+  const maskNum = (v) => hidden ? '••••' : v;
 
   useEffect(()=>{
     if(!loading && (!user||user.email!==ADMIN_EMAIL)) navigate('/');
@@ -236,7 +246,6 @@ export default function AdminDashboard() {
   const tokTotal=fT.reduce((s,c)=>s+Number(c.tokens_used||0),0);
   const tokCost=(tokTotal/1_000_000)*0.15*5.1;
 
-  // Reusable components
   const Card=({children,style={}})=>(
     <div style={{ background:th.card, border:`1px solid ${th.border}`, borderRadius:10, ...style }}>{children}</div>
   );
@@ -274,6 +283,24 @@ export default function AdminDashboard() {
     );
   };
 
+  // Card colorido com ocultar
+  const StatCard=({ label, value, sub, color, icon })=>{
+    const c = cardColors[color] || cardColors.green;
+    return(
+      <div style={{ background:th.card, border:`1px solid ${th.border}`, borderRadius:10, padding:14, position:'relative', overflow:'hidden' }}>
+        <div style={{ position:'absolute', top:0, left:0, right:0, height:2, background:c.val, opacity:0.6, borderRadius:'10px 10px 0 0' }} />
+        <div style={{ width:26, height:26, borderRadius:6, background:c.bg, border:`1px solid ${c.border}`, display:'flex', alignItems:'center', justifyContent:'center', marginBottom:10 }}>
+          <Ic d={icon} size={13} color={c.val} />
+        </div>
+        <p style={{ fontSize:20, fontWeight:700, color:c.val, letterSpacing:'-0.02em', lineHeight:1, marginBottom:4, transition:'color 0.2s' }}>
+          {hidden ? <span style={{ letterSpacing:2, fontSize:16 }}>••••••</span> : value}
+        </p>
+        <p style={{ fontSize:12, color:th.mid, marginBottom:2 }}>{label}</p>
+        <p style={{ fontSize:11, color:th.muted }}>{sub}</p>
+      </div>
+    );
+  };
+
   const nav=(id)=>{ setSection(id); setSideOpen(false); };
 
   return(
@@ -295,17 +322,12 @@ export default function AdminDashboard() {
         }
       `}</style>
 
-      {/* Mobile overlay */}
       {sideOpen&&<div onClick={()=>setSideOpen(false)} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.4)', zIndex:40, backdropFilter:'blur(2px)' }} />}
 
-      {/* Sidebar */}
       <aside style={{
-        width:200, flexShrink:0,
-        background:th.sidebar, borderRight:`1px solid ${th.border}`,
-        display:'flex', flexDirection:'column',
-        position:'fixed', top:0, bottom:0, left:0, zIndex:50,
-        transform: sideOpen ? 'translateX(0)' : undefined,
-        transition:'transform 0.22s ease',
+        width:200, flexShrink:0, background:th.sidebar, borderRight:`1px solid ${th.border}`,
+        display:'flex', flexDirection:'column', position:'fixed', top:0, bottom:0, left:0, zIndex:50,
+        transform: sideOpen ? 'translateX(0)' : undefined, transition:'transform 0.22s ease',
       }} className={sideOpen?'':'hide-mobile'}>
         <div style={{ padding:'16px 14px', borderBottom:`1px solid ${th.border}`, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
           <div style={{ display:'flex', alignItems:'center', gap:9 }}>
@@ -342,13 +364,11 @@ export default function AdminDashboard() {
         </div>
       </aside>
 
-      {/* Content */}
-      <div style={{ flex:1, marginLeft:200, display:'flex', flexDirection:'column', minHeight:'100vh' }} className="mobile-full" style2={{ marginLeft:0 }}>
+      <div style={{ flex:1, marginLeft:200, display:'flex', flexDirection:'column', minHeight:'100vh' }} className="mobile-full">
 
         {/* Top bar */}
         <header style={{ position:'sticky', top:0, zIndex:30, background:th.sidebar, borderBottom:`1px solid ${th.border}`, padding:'0 20px', height:52, display:'flex', alignItems:'center', justifyContent:'space-between', backdropFilter:'blur(8px)' }}>
           <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-            {/* Hamburger — mobile only */}
             <button onClick={()=>setSideOpen(!sideOpen)} style={{ display:'none', width:32, height:32, border:`1px solid ${th.border}`, borderRadius:7, background:th.input, alignItems:'center', justifyContent:'center', cursor:'pointer' }} className="show-mobile-flex">
               <Ic d={sideOpen?I.x:I.menu} size={15} color={th.mid} />
             </button>
@@ -360,6 +380,12 @@ export default function AdminDashboard() {
             </div>
           </div>
           <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+            {/* Botão ocultar valores */}
+            <button onClick={()=>setHidden(!hidden)} title={hidden?'Mostrar valores':'Ocultar valores'}
+              style={{ display:'flex', alignItems:'center', gap:6, padding:'5px 12px', borderRadius:7, border:`1px solid ${th.border}`, background:hidden?( dark?'rgba(251,191,36,0.1)':'rgba(217,119,6,0.07)'):th.input, color:hidden?(dark?'#fbbf24':'#d97706'):th.mid, fontSize:12, cursor:'pointer', transition:'all 0.2s' }}>
+              <Ic d={hidden?I.eyeOff:I.eye} size={13} color={hidden?(dark?'#fbbf24':'#d97706'):th.mid} />
+              <span className="hide-mobile">{hidden?'Mostrar':'Ocultar'}</span>
+            </button>
             <button onClick={load} style={{ display:'flex', alignItems:'center', gap:6, padding:'5px 12px', borderRadius:7, border:`1px solid ${th.border}`, background:th.input, color:th.mid, fontSize:12, cursor:'pointer' }}>
               <span style={{ animation:loading2?'spin 0.8s linear infinite':'none', display:'inline-block' }}><Ic d={I.refresh} size={12} color={th.mid} /></span>
               <span className="hide-mobile">Atualizar</span>
@@ -372,36 +398,23 @@ export default function AdminDashboard() {
 
         <main style={{ flex:1, padding:'24px 20px', overflowX:'hidden' }}>
 
-          {/* ── OVERVIEW ───────────────────────────────── */}
+          {/* ── OVERVIEW ── */}
           {section==='overview'&&(<>
             <DateFilter from={oF} to={oT} onFrom={setOF} onTo={setOT} onClear={()=>{setOF('');setOT('');}} th={th} />
 
-            {/* Stat cards */}
             <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(150px,1fr))', gap:10, marginBottom:16 }} className="grid-5">
-              {[
-                { label:'Contratos gerados', value:fmtNum(totalC),        sub:`${conv}% convertidos`,           icon:I.file },
-                { label:'Contratos pagos',   value:fmtNum(paidC),         sub:`de ${fmtNum(totalC)} gerados`,   icon:I.check },
-                { label:'Faturamento',       value:fmtCurrency(totalR),   sub:`ticket médio ${fmtCurrency(avgT)}`, icon:I.dollar },
-                { label:'Usuários únicos',   value:fmtNum(uniqU),         sub:'com contratos',                  icon:I.user },
-                { label:'Plano premium',     value:fmtNum(fOC.filter(c=>c.plan==='premium').length), sub:`padrão: ${fmtNum(fOC.filter(c=>c.plan!=='premium').length)}`, icon:I.star },
-              ].map((s,i)=>(
-                <Card key={i} style={{ padding:14 }}>
-                  <div style={{ width:26,height:26,borderRadius:6,background:th.input,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:10 }}>
-                    <Ic d={s.icon} size={13} color={th.muted} />
-                  </div>
-                  <p style={{ fontSize:20,fontWeight:700,color:th.text,letterSpacing:'-0.02em',lineHeight:1,marginBottom:4 }}>{s.value}</p>
-                  <p style={{ fontSize:12,color:th.mid,marginBottom:2 }}>{s.label}</p>
-                  <p style={{ fontSize:11,color:th.muted }}>{s.sub}</p>
-                </Card>
-              ))}
+              <StatCard label="Contratos gerados" value={fmtNum(totalC)}      sub={`${conv}% convertidos`}                     color="blue"   icon={I.file}  />
+              <StatCard label="Contratos pagos"   value={fmtNum(paidC)}       sub={`de ${fmtNum(totalC)} gerados`}              color="green"  icon={I.check} />
+              <StatCard label="Faturamento"       value={mask(fmtCurrency(totalR))} sub={`ticket médio ${mask(fmtCurrency(avgT))}`} color="green"  icon={I.dollar}/>
+              <StatCard label="Usuários únicos"   value={maskNum(fmtNum(uniqU))}     sub="com contratos"                          color="teal"   icon={I.user}  />
+              <StatCard label="Plano premium"     value={maskNum(fmtNum(fOC.filter(c=>c.plan==='premium').length))} sub={`padrão: ${maskNum(fmtNum(fOC.filter(c=>c.plan!=='premium').length))}`} color="purple" icon={I.star} />
             </div>
 
-            {/* Charts */}
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10, marginBottom:10 }} className="grid-2">
               <Card style={{ padding:16 }}>
                 <div style={{ display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12 }}>
                   <p style={{ fontSize:13,fontWeight:600,color:th.text }}>Faturamento por dia</p>
-                  <span style={{ fontSize:11,color:th.muted }}>{fmtCurrency(totalR)}</span>
+                  <span style={{ fontSize:11,color:th.muted }}>{mask(fmtCurrency(totalR))}</span>
                 </div>
                 <div style={{ height:150 }}><canvas ref={revRef} /></div>
               </Card>
@@ -414,7 +427,6 @@ export default function AdminDashboard() {
               </Card>
             </div>
 
-            {/* Pie + Summary */}
             <div style={{ display:'grid', gridTemplateColumns:'250px 1fr', gap:10 }} className="pie-grid">
               <Card style={{ padding:16 }}>
                 <p style={{ fontSize:13,fontWeight:600,color:th.text,marginBottom:12 }}>Tipos de contrato</p>
@@ -440,16 +452,16 @@ export default function AdminDashboard() {
                 <p style={{ fontSize:13,fontWeight:600,color:th.text,marginBottom:12 }}>Resumo financeiro</p>
                 <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:8 }}>
                   {[
-                    { label:'Receita total',       value:fmtCurrency(totalR) },
-                    { label:'Ticket médio',         value:fmtCurrency(avgT) },
-                    { label:'Taxa de conversão',    value:`${conv}%` },
-                    { label:'Contratos pendentes',  value:fmtNum(totalC-paidC) },
-                    { label:'Receita premium',      value:fmtCurrency(fOP.filter(p=>p.plan==='premium').reduce((s,p)=>s+Number(p.amount||0),0)) },
-                    { label:'Receita padrão',       value:fmtCurrency(fOP.filter(p=>p.plan!=='premium').reduce((s,p)=>s+Number(p.amount||0),0)) },
+                    { label:'Receita total',       value:mask(fmtCurrency(totalR)),        color: cardColors.green.val },
+                    { label:'Ticket médio',         value:mask(fmtCurrency(avgT)),          color: cardColors.teal.val },
+                    { label:'Taxa de conversão',    value:`${conv}%`,                       color: cardColors.blue.val },
+                    { label:'Contratos pendentes',  value:maskNum(fmtNum(totalC-paidC)),    color: cardColors.amber.val },
+                    { label:'Receita premium',      value:mask(fmtCurrency(fOP.filter(p=>p.plan==='premium').reduce((s,p)=>s+Number(p.amount||0),0))), color: cardColors.purple.val },
+                    { label:'Receita padrão',       value:mask(fmtCurrency(fOP.filter(p=>p.plan!=='premium').reduce((s,p)=>s+Number(p.amount||0),0))), color: cardColors.blue.val },
                   ].map((item,i)=>(
                     <div key={i} style={{ background:th.input,borderRadius:8,padding:12 }}>
                       <p style={{ fontSize:11,color:th.muted,marginBottom:5 }}>{item.label}</p>
-                      <p style={{ fontSize:15,fontWeight:700,color:th.text,letterSpacing:'-0.01em' }}>{item.value}</p>
+                      <p style={{ fontSize:15,fontWeight:700,color:item.color,letterSpacing:'-0.01em' }}>{item.value}</p>
                     </div>
                   ))}
                 </div>
@@ -457,7 +469,7 @@ export default function AdminDashboard() {
             </div>
           </>)}
 
-          {/* ── CONTRACTS ──────────────────────────────── */}
+          {/* ── CONTRACTS ── */}
           {section==='contracts'&&(<>
             <DateFilter from={cF} to={cT} onFrom={setCF} onTo={setCT} onClear={()=>{setCF('');setCT('');}} th={th} />
             <Card>
@@ -475,7 +487,7 @@ export default function AdminDashboard() {
                           <td style={{ padding:'8px 13px' }}><Badge v={c.plan==='premium'?'p':'n'}>{c.plan==='premium'?'Premium':'Padrão'}</Badge></td>
                           <td style={{ padding:'8px 13px' }}><Badge v={c.is_paid?'g':'a'}>{c.is_paid?'Pago':'Pendente'}</Badge></td>
                           <TD>{fmtNum(c.tokens_used)}</TD>
-                          <TD style={{ color:th.text,fontWeight:600 }}>{fmtCurrency(c.amount)}</TD>
+                          <TD style={{ color:cardColors.green.val,fontWeight:600 }}>{mask(fmtCurrency(c.amount))}</TD>
                           <TD style={{ color:th.muted,whiteSpace:'nowrap' }}>{new Date(c.created_at).toLocaleDateString('pt-BR')}</TD>
                         </tr>
                       ))}
@@ -486,25 +498,29 @@ export default function AdminDashboard() {
             </Card>
           </>)}
 
-          {/* ── PAYMENTS ───────────────────────────────── */}
+          {/* ── PAYMENTS ── */}
           {section==='payments'&&(<>
             <DateFilter from={pF} to={pT} onFrom={setPF} onTo={setPT} onClear={()=>{setPF('');setPT('');}} th={th} />
             <div style={{ display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10,marginBottom:12 }} className="grid-3">
               {[
-                { label:'Total recebido', value:fmtCurrency(fP.reduce((s,p)=>s+Number(p.amount||0),0)), icon:I.dollar },
-                { label:'Transações',     value:fmtNum(fP.length), icon:I.card },
-                { label:'Ticket médio',   value:fmtCurrency(fP.length>0?fP.reduce((s,p)=>s+Number(p.amount||0),0)/fP.length:0), icon:I.trend },
-              ].map((s,i)=>(
-                <Card key={i} style={{ padding:14,display:'flex',alignItems:'center',gap:12 }}>
-                  <div style={{ width:32,height:32,borderRadius:8,background:th.input,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0 }}>
-                    <Ic d={s.icon} size={14} color={th.muted} />
+                { label:'Total recebido', value:mask(fmtCurrency(fP.reduce((s,p)=>s+Number(p.amount||0),0))), color:'green',  icon:I.dollar },
+                { label:'Transações',     value:maskNum(fmtNum(fP.length)),                                    color:'blue',   icon:I.card   },
+                { label:'Ticket médio',   value:mask(fmtCurrency(fP.length>0?fP.reduce((s,p)=>s+Number(p.amount||0),0)/fP.length:0)), color:'teal', icon:I.trend },
+              ].map((s,i)=>{
+                const c=cardColors[s.color];
+                return(
+                  <div key={i} style={{ background:th.card, border:`1px solid ${th.border}`, borderRadius:10, padding:14, display:'flex', alignItems:'center', gap:12, position:'relative', overflow:'hidden' }}>
+                    <div style={{ position:'absolute',top:0,left:0,right:0,height:2,background:c.val,opacity:0.6,borderRadius:'10px 10px 0 0' }} />
+                    <div style={{ width:32,height:32,borderRadius:8,background:c.bg,border:`1px solid ${c.border}`,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0 }}>
+                      <Ic d={s.icon} size={14} color={c.val} />
+                    </div>
+                    <div>
+                      <p style={{ fontSize:17,fontWeight:700,color:c.val,letterSpacing:'-0.01em' }}>{s.value}</p>
+                      <p style={{ fontSize:11,color:th.muted,marginTop:2 }}>{s.label}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p style={{ fontSize:17,fontWeight:700,color:th.text,letterSpacing:'-0.01em' }}>{s.value}</p>
-                    <p style={{ fontSize:11,color:th.muted,marginTop:2 }}>{s.label}</p>
-                  </div>
-                </Card>
-              ))}
+                );
+              })}
             </div>
             <Card>
               <SectionHeader title="Histórico de pagamentos" count={`${fP.length} transações`} />
@@ -520,7 +536,7 @@ export default function AdminDashboard() {
                           <TD>{CONTRACT_NAMES[p.contract_type]||p.contract_type}</TD>
                           <td style={{ padding:'8px 13px' }}><Badge v={p.plan==='premium'?'p':'n'}>{p.plan==='premium'?'Premium':'Padrão'}</Badge></td>
                           <td style={{ padding:'8px 13px' }}><Badge v="g">PIX</Badge></td>
-                          <TD style={{ color:th.text,fontWeight:600 }}>{fmtCurrency(p.amount)}</TD>
+                          <TD style={{ color:cardColors.green.val,fontWeight:600 }}>{mask(fmtCurrency(p.amount))}</TD>
                           <TD style={{ color:th.muted,whiteSpace:'nowrap' }}>{new Date(p.paid_at).toLocaleDateString('pt-BR')}</TD>
                         </tr>
                       ))}
@@ -531,15 +547,14 @@ export default function AdminDashboard() {
             </Card>
           </>)}
 
-          {/* ── USERS ──────────────────────────────────── */}
+          {/* ── USERS ── */}
           {section==='users'&&(<>
             <DateFilter from={uF} to={uT} onFrom={setUF} onTo={setUT} onClear={()=>{setUF('');setUT('');}} th={th} />
-
             {(uF||uT)&&(
               <div style={{ display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:14 }} className="grid-2">
                 {[
                   { title:'Geraram contratos', list:usersGen, right:(u)=><span style={{ fontSize:11,color:th.muted,flexShrink:0 }}>{u.count} contrato{u.count!==1?'s':''}</span>, empty:'Nenhum contrato no período' },
-                  { title:'Realizaram pagamentos', list:usersPaid, right:(u)=><span style={{ fontSize:12,fontWeight:600,color:th.text,flexShrink:0 }}>{fmtCurrency(u.total)}</span>, empty:'Nenhum pagamento no período' },
+                  { title:'Realizaram pagamentos', list:usersPaid, right:(u)=><span style={{ fontSize:12,fontWeight:600,color:cardColors.green.val,flexShrink:0 }}>{mask(fmtCurrency(u.total))}</span>, empty:'Nenhum pagamento no período' },
                 ].map((panel,pi)=>(
                   <Card key={pi} style={{ overflow:'hidden' }}>
                     <div style={{ padding:'12px 14px',borderBottom:`1px solid ${th.border}` }}>
@@ -558,13 +573,11 @@ export default function AdminDashboard() {
                 ))}
               </div>
             )}
-
             {!(uF||uT)&&(
               <div style={{ padding:'10px 14px',background:th.input,border:`1px solid ${th.border}`,borderRadius:8,marginBottom:14 }}>
                 <p style={{ fontSize:12,color:th.muted }}>Selecione um período acima para ver quais usuários geraram ou pagaram contratos nesse intervalo.</p>
               </div>
             )}
-
             <Card>
               <div style={{ padding:'12px 14px',borderBottom:`1px solid ${th.border}`,display:'flex',alignItems:'center',gap:10,flexWrap:'wrap' }}>
                 <p style={{ fontSize:13,fontWeight:600,color:th.text,flexShrink:0 }}>Todos os usuários</p>
@@ -595,9 +608,9 @@ export default function AdminDashboard() {
                               </div>
                             </td>
                             <TD style={{ maxWidth:160,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' }}>{u.email}</TD>
-                            <td style={{ padding:'8px 13px' }}><Badge v={Number(u.total_contracts)>0?'b':'n'}>{fmtNum(u.total_contracts)}</Badge></td>
-                            <td style={{ padding:'8px 13px' }}><Badge v={Number(u.paid_contracts)>0?'g':'n'}>{fmtNum(u.paid_contracts)}</Badge></td>
-                            <TD style={{ color:th.text,fontWeight:600 }}>{fmtCurrency(u.total_spent)}</TD>
+                            <td style={{ padding:'8px 13px' }}><Badge v={Number(u.total_contracts)>0?'b':'n'}>{maskNum(fmtNum(u.total_contracts))}</Badge></td>
+                            <td style={{ padding:'8px 13px' }}><Badge v={Number(u.paid_contracts)>0?'g':'n'}>{maskNum(fmtNum(u.paid_contracts))}</Badge></td>
+                            <TD style={{ color:cardColors.green.val,fontWeight:600 }}>{mask(fmtCurrency(u.total_spent))}</TD>
                             <TD style={{ color:th.muted,whiteSpace:'nowrap' }}>{u.created_at?new Date(u.created_at).toLocaleDateString('pt-BR'):'—'}</TD>
                             <TD style={{ color:th.muted,whiteSpace:'nowrap' }}>{u.last_sign_in_at?new Date(u.last_sign_in_at).toLocaleDateString('pt-BR'):'—'}</TD>
                           </tr>
@@ -610,24 +623,28 @@ export default function AdminDashboard() {
             </Card>
           </>)}
 
-          {/* ── TOKENS ─────────────────────────────────── */}
+          {/* ── TOKENS ── */}
           {section==='tokens'&&(<>
             <DateFilter from={tF} to={tT} onFrom={setTF} onTo={setTT} onClear={()=>{setTF('');setTT('');}} th={th} />
             <div style={{ display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10,marginBottom:12 }} className="grid-3">
               {[
-                { label:'Total de tokens',    value:fmtNum(tokTotal),   sub:'consumidos no período', icon:I.bolt },
-                { label:'Custo estimado',     value:fmtCurrency(tokCost), sub:'$0.15/1M tokens (gpt-4o-mini)', icon:I.dollar },
-                { label:'Média por contrato', value:fmtNum(fT.length>0?Math.round(tokTotal/fT.length):0), sub:'tokens por geração', icon:I.trend },
-              ].map((s,i)=>(
-                <Card key={i} style={{ padding:16 }}>
-                  <div style={{ width:26,height:26,borderRadius:6,background:th.input,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:10 }}>
-                    <Ic d={s.icon} size={13} color={th.muted} />
+                { label:'Total de tokens',    value:maskNum(fmtNum(tokTotal)),   sub:'consumidos no período',          color:'blue',   icon:I.bolt   },
+                { label:'Custo estimado',     value:mask(fmtCurrency(tokCost)),  sub:'$0.15/1M tokens (gpt-4o-mini)', color:'amber',  icon:I.dollar },
+                { label:'Média por contrato', value:maskNum(fmtNum(fT.length>0?Math.round(tokTotal/fT.length):0)), sub:'tokens por geração', color:'teal', icon:I.trend },
+              ].map((s,i)=>{
+                const c=cardColors[s.color];
+                return(
+                  <div key={i} style={{ background:th.card,border:`1px solid ${th.border}`,borderRadius:10,padding:16,position:'relative',overflow:'hidden' }}>
+                    <div style={{ position:'absolute',top:0,left:0,right:0,height:2,background:c.val,opacity:0.6,borderRadius:'10px 10px 0 0' }} />
+                    <div style={{ width:26,height:26,borderRadius:6,background:c.bg,border:`1px solid ${c.border}`,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:10 }}>
+                      <Ic d={s.icon} size={13} color={c.val} />
+                    </div>
+                    <p style={{ fontSize:20,fontWeight:700,color:c.val,letterSpacing:'-0.02em',marginBottom:3 }}>{s.value}</p>
+                    <p style={{ fontSize:12,color:th.mid,marginBottom:2 }}>{s.label}</p>
+                    <p style={{ fontSize:11,color:th.muted }}>{s.sub}</p>
                   </div>
-                  <p style={{ fontSize:20,fontWeight:700,color:th.text,letterSpacing:'-0.02em',marginBottom:3 }}>{s.value}</p>
-                  <p style={{ fontSize:12,color:th.mid,marginBottom:2 }}>{s.label}</p>
-                  <p style={{ fontSize:11,color:th.muted }}>{s.sub}</p>
-                </Card>
-              ))}
+                );
+              })}
             </div>
             <Card>
               <SectionHeader title="Consumo por contrato" />
@@ -641,8 +658,8 @@ export default function AdminDashboard() {
                         <tr key={c.id} style={{ borderBottom:`1px solid ${th.sub}`,background:i%2===0?th.rowAlt:th.row }}>
                           <TD style={{ color:th.text,maxWidth:180,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' }}>{c.user_email}</TD>
                           <TD>{CONTRACT_NAMES[c.contract_type]||c.contract_type}</TD>
-                          <TD style={{ color:th.text,fontWeight:600 }}>{fmtNum(c.tokens_used)}</TD>
-                          <TD>{fmtCurrency((c.tokens_used/1_000_000)*0.15*5.1)}</TD>
+                          <TD style={{ color:cardColors.blue.val,fontWeight:600 }}>{maskNum(fmtNum(c.tokens_used))}</TD>
+                          <TD style={{ color:cardColors.amber.val,fontWeight:600 }}>{mask(fmtCurrency((c.tokens_used/1_000_000)*0.15*5.1))}</TD>
                           <TD style={{ color:th.muted,whiteSpace:'nowrap' }}>{new Date(c.created_at).toLocaleDateString('pt-BR')}</TD>
                         </tr>
                       ))}
@@ -657,7 +674,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Mobile bottom nav */}
-      <nav style={{ display:'none', position:'fixed', bottom:0, left:0, right:0, background:th.sidebar, borderTop:`1px solid ${th.border}`, zIndex:40, padding:'6px 0', paddingBottom:'calc(6px + env(safe-area-inset-bottom,0px))' }} className="show-mobile-flex" style2={{ justifyContent:'space-around' }}>
+      <nav style={{ display:'none', position:'fixed', bottom:0, left:0, right:0, background:th.sidebar, borderTop:`1px solid ${th.border}`, zIndex:40, padding:'6px 0', paddingBottom:'calc(6px + env(safe-area-inset-bottom,0px))' }} className="show-mobile-flex">
         {navItems.map(item=>(
           <button key={item.id} onClick={()=>nav(item.id)} style={{ display:'flex',flexDirection:'column',alignItems:'center',gap:3,flex:1,padding:'6px 4px',border:'none',background:'transparent',color:section===item.id?(dark?'#5aaa7a':'#1a3028'):th.muted,cursor:'pointer' }}>
             <Ic d={item.icon} size={18} color={section===item.id?(dark?'#5aaa7a':'#1a3028'):th.muted} />
@@ -671,7 +688,6 @@ export default function AdminDashboard() {
           .hide-mobile{display:none!important}
           .show-mobile-flex{display:flex!important}
           aside{transform:translateX(-100%)}
-          aside.open{transform:translateX(0)}
           .mobile-full{margin-left:0!important}
           main{padding-bottom:72px!important}
           .grid-2{grid-template-columns:1fr!important}
