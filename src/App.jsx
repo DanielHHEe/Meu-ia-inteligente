@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import AdminDashboard from "./AdminDashboard";
 
 import Chat from "./Chat";
 import { AuthProvider, useAuth } from "./config/AuthContext";
@@ -64,6 +65,7 @@ const AppContent = () => {
         <Route path="/termos-de-uso" element={<TermosDeUso />} />
         <Route path="/politica-de-privacidade" element={<PoliticaPrivacidade />} />
         <Route path="/lgpd" element={<LGPD />} />
+        <Route path="/admin" element={<AdminDashboard />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 
