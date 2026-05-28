@@ -8,35 +8,16 @@ export const API_CONFIG = {
 const isLocalDev = typeof window !== 'undefined' &&
   (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 
-// Chamada para o chat normal (perguntas da entrevista) — usa serverless do Vercel em prod
-const callAI = async (endpoint, body) => {
-  const url = isLocalDev ? 'https://api.openai.com/v1/chat/completions' : endpoint;
-  const headers = isLocalDev
+const callAI = async (endpoint, body, forceDirect = false) => {
+  const useDirect = isLocalDev || forceDirect;
+  const url = useDirect ? 'https://api.openai.com/v1/chat/completions' : endpoint;
+  const headers = useDirect
     ? { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}` }
     : { 'Content-Type': 'application/json' };
   const response = await fetch(url, { method: 'POST', headers, body: JSON.stringify(body) });
   if (!response.ok) {
     const err = await response.json();
     throw new Error(err.error?.message || err.error || 'Erro na API');
-  }
-  return response.json();
-};
-
-// Chamada DIRETA à OpenAI — usada apenas em desenvolvimento local
-const callOpenAIDirect = async (body) => {
-  const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-  if (!apiKey) throw new Error('VITE_OPENAI_API_KEY não configurada');
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify(body),
-  });
-  if (!response.ok) {
-    const err = await response.json();
-    throw new Error(err.error?.message || err.error || 'Erro na API OpenAI');
   }
   return response.json();
 };
@@ -73,18 +54,18 @@ const formatDocumento = (v) => {
 
 const formatAnswers = (answers) => {
   const cpfFields = [
-    'contratante_cpf_cnpj','contratado_cpf_cnpj','locador_cpf_cnpj','locatario_cpf_cnpj',
-    'parte_a_cpf_cnpj','parte_b_cpf_cnpj','revelador_cpf_cnpj','receptor_cpf_cnpj',
-    'freelancer_cpf','vendedor_cpf_cnpj','comprador_cpf_cnpj','empreiteiro_cpf_cnpj',
-    'socio_a_cpf','socio_b_cpf','representada_cnpj','representante_cpf_cnpj',
-    'comodante_cpf_cnpj','comodatario_cpf_cnpj',
+    'contratante_cpf_cnpj', 'contratado_cpf_cnpj', 'locador_cpf_cnpj', 'locatario_cpf_cnpj',
+    'parte_a_cpf_cnpj', 'parte_b_cpf_cnpj', 'revelador_cpf_cnpj', 'receptor_cpf_cnpj',
+    'freelancer_cpf', 'vendedor_cpf_cnpj', 'comprador_cpf_cnpj', 'empreiteiro_cpf_cnpj',
+    'socio_a_cpf', 'socio_b_cpf', 'representada_cnpj', 'representante_cpf_cnpj',
+    'comodante_cpf_cnpj', 'comodatario_cpf_cnpj',
   ];
   const telFields = [
-    'contratante_telefone','contratado_telefone','locador_telefone','locatario_telefone',
-    'parte_a_telefone','parte_b_telefone','revelador_telefone','receptor_telefone',
-    'freelancer_telefone','vendedor_telefone','comprador_telefone','empreiteiro_telefone',
-    'socio_a_telefone','socio_b_telefone','representada_telefone','representante_telefone',
-    'comodante_telefone','comodatario_telefone',
+    'contratante_telefone', 'contratado_telefone', 'locador_telefone', 'locatario_telefone',
+    'parte_a_telefone', 'parte_b_telefone', 'revelador_telefone', 'receptor_telefone',
+    'freelancer_telefone', 'vendedor_telefone', 'comprador_telefone', 'empreiteiro_telefone',
+    'socio_a_telefone', 'socio_b_telefone', 'representada_telefone', 'representante_telefone',
+    'comodante_telefone', 'comodatario_telefone',
   ];
   const out = { ...answers };
   cpfFields.forEach(f => { if (out[f]) out[f] = formatDocumento(out[f]); });
@@ -1184,7 +1165,8 @@ REGRAS ABSOLUTAS:
 
 Formato de saída esperado: {"campo1":"valor","campo2":"outro valor"}`;
   try {
-    const data = await callOpenAIDirect({
+    // Extração usa /api/chat normalmente — é rápida, não vai dar timeout
+    const data = await callAI('/api/chat', {
       model: API_CONFIG.model,
       messages: [
         { role: 'system', content: 'Você é um extrator de dados preciso. Retorne APENAS JSON válido, sem nenhum texto adicional, sem markdown.' },
@@ -1207,42 +1189,6 @@ Formato de saída esperado: {"campo1":"valor","campo2":"outro valor"}`;
   }
 };
 
-// ============================================================
-// LEITOR DE STREAM
-// ============================================================
-const readStreamedResponse = async (response) => {
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let fullText = '';
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-
-    const chunk = decoder.decode(value, { stream: true });
-    const lines = chunk.split('\n');
-
-    for (const line of lines) {
-      const trimmed = line.trim();
-      if (!trimmed || trimmed === 'data: [DONE]') continue;
-      if (!trimmed.startsWith('data: ')) continue;
-
-      try {
-        const json = JSON.parse(trimmed.slice(6));
-        const delta = json.choices?.[0]?.delta?.content;
-        if (delta) fullText += delta;
-      } catch {
-        // linha inválida, ignora
-      }
-    }
-  }
-
-  return fullText;
-};
-
-// ============================================================
-// GERAÇÃO DE CONTRATO COM STREAMING
-// ============================================================
 export const generateContractFromConversation = async (messages, contractType) => {
   const rawAnswers = await extractAnswersFromConversation(messages, contractType);
   const answers = formatAnswers(rawAnswers);
@@ -1252,24 +1198,19 @@ export const generateContractFromConversation = async (messages, contractType) =
   const hoje = new Date();
   const dataAtual = hoje.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
   const isOnline = answers.modalidade_assinatura?.toLowerCase().includes('online');
-
   let filledTemplate = selectedTemplate.template;
   Object.keys(answers).forEach(key => {
     filledTemplate = filledTemplate.replace(new RegExp(`{${key}}`, 'g'), answers[key] || '');
   });
   filledTemplate = filledTemplate.replace(/{[^}]+}/g, '');
-
   const dataBlock = Object.entries(answers)
     .filter(([, v]) => v && v.trim() !== '')
     .map(([k, v]) => `• ${k}: ${v}`)
     .join('\n');
-
   const clausulasList = (CONTRACT_CLAUSES[contractType] || []).map(c => `   - ${c}`).join('\n');
-
   const foroInstrucao = isOnline
     ? `A assinatura será realizada de forma ONLINE/DIGITAL. Na cláusula de foro de eleição, informe que as partes elegem o foro do domicílio do réu.`
     : `A assinatura será PRESENCIAL na cidade de ${answers.cidade || ''}, Estado do ${answers.estado || ''}. Use esses dados na cláusula de eleição de foro.`;
-
   const prompt = `Você é um Advogado Sênior especialista em Direito Civil e Empresarial Brasileiro. Elabore o instrumento contratual abaixo com rigor técnico-jurídico.
 
 ⚠️ DATA OBRIGATÓRIA: A data de assinatura deste contrato é ${dataAtual}. USE EXATAMENTE ESTA DATA.
@@ -1297,51 +1238,49 @@ ${clausulasList}
 REDIJA O CONTRATO COMPLETO AGORA.`;
 
   const systemMessages = [
-    {
-      role: 'system',
-      content: 'Você é um Advogado Sênior especialista em Direito Civil e Empresarial com 20+ anos de experiência. Redija contratos profissionais, extensos e juridicamente impecáveis. NUNCA use placeholders. NUNCA invente dados. NUNCA mencione testemunhas.'
-    },
+    { role: 'system', content: 'Você é um Advogado Sênior especialista em Direito Civil e Empresarial com 20+ anos de experiência. Redija contratos profissionais, extensos e juridicamente impecáveis. NUNCA use placeholders. NUNCA invente dados. NUNCA mencione testemunhas.' },
     { role: 'user', content: prompt }
   ];
 
-  let response;
-
+  let contractResponse;
   if (isLocalDev) {
-    const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-    response = await fetch('https://api.openai.com/v1/chat/completions', {
+    contractResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: API_CONFIG.model,
-        messages: systemMessages,
-        temperature: 0.2,
-        max_tokens: 8000,
-        stream: true,
-      }),
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}` },
+      body: JSON.stringify({ model: API_CONFIG.model, messages: systemMessages, temperature: 0.2, max_tokens: 8000, stream: true }),
     });
   } else {
-    response = await fetch('/api/generate-contract', {
+    contractResponse = await fetch('/api/generate-contract', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: API_CONFIG.model,
-        messages: systemMessages,
-        temperature: 0.2,
-        max_tokens: 8000,
-      }),
+      body: JSON.stringify({ model: API_CONFIG.model, messages: systemMessages, temperature: 0.2, max_tokens: 8000 }),
     });
   }
 
-  if (!response.ok) {
-    const err = await response.json().catch(() => ({ error: 'Erro desconhecido' }));
+  if (!contractResponse.ok) {
+    const err = await contractResponse.json().catch(() => ({ error: 'Erro desconhecido' }));
     throw new Error(err.error || 'Erro ao gerar contrato');
   }
 
-  let contract = await readStreamedResponse(response);
+  const reader = contractResponse.body.getReader();
+  const decoder = new TextDecoder();
+  let contractText = '';
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    const chunk = decoder.decode(value, { stream: true });
+    for (const line of chunk.split('\n')) {
+      const t = line.trim();
+      if (!t || t === 'data: [DONE]' || !t.startsWith('data: ')) continue;
+      try {
+        const json = JSON.parse(t.slice(6));
+        const delta = json.choices?.[0]?.delta?.content;
+        if (delta) contractText += delta;
+      } catch (_e) { /* ignora linha inválida */ }
+    }
+  }
 
+  let contract = contractText;
   contract = contract.replace(/\[[A-ZÁÉÍÓÚÂÊÎÔÛÃÕÇ\s_]+\]/gi, '');
   contract = contract.replace(/\{[^}]+\}/g, '');
   Object.keys(answers).forEach(key => {
@@ -1349,6 +1288,5 @@ REDIJA O CONTRATO COMPLETO AGORA.`;
     [new RegExp(`{${key}}`, 'gi'), new RegExp(`\\[${key}\\]`, 'gi')]
       .forEach(p => { contract = contract.replace(p, value); });
   });
-
   return contract;
 };
