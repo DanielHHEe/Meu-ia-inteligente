@@ -22,22 +22,39 @@ const callAI = async (endpoint, body) => {
   return response.json();
 };
 
-// Chamada DIRETA à OpenAI — usada para extração e geração de contrato
-// Evita o timeout de 10s do Vercel Hobby para requisições longas
-const callOpenAIDirect = async (body) => {
-  const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-  if (!apiKey) throw new Error('VITE_OPENAI_API_KEY não configurada');
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+// Chamada para endpoints serverless do Vercel (evita CORS e timeout curto do browser)
+// Em dev local, também usa o endpoint serverless via VITE proxy ou direto na OpenAI
+const callServerless = async (endpoint, body) => {
+  const url = isLocalDev
+    ? `https://api.openai.com/v1/chat/completions`
+    : endpoint;
+
+  if (isLocalDev) {
+    // Em dev, chama OpenAI diretamente com a chave (só no ambiente local, sem CORS)
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify(body),
+    });
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.error?.message || err.error || 'Erro na API OpenAI');
+    }
+    return response.json();
+  }
+
+  // Em produção, usa o endpoint serverless do Vercel (sem CORS, sem limite de 10s)
+  const response = await fetch(url, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`,
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
   if (!response.ok) {
     const err = await response.json();
-    throw new Error(err.error?.message || err.error || 'Erro na API OpenAI');
+    throw new Error(err.error?.message || err.error || 'Erro no servidor');
   }
   return response.json();
 };
@@ -1184,9 +1201,10 @@ REGRAS ABSOLUTAS:
 7. Se a modalidade for "presencial", extraia cidade e estado normalmente
 
 Formato de saída esperado: {"campo1":"valor","campo2":"outro valor"}`;
+
   try {
-    // Direto à OpenAI para evitar timeout do Vercel Hobby
-    const data = await callOpenAIDirect({
+    // ✅ USA O ENDPOINT SERVERLESS — sem CORS, sem timeout de 10s
+    const data = await callServerless('/api/generate-contract', {
       model: API_CONFIG.model,
       messages: [
         { role: 'system', content: 'Você é um extrator de dados preciso. Retorne APENAS JSON válido, sem nenhum texto adicional, sem markdown.' },
@@ -1257,8 +1275,8 @@ ${clausulasList}
 
 REDIJA O CONTRATO COMPLETO AGORA.`;
 
-  // Direto à OpenAI para evitar timeout do Vercel Hobby (8000 tokens leva 30-60s)
-  const data = await callOpenAIDirect({
+  // ✅ USA O ENDPOINT SERVERLESS — sem CORS, sem timeout de 10s
+  const data = await callServerless('/api/generate-contract', {
     model: API_CONFIG.model,
     messages: [
       { role: 'system', content: 'Você é um Advogado Sênior especialista em Direito Civil e Empresarial com 20+ anos de experiência. Redija contratos profissionais, extensos e juridicamente impecáveis. NUNCA use placeholders. NUNCA invente dados. NUNCA mencione testemunhas.' },
