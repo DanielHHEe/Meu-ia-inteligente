@@ -5,11 +5,10 @@ export const API_CONFIG = {
   model: 'gpt-4o-mini',
 };
 
-// Em dev local (npm run dev), chama OpenAI direto usando VITE_OPENAI_API_KEY
-// Em produção (Vercel), chama as serverless functions /api/chat e /api/generate-contract
 const isLocalDev = typeof window !== 'undefined' &&
   (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
 
+// Chamada para o chat normal (perguntas da entrevista) — usa serverless do Vercel em prod
 const callAI = async (endpoint, body) => {
   const url = isLocalDev ? 'https://api.openai.com/v1/chat/completions' : endpoint;
   const headers = isLocalDev
@@ -19,6 +18,26 @@ const callAI = async (endpoint, body) => {
   if (!response.ok) {
     const err = await response.json();
     throw new Error(err.error?.message || err.error || 'Erro na API');
+  }
+  return response.json();
+};
+
+// Chamada DIRETA à OpenAI — usada para extração e geração de contrato
+// Evita o timeout de 10s do Vercel Hobby para requisições longas
+const callOpenAIDirect = async (body) => {
+  const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+  if (!apiKey) throw new Error('VITE_OPENAI_API_KEY não configurada');
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.error?.message || err.error || 'Erro na API OpenAI');
   }
   return response.json();
 };
@@ -1166,7 +1185,8 @@ REGRAS ABSOLUTAS:
 
 Formato de saída esperado: {"campo1":"valor","campo2":"outro valor"}`;
   try {
-    const data = await callAI('/api/chat', {
+    // Direto à OpenAI para evitar timeout do Vercel Hobby
+    const data = await callOpenAIDirect({
       model: API_CONFIG.model,
       messages: [
         { role: 'system', content: 'Você é um extrator de dados preciso. Retorne APENAS JSON válido, sem nenhum texto adicional, sem markdown.' },
@@ -1236,7 +1256,9 @@ ESTRUTURA OBRIGATÓRIA:
 ${clausulasList}
 
 REDIJA O CONTRATO COMPLETO AGORA.`;
-  const data = await callAI('/api/generate-contract', {
+
+  // Direto à OpenAI para evitar timeout do Vercel Hobby (8000 tokens leva 30-60s)
+  const data = await callOpenAIDirect({
     model: API_CONFIG.model,
     messages: [
       { role: 'system', content: 'Você é um Advogado Sênior especialista em Direito Civil e Empresarial com 20+ anos de experiência. Redija contratos profissionais, extensos e juridicamente impecáveis. NUNCA use placeholders. NUNCA invente dados. NUNCA mencione testemunhas.' },
