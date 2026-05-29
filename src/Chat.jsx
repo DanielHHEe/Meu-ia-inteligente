@@ -684,12 +684,13 @@ const ProgressSidebar = ({ currentStep, contractType, plan }) => {
     { id: 3, name: 'Contrato Pronto', icon: FileText },
   ];
   return (
-    <div className="hidden lg:flex" style={{ width: '260px', position: 'fixed', left: 0, top: 0, bottom: 0, backgroundColor: '#060b11', borderRight: '1px solid rgba(255,255,255,0.06)', flexDirection: 'column', padding: '28px 20px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '28px' }}>
-        <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: 'linear-gradient(135deg, #10b981, #059669)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-          <img src="/rob.png" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        </div>
-        <span style={{ fontSize: '15px', fontWeight: '700', color: 'white' }}>Contrati<span style={{ color: '#10b981' }}>fy</span></span>
+    <div className="hidden lg:flex" style={{ width: '260px', position: 'fixed', left: 0, top: 0, bottom: 0, backgroundColor: '#060b11', borderRight: '1px solid rgba(255,255,255,0.06)', flexDirection: 'column', padding: '10px 20px' }}>
+      <div style={{ marginBottom: '5px' }}>
+        <img
+          src="/contrati.png"
+          alt="Contratify"
+          style={{ width: '190px', height: 'auto', objectFit: 'contain' }}
+        />
       </div>
 
       {plan && (

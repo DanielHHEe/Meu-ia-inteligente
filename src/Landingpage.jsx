@@ -12,28 +12,19 @@ import {
 } from "lucide-react";
 import { useAuth } from "./config/AuthContext";
 
-// ─────────────────────────────────────────────
-// SMOOTH SCROLL
-// ─────────────────────────────────────────────
 const smoothScrollTo = (e, href) => {
   e.preventDefault();
   const el = document.getElementById(href.replace("#", ""));
   if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
 };
 
-// ─────────────────────────────────────────────
-// DETECT MOBILE
-// ─────────────────────────────────────────────
 const isMobileDevice = () =>
   typeof window !== "undefined" && window.innerWidth < 768;
 
-// ─────────────────────────────────────────────
-// FLOATING PARTICLES (canvas) — desabilitado no mobile
-// ─────────────────────────────────────────────
 const FloatingParticles = () => {
   const ref = useRef(null);
   useEffect(() => {
-    if (isMobileDevice()) return; // skip no mobile
+    if (isMobileDevice()) return;
     const canvas = ref.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
@@ -74,9 +65,6 @@ const FloatingParticles = () => {
   return <canvas ref={ref} className="absolute inset-0 pointer-events-none" style={{ opacity: 0.7 }} />;
 };
 
-// ─────────────────────────────────────────────
-// 3D DOCUMENT (Three.js)
-// ─────────────────────────────────────────────
 const ThreeDDocument = () => {
   const mountRef = useRef(null);
   const mouseRef = useRef({ x: 0, y: 0 });
@@ -128,9 +116,6 @@ const ThreeDDocument = () => {
   return <div ref={mountRef} className="w-full h-full cursor-grab active:cursor-grabbing" style={{ minHeight: 420 }} />;
 };
 
-// ─────────────────────────────────────────────
-// INFINITE MARQUEE
-// ─────────────────────────────────────────────
 const InfiniteMarquee = ({ testimonials, direction = 1, speed = 35 }) => {
   const trackRef = useRef(null);
   const animRef = useRef(null);
@@ -175,9 +160,6 @@ const InfiniteMarquee = ({ testimonials, direction = 1, speed = 35 }) => {
   );
 };
 
-// ─────────────────────────────────────────────
-// PARALLAX SECTION DIVIDER
-// ─────────────────────────────────────────────
 const ParallaxBanner = () => {
   const ref = useRef(null);
   const isDesktop = typeof window !== "undefined" && window.innerWidth >= 1024;
@@ -196,11 +178,11 @@ const ParallaxBanner = () => {
       <motion.div style={{ y: y2 }} className="absolute inset-0 pointer-events-none">
         <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full blur-[100px]" style={{ background: "radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%)" }} />
       </motion.div>
-      <motion.div style={{ x: x1, y: y1 }} className="absolute left-[8%] top-[20%] px-5 py-3 rounded-2xl bg-white/4 border border-emerald-500/20 backdrop-blur-sm hidden md:flex items-center gap-3">
+      <motion.div style={{ x: x1, y: y1 }} className="absolute left-[8%] top-[20%] px-5 py-3 rounded-2xl bg-white/4 border border-emerald-500/20 backdrop-blur-sm hidden lg:flex items-center gap-3">
         <div className="w-8 h-8 rounded-xl bg-emerald-500/20 flex items-center justify-center"><Shield className="w-4 h-4 text-emerald-400" /></div>
         <div><p className="text-white font-bold text-sm">100% Legal</p><p className="text-white/40 text-xs">Revisado por especialistas</p></div>
       </motion.div>
-      <motion.div style={{ x: x2, y: y2 }} className="absolute right-[8%] bottom-[20%] px-5 py-3 rounded-2xl bg-white/4 border border-amber-500/20 backdrop-blur-sm hidden md:flex items-center gap-3">
+      <motion.div style={{ x: x2, y: y2 }} className="absolute right-[8%] bottom-[20%] px-5 py-3 rounded-2xl bg-white/4 border border-amber-500/20 backdrop-blur-sm hidden lg:flex items-center gap-3">
         <div className="w-8 h-8 rounded-xl bg-amber-500/20 flex items-center justify-center"><Zap className="w-4 h-4 text-amber-400" /></div>
         <div><p className="text-white font-bold text-sm">2 minutos</p><p className="text-white/40 text-xs">Do zero ao PDF pronto</p></div>
       </motion.div>
@@ -220,9 +202,6 @@ const ParallaxBanner = () => {
   );
 };
 
-// ─────────────────────────────────────────────
-// WHATSAPP BUTTON
-// ─────────────────────────────────────────────
 const WhatsAppButton = () => {
   const phoneNumber = "5599991999125";
   const message = "Olá! Preciso de ajuda com meu contrato.";
@@ -242,9 +221,6 @@ const WhatsAppButton = () => {
   );
 };
 
-// ─────────────────────────────────────────────
-// HEADER
-// ─────────────────────────────────────────────
 const Header = ({ onCreateContract, onOpenAuth }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -270,25 +246,18 @@ const Header = ({ onCreateContract, onOpenAuth }) => {
       <div className="max-w-7xl mx-auto px-6 md:px-10">
         <div className="flex items-center justify-between h-16 md:h-20 lg:h-24">
           <a href="#" className="flex items-center flex-shrink-0">
-            <motion.img
-              src="/contrati.png"
-              alt="Contratify"
-              whileHover={{ scale: 1.05 }}
-              className="h-7 md:h-9 lg:h-12 w-auto object-contain"
-            />
+            <motion.img src="/contrati.png" alt="Contratify" whileHover={{ scale: 1.05 }} className="h-20 md:h-18 lg:h-28 w-auto object-contain" />
           </a>
-
           <nav className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
             {navLinks.map((link, i) => (
               <motion.a key={link.href} href={link.href} onClick={(e) => smoothScrollTo(e, link.href)}
                 initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 * i }}
-                className="text-sm font-medium text-white/60 hover:text-white transition-colors duration-200 relative group">
+                className="text-sm font-medium text-white/60 hover:text-white transition-colors duration-200 relative group whitespace-nowrap">
                 {link.label}
                 <span className="absolute -bottom-1 left-0 w-0 h-px bg-emerald-400 group-hover:w-full transition-all duration-300" />
               </motion.a>
             ))}
           </nav>
-
           <div className="hidden md:flex items-center gap-3">
             {!loading && !isAuthenticated && (
               <motion.button onClick={() => onOpenAuth("login")} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
@@ -297,13 +266,11 @@ const Header = ({ onCreateContract, onOpenAuth }) => {
               </motion.button>
             )}
           </div>
-
           <div className="flex items-center gap-2 md:hidden">
             {!loading && !isAuthenticated && (
               <motion.button onClick={() => onOpenAuth("login")} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
                 className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white/60 hover:text-white border border-white/8 hover:border-white/20 rounded-xl transition-all">
-                <LogIn className="w-4 h-4" />
-                Entrar
+                <LogIn className="w-4 h-4" />Entrar
               </motion.button>
             )}
             <button className="p-2 text-white/80" onClick={() => setIsMenuOpen(!isMenuOpen)}>
@@ -311,7 +278,6 @@ const Header = ({ onCreateContract, onOpenAuth }) => {
             </button>
           </div>
         </div>
-
         <AnimatePresence>
           {isMenuOpen && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="md:hidden border-t border-white/10 py-4" style={{ background: "#080d14" }}>
@@ -329,19 +295,16 @@ const Header = ({ onCreateContract, onOpenAuth }) => {
   );
 };
 
-// ─────────────────────────────────────────────
-// HERO SECTION
-// ─────────────────────────────────────────────
 const HeroSection = ({ onCreateContract }) => {
   const benefits = ["Juridicamente revisado", "Pronto em 2 minutos", "Pagamento via Pix"];
   const { scrollY } = useScroll();
   const isDesktop = typeof window !== "undefined" && window.innerWidth >= 1024;
   const gridY      = useTransform(scrollY, [0, 800], isDesktop ? [0, 200] : [0, 0]);
   const blob1Y     = useTransform(scrollY, [0, 800], isDesktop ? [0, 120] : [0, 0]);
-  const blob2Y     = useTransform(scrollY, [0, 800], isDesktop ? [0, 80] : [0, 0]);
+  const blob2Y     = useTransform(scrollY, [0, 800], isDesktop ? [0, 80]  : [0, 0]);
   const blob1X     = useTransform(scrollY, [0, 800], isDesktop ? [0, -30] : [0, 0]);
-  const blob2X     = useTransform(scrollY, [0, 800], isDesktop ? [0, 30] : [0, 0]);
-  const contentY   = useTransform(scrollY, [0, 600], isDesktop ? [0, 60] : [0, 0]);
+  const blob2X     = useTransform(scrollY, [0, 800], isDesktop ? [0, 30]  : [0, 0]);
+  const contentY   = useTransform(scrollY, [0, 600], isDesktop ? [0, 60]  : [0, 0]);
   const heroOpacity = useTransform(scrollY, [0, 500], [1, isDesktop ? 0 : 1]);
 
   const [count, setCount] = useState(0);
@@ -364,7 +327,7 @@ const HeroSection = ({ onCreateContract }) => {
       <motion.div style={{ y: blob2Y, x: blob2X }} className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full pointer-events-none">
         <div className="w-full h-full rounded-full" style={{ background: "radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%)", filter: "blur(120px)" }} />
       </motion.div>
-      <motion.div style={{ y: contentY, opacity: heroOpacity }} className="max-w-7xl mx-auto px-6 md:px-10 relative z-10 pt-24 w-full">
+      <motion.div style={{ y: contentY, opacity: heroOpacity }} className="max-w-7xl mx-auto px-6 md:px-10 relative z-10 pt-14 md:pt-24 w-full">
         <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
           <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}>
             <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }} className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-8">
@@ -390,7 +353,6 @@ const HeroSection = ({ onCreateContract }) => {
                 </motion.div>
               ))}
             </div>
-
             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.1 }} className="mt-8 text-sm text-white/30">
               <span className="text-emerald-400 font-semibold">Já temos +{count} contratos</span> gerados com sucesso
             </motion.p>
@@ -412,9 +374,6 @@ const HeroSection = ({ onCreateContract }) => {
   );
 };
 
-// ─────────────────────────────────────────────
-// HOW IT WORKS
-// ─────────────────────────────────────────────
 const HowItWorksSection = () => {
   const steps = [
     { icon: FileEdit, number: "01", title: "Preencha os dados", description: "Responda perguntas simples sobre o tipo de contrato e as partes envolvidas." },
@@ -458,26 +417,14 @@ const HowItWorksSection = () => {
   );
 };
 
-// ─────────────────────────────────────────────
-// BENEFIT CARD
-// ─────────────────────────────────────────────
 const BenefitCard = ({ benefit, index }) => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-60px" });
   const mobile = isMobileDevice();
-
-  const initial = mobile
-    ? { opacity: 0 }
-    : { opacity: 0, x: index % 2 === 0 ? -60 : 60 };
-
-  const animate = isInView
-    ? { opacity: 1, x: 0 }
-    : {};
-
+  const initial = mobile ? { opacity: 0 } : { opacity: 0, x: index % 2 === 0 ? -60 : 60 };
+  const animate = isInView ? { opacity: 1, x: 0 } : {};
   return (
-    <motion.div ref={ref}
-      initial={initial}
-      animate={animate}
+    <motion.div ref={ref} initial={initial} animate={animate}
       transition={{ duration: mobile ? 0.4 : 0.6, delay: mobile ? (index % 3) * 0.05 : (index % 3) * 0.08, ease: [0.16, 1, 0.3, 1] }}
       className="group relative p-6 md:p-8 rounded-2xl border border-white/5 bg-white/[0.02] hover:border-emerald-500/25 hover:bg-white/[0.04] transition-colors duration-300 cursor-default"
       style={{ willChange: "opacity, transform" }}>
@@ -494,9 +441,6 @@ const BenefitCard = ({ benefit, index }) => {
   );
 };
 
-// ─────────────────────────────────────────────
-// BENEFITS SECTION
-// ─────────────────────────────────────────────
 const BenefitsSection = () => {
   const sectionRef = useRef(null);
   const isMobile = typeof window !== "undefined" && window.innerWidth < 1024;
@@ -541,9 +485,6 @@ const BenefitsSection = () => {
   );
 };
 
-// ─────────────────────────────────────────────
-// TESTIMONIALS
-// ─────────────────────────────────────────────
 const TestimonialsSection = () => {
   const testimonials = [
     { name: "Mariana Costa", role: "Designer Freelancer", avatar: "MC", rating: 5, text: "Incrível! Precisava de um contrato para um cliente grande e em menos de 3 minutos já tinha tudo pronto. Economizei muito comparado a contratar um advogado.", contractType: "Prestação de Serviços", date: "há 2 dias", color: "from-purple-500 to-pink-500" },
@@ -585,27 +526,13 @@ const TestimonialsSection = () => {
   );
 };
 
-// ─────────────────────────────────────────────
-// PRICING
-// ─────────────────────────────────────────────
 const PricingSection = ({ onCreateContract, onOpenAuth }) => {
-  const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
-  
   const ref = useRef(null);
   const isDesktop = typeof window !== "undefined" && window.innerWidth >= 1024;
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
   const decorY1 = useTransform(scrollYProgress, [0, 1], isDesktop ? [-50, 50] : [0, 0]);
   const decorY2 = useTransform(scrollYProgress, [0, 1], isDesktop ? [50, -50] : [0, 0]);
   const decorX1 = useTransform(scrollYProgress, [0, 1], isDesktop ? [-20, 20] : [0, 0]);
-
-  const handleSubscriptionClick = () => {
-    if (isAuthenticated) {
-      navigate("/chat");
-    } else {
-      onOpenAuth("login");
-    }
-  };
 
   return (
     <section ref={ref} id="precos" className="py-28 md:py-40 bg-[#0a1018] relative overflow-hidden">
@@ -619,9 +546,7 @@ const PricingSection = ({ onCreateContract, onOpenAuth }) => {
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4" style={{ fontFamily: "'Parkinsans', sans-serif" }}>Escolha o Melhor Plano</h2>
           <p className="text-white/40 max-w-lg mx-auto">Sem mensalidades. Sem surpresas. Pague apenas pelo que usar.</p>
         </motion.div>
-
         <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-
           {/* PLANO BÁSICO */}
           <motion.div initial={{ opacity: 0, y: 30, scale: 0.95 }} whileInView={{ opacity: 1, y: 0, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.5 }}>
             <motion.div whileHover={{ boxShadow: "0 0 60px rgba(255,255,255,0.05)" }} className="relative rounded-3xl p-8 border border-white/10 bg-white/[0.02] transition-all duration-300 h-full">
@@ -672,10 +597,8 @@ const PricingSection = ({ onCreateContract, onOpenAuth }) => {
               </div>
             </motion.div>
           </motion.div>
-
           {/* PLANO PREMIUM */}
           <motion.div initial={{ opacity: 0, y: 30, scale: 0.95 }} whileInView={{ opacity: 1, y: 0, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.1 }} className="relative">
-            {/* Badge popular */}
             <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
               <span className="px-4 py-1.5 rounded-full text-xs font-bold tracking-wider" style={{ background: "linear-gradient(135deg, #22c55e, #a3e635)", color: "#0d2010" }}>✦ MAIS POPULAR</span>
             </div>
@@ -725,7 +648,6 @@ const PricingSection = ({ onCreateContract, onOpenAuth }) => {
             </motion.div>
           </motion.div>
         </div>
-
         <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.4 }} className="text-center mt-12">
           <div className="inline-flex items-center gap-3 px-6 py-3 rounded-2xl bg-white/[0.03] border border-white/8">
             <span className="text-sm text-white/50">Pagamento seguro via</span>
@@ -739,9 +661,6 @@ const PricingSection = ({ onCreateContract, onOpenAuth }) => {
   );
 };
 
-// ─────────────────────────────────────────────
-// FAQ
-// ─────────────────────────────────────────────
 const FAQSection = () => {
   const [openItem, setOpenItem] = useState(null);
   const faqs = [
@@ -752,6 +671,7 @@ const FAQSection = () => {
     { question: "Como a IA é treinada com leis brasileiras?", answer: "Nossa IA passou por um treinamento especializado com um vasto corpus de documentos legais brasileiros, incluindo contratos validados por advogados, decisões judiciais, doutrinas e a legislação atualizada. Diferente de IAs genéricas treinadas com dados da internet mundial, a nossa entende expressões como 'foro da comarca', 'multa contratual' e 'cláusulas resolutivas' no contexto correto do direito brasileiro, garantindo que cada contrato gerado esteja em conformidade com as leis do país." },
     { question: "Posso editar o contrato depois de gerado?", answer: "Sim! O contrato é entregue em formato PDF editável. Você pode fazer ajustes menores diretamente no documento. Para alterações mais significativas, recomendamos gerar um novo contrato com as informações atualizadas." },
     { question: "E se eu precisar de ajuda com meu contrato?", answer: "Nossa equipe de suporte está disponível por e-mail e por whatsapp para tirar dúvidas sobre o uso da plataforma e dos contratos gerados." },
+    { question: "O que acontece se ocorrer um erro ao gerar meu contrato?", answer: "Se por qualquer motivo você encontrar um erro durante a geração do seu contrato, entre em contato com nosso suporte pelo WhatsApp: (99) 99199-9125. Nossa equipe irá analisar o seu caso e, confirmado o problema, realizamos o reembolso integral do valor pago. Você nunca ficará no prejuízo." },
   ];
   return (
     <section id="faq" className="py-28 md:py-40 bg-[#080d14] relative">
@@ -787,9 +707,6 @@ const FAQSection = () => {
   );
 };
 
-// ─────────────────────────────────────────────
-// CTA
-// ─────────────────────────────────────────────
 const CTASection = ({ onCreateContract }) => {
   const ref = useRef(null);
   const isDesktop = typeof window !== "undefined" && window.innerWidth >= 1024;
@@ -811,7 +728,7 @@ const CTASection = ({ onCreateContract }) => {
             <span style={{ background: "linear-gradient(135deg, #10b981, #34d399)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>contrato profissional?</span>
           </h2>
           <p className="text-white/40 mb-12 max-w-lg mx-auto leading-relaxed">Junte-se a centenas de pessoas que já simplificaram a criação de contratos com o Contratify.</p>
-          <div className="flex flex-wrap justify-center gap-6 mb-12">
+          <div className="flex flex-wrap justify-center gap-6">
             {[{ icon: Shield, label: "100% Seguro" }, { icon: Clock, label: "Pronto em 2 minutos" }].map(({ icon: Icon, label }) => (
               <motion.div key={label} whileHover={{ y: -3 }} className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center"><Icon className="w-4 h-4 text-emerald-400" /></div>
@@ -819,23 +736,12 @@ const CTASection = ({ onCreateContract }) => {
               </motion.div>
             ))}
           </div>
-          <motion.button onClick={onCreateContract} whileHover={{ scale: 1.05, y: -4, boxShadow: "0 0 80px rgba(34,197,94,0.5)" }} whileTap={{ scale: 0.97 }}
-            className="group px-10 py-5 font-bold rounded-2xl flex items-center justify-center mx-auto gap-2 text-base overflow-hidden relative"
-            style={{ background: "linear-gradient(135deg, #22c55e, #a3e635)", color: "#0d2010", boxShadow: "0 0 60px rgba(34,197,94,0.35), 0 4px 20px rgba(0,0,0,0.3)" }}>
-            <motion.span className="absolute inset-0 bg-white/10" initial={{ x: "-100%" }} whileHover={{ x: "100%" }} transition={{ duration: 0.4 }} />
-            <span className="relative">Criar Meu Contrato Agora</span>
-            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform relative" />
-          </motion.button>
-          <p className="mt-6 text-sm text-white/25">A partir de R$ 39,90 • Pagamento via Pix</p>
         </motion.div>
       </div>
     </section>
   );
 };
 
-// ─────────────────────────────────────────────
-// FOOTER
-// ─────────────────────────────────────────────
 const Footer = () => {
   const currentYear = new Date().getFullYear();
   const links = {
@@ -848,7 +754,7 @@ const Footer = () => {
         <div className="py-16 grid md:grid-cols-2 lg:grid-cols-4 gap-10">
           <div className="lg:col-span-1">
             <a href="#" className="flex items-center mb-5">
-              <img src="/contrati.png" alt="Contratify" style={{ height: "32px", width: "auto", objectFit: "contain" }} />
+              <img src="/contrati.png" alt="Contratify" className="h-8 md:h-10 w-auto object-contain" />
             </a>
             <p className="text-white/30 text-sm leading-relaxed mb-6">Contratos profissionais gerados por IA. Rápido, seguro e acessível.</p>
           </div>
@@ -892,9 +798,6 @@ const Footer = () => {
   );
 };
 
-// ─────────────────────────────────────────────
-// LANDING PAGE
-// ─────────────────────────────────────────────
 const LandingPage = ({ onOpenAuth }) => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
@@ -916,10 +819,7 @@ const LandingPage = ({ onOpenAuth }) => {
         <ParallaxBanner />
         <BenefitsSection />
         <TestimonialsSection />
-        <PricingSection 
-          onCreateContract={handleCreateContract}
-          onOpenAuth={onOpenAuth} 
-        />
+        <PricingSection onCreateContract={handleCreateContract} onOpenAuth={onOpenAuth} />
         <FAQSection />
         <CTASection onCreateContract={() => handleCreateContract("standard")} />
       </main>

@@ -72,27 +72,29 @@ const I = {
 
 const DateFilter = ({ from, to, onFrom, onTo, onClear, th }) => (
   <div style={{ marginBottom:24, background:th.card, border:`1px solid ${th.border}`, borderRadius:10, padding:'12px 16px' }}>
-    <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:10 }}>
-      <Ic d={I.calendar} size={13} color={th.muted} />
-      <span style={{ fontSize:11, color:th.muted, fontWeight:600, textTransform:'uppercase', letterSpacing:'0.06em' }}>Período</span>
-    </div>
-    <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
-      <div style={{ display:'flex', alignItems:'center', gap:6, flex:1, minWidth:140 }}>
-        <span style={{ fontSize:12, color:th.muted, flexShrink:0 }}>De</span>
-        <input type="date" value={from} onChange={e=>onFrom(e.target.value)}
-          style={{ flex:1, minWidth:0, padding:'6px 10px', borderRadius:7, border:`1px solid ${th.border}`, background:th.input, color:th.text, fontSize:12, cursor:'pointer', width:'100%' }} />
-      </div>
-      <div style={{ display:'flex', alignItems:'center', gap:6, flex:1, minWidth:140 }}>
-        <span style={{ fontSize:12, color:th.muted, flexShrink:0 }}>Até</span>
-        <input type="date" value={to} onChange={e=>onTo(e.target.value)}
-          style={{ flex:1, minWidth:0, padding:'6px 10px', borderRadius:7, border:`1px solid ${th.border}`, background:th.input, color:th.text, fontSize:12, cursor:'pointer', width:'100%' }} />
+    <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:10 }}>
+      <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+        <Ic d={I.calendar} size={13} color={th.muted} />
+        <span style={{ fontSize:11, color:th.muted, fontWeight:600, textTransform:'uppercase', letterSpacing:'0.06em' }}>Período</span>
       </div>
       {(from||to) && (
         <button onClick={onClear}
-          style={{ padding:'6px 14px', borderRadius:7, border:`1px solid ${th.border}`, background:'transparent', color:th.muted, fontSize:12, cursor:'pointer', flexShrink:0 }}>
+          style={{ padding:'4px 12px', borderRadius:7, border:`1px solid ${th.border}`, background:'transparent', color:th.muted, fontSize:12, cursor:'pointer' }}>
           Limpar
         </button>
       )}
+    </div>
+    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
+      <div style={{ display:'flex', flexDirection:'column', gap:4 }}>
+        <span style={{ fontSize:11, color:th.muted, fontWeight:500 }}>De</span>
+        <input type="date" value={from} onChange={e=>onFrom(e.target.value)}
+          style={{ width:'100%', padding:'7px 10px', borderRadius:7, border:`1px solid ${th.border}`, background:th.input, color:th.text, fontSize:13, cursor:'pointer' }} />
+      </div>
+      <div style={{ display:'flex', flexDirection:'column', gap:4 }}>
+        <span style={{ fontSize:11, color:th.muted, fontWeight:500 }}>Até</span>
+        <input type="date" value={to} onChange={e=>onTo(e.target.value)}
+          style={{ width:'100%', padding:'7px 10px', borderRadius:7, border:`1px solid ${th.border}`, background:th.input, color:th.text, fontSize:13, cursor:'pointer' }} />
+      </div>
     </div>
   </div>
 );
@@ -201,18 +203,41 @@ export default function AdminDashboard() {
   const avgT   = paidC  > 0 ? totalR/paidC : 0;
   const uniqU  = new Set(fOC.map(c => c.user_id)).size;
 
+  // Gera todos os dias do período (máx 60), preenchendo zeros onde não há dados
+  const buildDailyRange = (fromStr, toStr, maxDays = 60) => {
+    const start = fromStr ? new Date(fromStr + 'T00:00:00') : new Date(Date.now() - 29*86400000);
+    const end   = toStr   ? new Date(toStr   + 'T23:59:59') : new Date();
+    const days  = [];
+    const cur   = new Date(start);
+    while (cur <= end && days.length < maxDays) {
+      days.push(new Date(cur));
+      cur.setDate(cur.getDate() + 1);
+    }
+    return days;
+  };
+
   const revByDay = (() => {
-    const d = {};
-    fOP.forEach(p => { const k = new Date(p.paid_at).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}); d[k]=(d[k]||0)+Number(p.amount||0); });
-    const e = Object.entries(d).slice(-14);
-    return { labels: e.map(([k])=>k), data: e.map(([,v])=>Math.round(v*100)/100) };
+    const totals = {};
+    fOP.forEach(p => {
+      const k = new Date(p.paid_at).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
+      totals[k] = (totals[k]||0) + Number(p.amount||0);
+    });
+    const days   = buildDailyRange(oF, oT);
+    const labels = days.map(d => d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}));
+    const data   = labels.map(k => Math.round((totals[k]||0)*100)/100);
+    return { labels, data };
   })();
 
   const cByDay = (() => {
-    const d = {};
-    fOC.forEach(c => { const k = new Date(c.created_at).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}); d[k]=(d[k]||0)+1; });
-    const e = Object.entries(d).slice(-14);
-    return { labels: e.map(([k])=>k), data: e.map(([,v])=>v) };
+    const totals = {};
+    fOC.forEach(c => {
+      const k = new Date(c.created_at).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
+      totals[k] = (totals[k]||0) + 1;
+    });
+    const days   = buildDailyRange(oF, oT);
+    const labels = days.map(d => d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}));
+    const data   = labels.map(k => totals[k]||0);
+    return { labels, data };
   })();
 
   const byType = (() => {
@@ -458,7 +483,7 @@ export default function AdminDashboard() {
             <div style={{ marginBottom:12, display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:8 }}>
               <div>
                 <p style={{ fontSize:22, fontWeight:700, color:th.text, letterSpacing:'-0.02em' }}>
-                  {greeting()}, Daniel Herênio 
+                  {greeting()}, Daniel Herênio!
                 </p>
                 <p style={{ fontSize:13, color:th.muted, marginTop:4 }}>
                   {new Date().toLocaleDateString('pt-BR',{ weekday:'long', day:'numeric', month:'long', year:'numeric' })}
