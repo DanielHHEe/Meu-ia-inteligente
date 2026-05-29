@@ -5,41 +5,35 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
-
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const token = process.env.MP_ACCESS_TOKEN;
-
-  // ✅ DEBUG — retorna quais variáveis MP existem no ambiente
   if (!token) {
-    return res.status(500).json({
-      error: 'MP_ACCESS_TOKEN ausente',
-      mp_vars_encontradas: Object.keys(process.env).filter(k => k.startsWith('MP') || k.includes('MERCADO') || k.includes('ACCESS')),
-      todas_vars: Object.keys(process.env),
-    });
+    return res.status(500).json({ error: 'MP_ACCESS_TOKEN ausente' });
   }
 
   try {
-    const { contractType, paymentId: existingId } = req.body;
+    const { contractType, paymentId: existingId, amount } = req.body;
+
+    // Garante que o amount seja número válido — aceita tanto number quanto string numérica
+    const parsed = typeof amount === 'number' ? amount : parseFloat(amount);
+    const transactionAmount = (!isNaN(parsed) && parsed > 0) ? parsed : 39.90;
+
+    console.log(`💰 Plano recebido | amount bruto: ${amount} | amount final: ${transactionAmount}`);
 
     const externalReference =
       existingId ||
       `contrato-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
     const body = {
-      transaction_amount: 29.90,
+      transaction_amount: transactionAmount,
       description: `Contrato: ${contractType || 'Documento'}`,
       payment_method_id: 'pix',
       payer: {
         email: 'cliente@contrate-me.com.br',
         first_name: 'Cliente',
         last_name: 'Contrateme',
-        identification: {
-          type: 'CPF',
-          number: '00000000000',
-        },
+        identification: { type: 'CPF', number: '00000000000' },
       },
       external_reference: externalReference,
       notification_url: `${
@@ -63,7 +57,6 @@ export default async function handler(req, res) {
     });
 
     const data = await response.json();
-
     console.log('📥 Resposta Mercado Pago (status', response.status, '):', JSON.stringify(data, null, 2));
 
     if (!response.ok) {
