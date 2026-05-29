@@ -246,7 +246,7 @@ const Header = ({ onCreateContract, onOpenAuth }) => {
       <div className="max-w-7xl mx-auto px-6 md:px-10">
         <div className="flex items-center justify-between h-16 md:h-20 lg:h-24">
           <a href="#" className="flex items-center flex-shrink-0">
-            <motion.img src="/contrati.png" alt="Contratify" whileHover={{ scale: 1.05 }} className="h-23 md:h-18 lg:h-28 w-auto object-contain" />
+            <motion.img src="/contrati.png" alt="Contratify" whileHover={{ scale: 1.05 }} className="h-26 md:h-18 lg:h-28 w-auto object-contain" />
           </a>
           <nav className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
             {navLinks.map((link, i) => (
@@ -327,7 +327,7 @@ const HeroSection = ({ onCreateContract }) => {
       <motion.div style={{ y: blob2Y, x: blob2X }} className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full pointer-events-none">
         <div className="w-full h-full rounded-full" style={{ background: "radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%)", filter: "blur(120px)" }} />
       </motion.div>
-      <motion.div style={{ y: contentY, opacity: heroOpacity }} className="max-w-7xl mx-auto px-6 md:px-10 relative z-10 pt-4 md:pt-14 w-full">
+      <motion.div style={{ y: contentY, opacity: heroOpacity }} className="max-w-7xl mx-auto px-6 md:px-10 relative z-10 pt-1 md:pt-14 w-full">
         <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
           <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}>
             <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }} className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-8">
@@ -753,9 +753,7 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto px-6 md:px-10">
         <div className="py-16 grid md:grid-cols-2 lg:grid-cols-4 gap-10">
           <div className="lg:col-span-1">
-            <a href="#" className="flex items-center mb-5">
-              <img src="/contrati.png" alt="Contratify" className="h-23 md:h-18 lg:h-28 w-auto object-contain" />
-            </a>
+            
             <p className="text-white/30 text-sm leading-relaxed mb-6">Contratos profissionais gerados por IA. Rápido, seguro e acessível.</p>
           </div>
           {[{ title: "Produto", items: links.produto }, { title: "Legal", items: links.legal }].map(({ title, items }) => (
