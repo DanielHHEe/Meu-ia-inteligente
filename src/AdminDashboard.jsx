@@ -52,7 +52,6 @@ const I = {
   file:    ['M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z','M14 2v6h6','M16 13H8','M16 17H8','M10 9H8'],
   card:    ['M1 4h22v16H1z','M1 10h22'],
   users:   ['M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2','M23 21v-2a4 4 0 00-3-3.87','M16 3.13a4 4 0 010 7.75','M9 11a4 4 0 100-8 4 4 0 000 8z'],
-  bolt:    ['M13 2L3 14h9l-1 8 10-12h-9l1-8z'],
   moon:    ['M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z'],
   sun:     ['M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42','M12 17a5 5 0 100-10 5 5 0 000 10z'],
   left:    ['M15 18l-6-6 6-6'],
@@ -203,7 +202,6 @@ export default function AdminDashboard() {
   const avgT   = paidC  > 0 ? totalR/paidC : 0;
   const uniqU  = new Set(fOC.map(c => c.user_id)).size;
 
-  // Gera todos os dias do período (máx 60), preenchendo zeros onde não há dados
   const buildDailyRange = (fromStr, toStr, maxDays = 60) => {
     const start = fromStr ? new Date(fromStr + 'T00:00:00') : new Date(Date.now() - 29*86400000);
     const end   = toStr   ? new Date(toStr   + 'T23:59:59') : new Date();
@@ -391,7 +389,6 @@ export default function AdminDashboard() {
         }
       `}</style>
 
-      {/* Overlay mobile */}
       {sideOpen && <div onClick={()=>setSideOpen(false)} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', zIndex:40, backdropFilter:'blur(3px)' }} />}
 
       {/* ── SIDEBAR ── */}
@@ -402,18 +399,7 @@ export default function AdminDashboard() {
         transform: sideOpen ? 'translateX(0)' : undefined,
       }}>
 
-        {/* Logo */}
-        <div style={{ padding:'20px 18px 16px', borderBottom:`1px solid ${th.border}` }}>
-          <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-            <div style={{ width:32, height:32, borderRadius:9, background:dark?'#1c2128':'#18181b', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-              <Ic d={I.bolt} size={15} color="#ffffff" sw={1.8} />
-            </div>
-            <div>
-              <p style={{ fontSize:14, fontWeight:700, color:th.text, letterSpacing:'-0.02em' }}>Contratify</p>
-              <p style={{ fontSize:11, color:th.muted, marginTop:1 }}>Painel Admin</p>
-            </div>
-          </div>
-        </div>
+    
 
         {/* Nav */}
         <nav style={{ padding:'12px 10px', flex:1, overflowY:'auto' }}>
@@ -478,8 +464,6 @@ export default function AdminDashboard() {
 
           {/* ── OVERVIEW ── */}
           {section==='overview' && (<>
-
-            {/* Greeting */}
             <div style={{ marginBottom:12, display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:8 }}>
               <div>
                 <p style={{ fontSize:22, fontWeight:700, color:th.text, letterSpacing:'-0.02em' }}>
@@ -493,7 +477,6 @@ export default function AdminDashboard() {
 
             <DateFilter from={oF} to={oT} onFrom={setOF} onTo={setOT} onClear={()=>clearTo(setOF,setOT)} th={th} />
 
-            {/* KPI cards */}
             <div style={{ display:'grid', gridTemplateColumns:'repeat(5,1fr)', gap:12, marginBottom:20 }} className="g5">
               <StatCard label="Contratos gerados" value={fmtNum(totalC)}               sub={`${conv}% convertidos`}                      icon={I.file}  />
               <StatCard label="Contratos pagos"   value={fmtNum(paidC)}                sub={`de ${fmtNum(totalC)} gerados`}               icon={I.check} />
@@ -502,7 +485,6 @@ export default function AdminDashboard() {
               <StatCard label="Plano premium"     value={maskNum(fmtNum(fOC.filter(c=>c.plan==='premium').length))} sub={`Padrão: ${maskNum(fmtNum(fOC.filter(c=>c.plan!=='premium').length))}`} icon={I.star} />
             </div>
 
-            {/* Charts row */}
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12, marginBottom:12 }} className="g2">
               <Card style={{ padding:20 }}>
                 <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:16 }}>
@@ -526,7 +508,6 @@ export default function AdminDashboard() {
               </Card>
             </div>
 
-            {/* Bottom row: pie + resumo */}
             <div style={{ display:'grid', gridTemplateColumns:'280px 1fr', gap:12 }} className="gpie">
               <Card style={{ padding:20 }}>
                 <p style={{ fontSize:13, fontWeight:600, color:th.text, marginBottom:16 }}>Tipos de contrato</p>
