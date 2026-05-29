@@ -327,7 +327,7 @@ const HeroSection = ({ onCreateContract }) => {
       <motion.div style={{ y: blob2Y, x: blob2X }} className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full pointer-events-none">
         <div className="w-full h-full rounded-full" style={{ background: "radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%)", filter: "blur(120px)" }} />
       </motion.div>
-      <motion.div style={{ y: contentY, opacity: heroOpacity }} className="max-w-7xl mx-auto px-6 md:px-10 relative z-10 pt-14 md:pt-14 w-full">
+      <motion.div style={{ y: contentY, opacity: heroOpacity }} className="max-w-7xl mx-auto px-6 md:px-10 relative z-10 pt-1 md:pt-14 w-full">
         <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
           <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}>
             <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }} className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-8">
