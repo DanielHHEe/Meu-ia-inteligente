@@ -20,7 +20,7 @@ export default async function handler(req) {
     });
   }
 
-  const { messages, model = 'gpt-4o-mini', temperature = 0.2, max_tokens = 8000 } = body;
+  const { messages, model = 'gpt-4o-mini', temperature = 0.1, max_tokens = 8000 } = body;
 
   if (!messages || !Array.isArray(messages)) {
     return new Response(JSON.stringify({ error: 'messages é obrigatório' }), {

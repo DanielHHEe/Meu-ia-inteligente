@@ -24,7 +24,6 @@ const isMobileDevice = () =>
 const FloatingParticles = () => {
   const ref = useRef(null);
   useEffect(() => {
-    if (isMobileDevice()) return;
     const canvas = ref.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
@@ -65,57 +64,6 @@ const FloatingParticles = () => {
   return <canvas ref={ref} className="absolute inset-0 pointer-events-none" style={{ opacity: 0.7 }} />;
 };
 
-const ThreeDDocument = () => {
-  const mountRef = useRef(null);
-  const mouseRef = useRef({ x: 0, y: 0 });
-  useEffect(() => {
-    const mount = mountRef.current;
-    if (!mount) return;
-    const w = mount.clientWidth || 460, h = mount.clientHeight || 420;
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setSize(w, h); renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    mount.appendChild(renderer.domElement);
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 100);
-    camera.position.set(0, 0, 5);
-    scene.add(new THREE.AmbientLight(0xffffff, 0.4));
-    const d1 = new THREE.DirectionalLight(0x10b981, 2.5); d1.position.set(3, 5, 5); scene.add(d1);
-    const d2 = new THREE.DirectionalLight(0x3b82f6, 1.2); d2.position.set(-3, -2, 3); scene.add(d2);
-    const group = new THREE.Group(); scene.add(group);
-    const docGeo = new THREE.BoxGeometry(2.2, 2.9, 0.08);
-    group.add(new THREE.Mesh(docGeo, new THREE.MeshPhysicalMaterial({ color: 0x0d1a2a, roughness: 0.2, metalness: 0.1, transparent: true, opacity: 0.95, emissive: 0x051020 })));
-    group.add(new THREE.LineSegments(new THREE.EdgesGeometry(docGeo), new THREE.LineBasicMaterial({ color: 0x10b981, transparent: true, opacity: 0.6 })));
-    const lm = new THREE.MeshBasicMaterial({ color: 0x10b981, transparent: true, opacity: 0.45 });
-    [1.4, 1.0, 1.3, 0.8, 1.2, 0.9, 1.1].forEach((lw, i) => {
-      const m = new THREE.Mesh(new THREE.BoxGeometry(lw, 0.07, 0.01), lm.clone());
-      m.position.set((lw - 1.4) / 2 - 0.3, 0.9 - i * 0.22, 0.05); group.add(m);
-    });
-    const sealMesh = new THREE.Mesh(new THREE.RingGeometry(0.25, 0.32, 32), new THREE.MeshBasicMaterial({ color: 0x10b981, transparent: true, opacity: 0.8, side: THREE.DoubleSide }));
-    sealMesh.position.set(0.6, -1.0, 0.05); group.add(sealMesh);
-    const sealInner = new THREE.Mesh(new THREE.CircleGeometry(0.18, 32), new THREE.MeshBasicMaterial({ color: 0x10b981, transparent: true, opacity: 0.15 }));
-    sealInner.position.set(0.6, -1.0, 0.05); group.add(sealInner);
-    const pPos = new Float32Array(40 * 3);
-    for (let i = 0; i < 40; i++) { pPos[i*3]=(Math.random()-.5)*5; pPos[i*3+1]=(Math.random()-.5)*5; pPos[i*3+2]=(Math.random()-.5)*3; }
-    const pGeo = new THREE.BufferGeometry(); pGeo.setAttribute("position", new THREE.BufferAttribute(pPos, 3));
-    const ps = new THREE.Points(pGeo, new THREE.PointsMaterial({ color: 0x10b981, size: 0.04, transparent: true, opacity: 0.6 }));
-    scene.add(ps);
-    const onMM = (e) => { const r = mount.getBoundingClientRect(); mouseRef.current.x = ((e.clientX-r.left)/r.width-.5)*2; mouseRef.current.y = -((e.clientY-r.top)/r.height-.5)*2; };
-    mount.addEventListener("mousemove", onMM);
-    let frame;
-    const animate = () => {
-      frame = requestAnimationFrame(animate);
-      group.rotation.y += (mouseRef.current.x*0.5 - group.rotation.y)*0.05;
-      group.rotation.x += (mouseRef.current.y*0.3 - group.rotation.x)*0.05;
-      group.rotation.y += 0.003; ps.rotation.y += 0.001;
-      sealMesh.material.opacity = 0.5 + Math.sin(Date.now()*0.003)*0.3;
-      renderer.render(scene, camera);
-    };
-    animate();
-    return () => { cancelAnimationFrame(frame); mount.removeEventListener("mousemove", onMM); renderer.dispose(); if (mount.contains(renderer.domElement)) mount.removeChild(renderer.domElement); };
-  }, []);
-  return <div ref={mountRef} className="w-full h-full cursor-grab active:cursor-grabbing" style={{ minHeight: 420 }} />;
-};
-
 const InfiniteMarquee = ({ testimonials, direction = 1, speed = 35 }) => {
   const trackRef = useRef(null);
   const animRef = useRef(null);
@@ -144,14 +92,32 @@ const InfiniteMarquee = ({ testimonials, direction = 1, speed = 35 }) => {
     <div className="overflow-hidden touch-pan-y" onMouseEnter={() => { pausedRef.current = true; }} onMouseLeave={() => { pausedRef.current = false; }}>
       <div ref={trackRef} className="flex will-change-transform" style={{ gap: GAP, width: "max-content" }}>
         {items.map((t, idx) => (
-          <div key={idx} style={{ width: CARD_WIDTH, flexShrink: 0 }} className="relative p-4 sm:p-5 rounded-2xl border border-white/6 bg-white/[0.025] transition-colors duration-300 cursor-default">
-            <div className="absolute top-3 right-4 opacity-[0.07]"><Quote className="w-7 h-7 sm:w-8 sm:h-8 text-emerald-400" /></div>
-            <div className="flex gap-0.5 mb-2.5">{[...Array(t.rating)].map((_, i) => <Star key={i} className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-400 fill-amber-400" />)}</div>
-            <p className="text-xs sm:text-sm text-white/55 leading-relaxed mb-4 italic" style={{ display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>"{t.text}"</p>
-            <div className="flex items-center gap-2.5">
-              <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-br ${t.color} flex items-center justify-center flex-shrink-0`}><span className="text-[10px] sm:text-xs font-bold text-white">{t.avatar}</span></div>
-              <div className="flex-1 min-w-0"><p className="text-xs sm:text-sm font-semibold text-white truncate">{t.name}</p><p className="text-[10px] sm:text-xs text-white/35 truncate">{t.role}</p></div>
-              <div className="text-right flex-shrink-0 hidden sm:block"><span className="text-[10px] text-emerald-400/70 block font-medium">{t.contractType}</span><span className="text-[10px] text-white/20">{t.date}</span></div>
+          <div
+            key={idx}
+            style={{ width: CARD_WIDTH, flexShrink: 0, boxShadow: "0 1px 0 rgba(255,255,255,0.05) inset, 0 12px 30px -18px rgba(0,0,0,0.6)" }}
+            className="group relative p-5 sm:p-6 rounded-3xl border border-white/8 bg-gradient-to-b from-white/[0.045] to-white/[0.012] backdrop-blur-sm transition-all duration-300 hover:border-emerald-500/25 hover:from-white/[0.07] cursor-default"
+          >
+            <Quote className="absolute top-4 right-5 w-9 h-9 text-emerald-400/10 group-hover:text-emerald-400/20 transition-colors duration-300" />
+            <div className="flex gap-0.5 mb-3">
+              {[...Array(t.rating)].map((_, i) => <Star key={i} className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-400 fill-amber-400" />)}
+            </div>
+            <p
+              className="text-xs sm:text-sm text-white/60 leading-relaxed mb-5"
+              style={{ display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}
+            >
+              "{t.text}"
+            </p>
+            <div className="flex items-center gap-3 pt-4 border-t border-white/5">
+              <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br ${t.color} flex items-center justify-center flex-shrink-0 ring-2 ring-white/10`}>
+                <span className="text-[11px] sm:text-xs font-bold text-white">{t.avatar}</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs sm:text-sm font-semibold text-white truncate">{t.name}</p>
+                <p className="text-[10px] sm:text-xs text-white/35 truncate">{t.role}</p>
+              </div>
+              <span className="hidden sm:inline-flex text-[10px] font-medium text-emerald-400/80 bg-emerald-500/10 border border-emerald-500/15 px-2.5 py-1 rounded-full flex-shrink-0 whitespace-nowrap">
+                {t.contractType}
+              </span>
             </div>
           </div>
         ))}
@@ -178,18 +144,7 @@ const ParallaxBanner = () => {
       <motion.div style={{ y: y2 }} className="absolute inset-0 pointer-events-none">
         <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full blur-[100px]" style={{ background: "radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%)" }} />
       </motion.div>
-      <motion.div style={{ x: x1, y: y1 }} className="absolute left-[8%] top-[20%] px-5 py-3 rounded-2xl bg-white/4 border border-emerald-500/20 backdrop-blur-sm hidden lg:flex items-center gap-3">
-        <div className="w-8 h-8 rounded-xl bg-emerald-500/20 flex items-center justify-center"><Shield className="w-4 h-4 text-emerald-400" /></div>
-        <div><p className="text-white font-bold text-sm">100% Legal</p><p className="text-white/40 text-xs">Revisado por especialistas</p></div>
-      </motion.div>
-      <motion.div style={{ x: x2, y: y2 }} className="absolute right-[8%] bottom-[20%] px-5 py-3 rounded-2xl bg-white/4 border border-amber-500/20 backdrop-blur-sm hidden lg:flex items-center gap-3">
-        <div className="w-8 h-8 rounded-xl bg-amber-500/20 flex items-center justify-center"><Zap className="w-4 h-4 text-amber-400" /></div>
-        <div><p className="text-white font-bold text-sm">2 minutos</p><p className="text-white/40 text-xs">Do zero ao PDF pronto</p></div>
-      </motion.div>
-      <motion.div style={{ x: x1, y: y2 }} className="absolute right-[12%] top-[18%] px-5 py-3 rounded-2xl bg-white/4 border border-blue-500/20 backdrop-blur-sm hidden lg:flex items-center gap-3">
-        <div className="w-8 h-8 rounded-xl bg-blue-500/20 flex items-center justify-center"><Star className="w-4 h-4 text-blue-400 fill-blue-400" /></div>
-        <div><p className="text-white font-bold text-sm">4.9 / 5</p><p className="text-white/40 text-xs">+500 avaliações</p></div>
-      </motion.div>
+
       <motion.div style={{ scale, opacity }} className="relative z-10 text-center px-6">
         <p className="text-xs font-bold text-emerald-400 uppercase tracking-[0.25em] mb-3">Simples assim</p>
         <h3 className="text-3xl md:text-5xl font-black text-white leading-tight" style={{ fontFamily: "'Parkinsans', sans-serif" }}>
@@ -235,7 +190,7 @@ const Header = ({ onCreateContract, onOpenAuth }) => {
   const navLinks = [
     { label: "Como Funciona", href: "#como-funciona" },
     { label: "Vantagens", href: "#vantagens" },
-    { label: "Avaliações", href: "#avaliacoes" },
+    { label: "Veja Funcionando", href: "#avaliacoes" },
     { label: "Preços", href: "#precos" },
     { label: "FAQ", href: "#faq" },
   ];
@@ -246,7 +201,12 @@ const Header = ({ onCreateContract, onOpenAuth }) => {
       <div className="max-w-7xl mx-auto px-6 md:px-10">
         <div className="flex items-center justify-between h-16 md:h-20 lg:h-24">
           <a href="#" className="flex items-center flex-shrink-0">
-            <motion.img src="/contrati.png" alt="Contratify" whileHover={{ scale: 1.05 }} className="h-26 md:h-18 lg:h-28 w-auto object-contain" />
+            <motion.img
+              src="/contrati.png"
+              alt="Contratify"
+              whileHover={{ scale: 1.05 }}
+              className="h-12 md:h-14 lg:h-16 w-auto object-contain"
+            />
           </a>
           <nav className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
             {navLinks.map((link, i) => (
@@ -299,13 +259,9 @@ const HeroSection = ({ onCreateContract }) => {
   const benefits = ["Juridicamente revisado", "Pronto em 2 minutos", "Pagamento via Pix"];
   const { scrollY } = useScroll();
   const isDesktop = typeof window !== "undefined" && window.innerWidth >= 1024;
-  const gridY      = useTransform(scrollY, [0, 800], isDesktop ? [0, 200] : [0, 0]);
-  const blob1Y     = useTransform(scrollY, [0, 800], isDesktop ? [0, 120] : [0, 0]);
-  const blob2Y     = useTransform(scrollY, [0, 800], isDesktop ? [0, 80]  : [0, 0]);
-  const blob1X     = useTransform(scrollY, [0, 800], isDesktop ? [0, -30] : [0, 0]);
-  const blob2X     = useTransform(scrollY, [0, 800], isDesktop ? [0, 30]  : [0, 0]);
-  const contentY   = useTransform(scrollY, [0, 600], isDesktop ? [0, 60]  : [0, 0]);
+  const contentY = useTransform(scrollY, [0, 600], isDesktop ? [0, 60] : [0, 0]);
   const heroOpacity = useTransform(scrollY, [0, 500], [1, isDesktop ? 0 : 1]);
+  const heroBgPosition = isDesktop ? "center top" : "78% 12%";
 
   const [count, setCount] = useState(0);
   useEffect(() => {
@@ -316,24 +272,47 @@ const HeroSection = ({ onCreateContract }) => {
   }, []);
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#080d14]">
-      <motion.div style={{ y: gridY }} className="absolute inset-0 pointer-events-none">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      {/* Background image — a partir do mobile M (375px) */}
+      <div
+        className="absolute inset-0 z-0 hidden min-[375px]:block"
+        style={{
+          backgroundImage: "url('/homens.png')",
+          backgroundSize: "cover",
+          backgroundPosition: heroBgPosition,
+          backgroundRepeat: "no-repeat",
+        }}
+      />
+      {/* Mobile S (<375px): sem imagem, só grade tracejada + partículas */}
+      <div className="absolute inset-0 z-[1] block min-[375px]:hidden pointer-events-none">
         <div className="absolute inset-0 opacity-20" style={{ backgroundImage: `linear-gradient(rgba(16,185,129,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(16,185,129,0.15) 1px, transparent 1px)`, backgroundSize: "60px 60px" }} />
-        {!isMobileDevice() && <FloatingParticles />}
-      </motion.div>
-      <motion.div style={{ y: blob1Y, x: blob1X }} className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full pointer-events-none">
-        <div className="w-full h-full rounded-full" style={{ background: "radial-gradient(circle, rgba(16,185,129,0.12) 0%, transparent 70%)", filter: "blur(120px)" }} />
-      </motion.div>
-      <motion.div style={{ y: blob2Y, x: blob2X }} className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full pointer-events-none">
-        <div className="w-full h-full rounded-full" style={{ background: "radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%)", filter: "blur(120px)" }} />
-      </motion.div>
+        <FloatingParticles />
+      </div>
+      {/* Overlay a partir do mobile M (375px) */}
+      <div
+        className="absolute inset-0 z-0 hidden min-[375px]:block"
+        style={{
+          background: "linear-gradient(to right, rgba(8,13,20,0.88) 0%, rgba(8,13,20,0.55) 50%, rgba(8,13,20,0.20) 100%)",
+        }}
+      />
+      {/* Overlay Mobile S (<375px) — mais escuro para legibilidade */}
+      <div
+        className="absolute inset-0 z-0 block min-[375px]:hidden"
+        style={{
+          background: "rgba(8,13,20,0.70)",
+        }}
+      />
+      {/* Fade no rodapé para transição suave com a próxima seção */}
+      <div
+        className="absolute bottom-0 left-0 right-0 h-40 z-0 pointer-events-none"
+        style={{ background: "linear-gradient(to bottom, transparent, #080d14)" }}
+      />
+
+
+
       <motion.div style={{ y: contentY, opacity: heroOpacity }} className="max-w-7xl mx-auto px-6 md:px-10 relative z-10 pt-1 md:pt-14 w-full">
-        <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+        <div className="flex flex-col max-w-xl">
           <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}>
-            <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }} className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-8">
-              <motion.span animate={{ scale: [1, 1.4, 1] }} transition={{ duration: 1.5, repeat: Infinity }} className="w-2 h-2 rounded-full bg-emerald-400" />
-              <span className="text-sm font-medium text-emerald-400 tracking-wide">Gerado por Inteligência Artificial</span>
-            </motion.div>
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white leading-[1.05] mb-6 tracking-tight" style={{ fontFamily: "'Parkinsans', sans-serif" }}>
               {["Seu contrato", "profissional", "em 2 minutos."].map((line, i) => (
                 <motion.span key={i} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + i * 0.12, duration: 0.6 }} className="block"
@@ -357,19 +336,10 @@ const HeroSection = ({ onCreateContract }) => {
               <span className="text-emerald-400 font-semibold">Já temos +{count} contratos</span> gerados com sucesso
             </motion.p>
           </motion.div>
-          <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1, delay: 0.4, ease: [0.16, 1, 0.3, 1] }} className="relative hidden lg:block h-[480px]">
-            <ThreeDDocument />
-            <motion.div animate={{ y: [0, -6, 0] }} transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }} className="absolute top-6 -left-6 px-4 py-2.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl flex items-center gap-2" style={{ boxShadow: "0 8px 32px rgba(0,0,0,0.3)" }}>
-              <Shield className="w-4 h-4 text-emerald-400" /><span className="text-xs font-semibold text-white">Juridicamente revisado</span>
-            </motion.div>
-            <motion.div animate={{ y: [0, -8, 0] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1 }} className="absolute bottom-10 -right-4 px-4 py-2.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl flex items-center gap-2" style={{ boxShadow: "0 8px 32px rgba(0,0,0,0.3)" }}>
-              <Zap className="w-4 h-4 text-amber-400" /><span className="text-xs font-semibold text-white">Pronto em 2 min</span>
-            </motion.div>
-            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 0.5 }} transition={{ delay: 1.5 }} className="absolute bottom-0 left-1/2 -translate-x-1/2 text-xs text-emerald-400/60 text-center whitespace-nowrap">↕ Mova o mouse para interagir</motion.p>
-          </motion.div>
+
         </div>
       </motion.div>
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#080d14] to-transparent pointer-events-none" />
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#080d14] to-transparent pointer-events-none z-10" />
     </section>
   );
 };
@@ -486,42 +456,125 @@ const BenefitsSection = () => {
 };
 
 const TestimonialsSection = () => {
-  const testimonials = [
-    { name: "Mariana Costa", role: "Designer Freelancer", avatar: "MC", rating: 5, text: "Incrível! Precisava de um contrato para um cliente grande e em menos de 3 minutos já tinha tudo pronto. Economizei muito comparado a contratar um advogado.", contractType: "Prestação de Serviços", date: "há 2 dias", color: "from-purple-500 to-pink-500" },
-    { name: "Rafael Mendonça", role: "Desenvolvedor Web", avatar: "RM", rating: 5, text: "Uso o Contratify todo mês para novos projetos. Simplesmente perfeito. O contrato é profissional e os clientes ficam impressionados com a qualidade.", contractType: "Contrato de TI", date: "há 5 dias", color: "from-blue-500 to-cyan-500" },
-    { name: "Juliana Ferreira", role: "Consultora de Marketing", avatar: "JF", rating: 5, text: "Finalmente um serviço que realmente funciona! O processo é super intuitivo, o pagamento via Pix é instantâneo e o PDF ficou impecável. Super recomendo!", contractType: "Consultoria", date: "há 1 semana", color: "from-emerald-500 to-teal-500" },
-    { name: "Carlos Albuquerque", role: "Fotógrafo Profissional", avatar: "CA", rating: 5, text: "Já tive problemas com clientes que não pagavam por falta de contrato. Com o Contratify isso acabou. Rápido, barato e juridicamente sólido!", contractType: "Fotografia", date: "há 2 semanas", color: "from-orange-500 to-red-500" },
-    { name: "Fernanda Lima", role: "Arquiteta", avatar: "FL", rating: 5, text: "Minha advogada cobrava R$500 por contrato básico. Aqui paguei R$39,90 e recebi algo ainda mais completo e personalizado. Não tem como não usar!", contractType: "Projeto Arquitetônico", date: "há 3 semanas", color: "from-violet-500 to-purple-500" },
-    { name: "Thiago Nunes", role: "Professor Particular", avatar: "TN", rating: 5, text: "Precisava formalizar meus contratos com alunos e pais. O Contratify gerou algo perfeito, com todas as cláusulas que eu precisava. Ótimo serviço!", contractType: "Contrato Educacional", date: "há 1 mês", color: "from-amber-500 to-orange-500" },
-    { name: "Beatriz Rocha", role: "Nutricionista", avatar: "BR", rating: 5, text: "Prático demais! Gerei contratos para minha clínica em minutos. A linguagem jurídica é clara e os pacientes ficam mais tranquilos assinando.", contractType: "Atendimento Clínico", date: "há 1 mês", color: "from-rose-500 to-pink-500" },
-    { name: "Lucas Pimentel", role: "Social Media", avatar: "LP", rating: 5, text: "Comecei a usar e não largo mais. Para quem é freelancer como eu, ter um contrato profissional rápido e barato é essencial. Melhor custo-benefício!", contractType: "Gestão de Redes", date: "há 2 meses", color: "from-sky-500 to-blue-500" },
+  const steps = [
+    { label: "01", title: "Você responde", text: "\"Preciso de um contrato de prestação de serviços para um projeto de design, com pagamento em 3 parcelas.\"" },
+    { label: "02", title: "A IA estrutura", text: "Identifica partes, objeto, valores, prazos e cláusulas aplicáveis à legislação brasileira." },
+    { label: "03", title: "O sistema valida", text: "Confere valores, datas e identificadores antes de liberar o documento — sem espaço para erro." },
   ];
-  const row1 = testimonials.slice(0, 4);
-  const row2 = testimonials.slice(4);
+
+  const guarantees = [
+    { icon: Scale, title: "Base jurídica real", description: "Cláusulas fundamentadas no Código Civil, CLT e LGPD — não um texto genérico adaptado." },
+    { icon: Shield, title: "Validação automática", description: "Cada contrato passa por uma camada de checagem que impede valores, prazos ou dados inconsistentes." },
+    { icon: Repeat, title: "Reembolso garantido", description: "Encontrou um erro? Devolução integral do valor pago, sem burocracia." },
+    { icon: Clock, title: "Pronto em minutos", description: "Do preenchimento ao PDF final, sem depender de agenda de advogado." },
+  ];
+
   return (
     <section id="avaliacoes" className="py-28 md:py-40 bg-[#080d14] relative overflow-hidden">
-      <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at 50% 50%, rgba(16,185,129,0.04) 0%, transparent 70%)" }} />
-      <div className="absolute left-0 top-0 bottom-0 w-28 z-10 pointer-events-none" style={{ background: "linear-gradient(to right, #080d14, transparent)" }} />
-      <div className="absolute right-0 top-0 bottom-0 w-28 z-10 pointer-events-none" style={{ background: "linear-gradient(to left, #080d14, transparent)" }} />
-      <div className="max-w-7xl mx-auto px-6 md:px-10 relative z-10 mb-14">
-        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center">
-          <span className="inline-block text-xs font-bold text-emerald-400 uppercase tracking-[0.2em] mb-4">Depoimentos</span>
+      <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: `radial-gradient(circle at 15% 20%, rgba(16,185,129,0.18) 0%, transparent 45%), radial-gradient(circle at 85% 80%, rgba(59,130,246,0.12) 0%, transparent 45%)` }} />
+      <div className="max-w-7xl mx-auto px-6 md:px-10 relative z-10">
+        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16 md:mb-20">
+          <span className="inline-block text-xs font-bold text-emerald-400 uppercase tracking-[0.2em] mb-4">Veja funcionando</span>
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4" style={{ fontFamily: "'Parkinsans', sans-serif" }}>
-            O que nossos clientes<br />
-            <span style={{ background: "linear-gradient(135deg, #10b981, #34d399)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>estão dizendo</span>
+            Do texto solto ao contrato<br />
+            <span style={{ background: "linear-gradient(135deg, #10b981, #34d399)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>pronto para assinar</span>
           </h2>
-          <div className="flex items-center justify-center gap-1.5 mt-4">
-            {[...Array(5)].map((_, i) => (
-              <motion.div key={i} initial={{ opacity: 0, scale: 0 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }}>
-                <Star className="w-5 h-5 text-amber-400 fill-amber-400" />
-              </motion.div>
-            ))}
-            <span className="text-white/40 text-sm ml-2">4.9/5 · +600 avaliações</span>
+          <p className="text-white/40 max-w-xl mx-auto mt-4 text-sm leading-relaxed">
+            Sem depoimentos genéricos. Aqui está exatamente o que acontece por trás de cada contrato gerado.
+          </p>
+        </motion.div>
+
+        {/* Mockup: fluxo de geração */}
+        <div className="grid lg:grid-cols-3 gap-4 mb-20">
+          {steps.map((step, index) => (
+            <motion.div
+              key={step.label}
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-40px" }}
+              transition={{ duration: 0.5, delay: index * 0.12, ease: [0.16, 1, 0.3, 1] }}
+              className="relative p-6 md:p-7 rounded-3xl border border-white/8 bg-gradient-to-b from-white/[0.045] to-white/[0.012]"
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                  <span className="text-xs font-bold text-emerald-400">{step.label}</span>
+                </div>
+                <h3 className="text-sm font-bold text-white">{step.title}</h3>
+              </div>
+              <p className="text-sm text-white/45 leading-relaxed">{step.text}</p>
+              {index < steps.length - 1 && (
+                <div className="hidden lg:flex absolute top-1/2 -right-6 z-10 items-center justify-center">
+                  <ArrowRight className="w-4 h-4 text-white/15" />
+                </div>
+              )}
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Documento validado — preview estilizado */}
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-40px" }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="relative rounded-3xl border border-emerald-500/20 bg-emerald-500/[0.03] p-6 md:p-10 mb-16 overflow-hidden"
+        >
+          <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(16,185,129,0.07) 0%, transparent 60%)" }} />
+          <div className="relative flex flex-col md:flex-row md:items-center gap-8">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-7 h-7 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center">
+                  <Check className="w-3.5 h-3.5 text-emerald-400" />
+                </div>
+                <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider">Contrato validado</span>
+              </div>
+              <h3 className="text-xl md:text-2xl font-bold text-white mb-3" style={{ fontFamily: "'Parkinsans', sans-serif" }}>
+                Nenhum contrato sai sem passar pela checagem
+              </h3>
+              <p className="text-sm text-white/45 leading-relaxed max-w-md">
+                Antes da entrega, o sistema confere valores monetários, prazos, nomes e identificadores contra os dados que você informou — eliminando o risco de inconsistência gerada por IA.
+              </p>
+            </div>
+            <div className="flex-1 w-full">
+              <div className="rounded-2xl border border-white/10 bg-[#0a1018] p-5 space-y-3">
+                {[
+                  { label: "Partes identificadas", ok: true },
+                  { label: "Valores e datas conferidos", ok: true },
+                  { label: "Cláusulas aplicáveis (Código Civil)", ok: true },
+                  { label: "Formatação final em PDF", ok: true },
+                ].map((row) => (
+                  <div key={row.label} className="flex items-center justify-between py-1.5">
+                    <span className="text-xs text-white/50">{row.label}</span>
+                    <div className="w-5 h-5 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center flex-shrink-0">
+                      <Check className="w-3 h-3 text-emerald-400" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </motion.div>
+
+        {/* Garantias */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {guarantees.map((g, index) => (
+            <motion.div
+              key={g.title}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-40px" }}
+              transition={{ duration: 0.5, delay: index * 0.08, ease: [0.16, 1, 0.3, 1] }}
+              className="p-6 rounded-2xl border border-white/6 bg-white/[0.02] hover:border-emerald-500/20 hover:bg-white/[0.04] transition-colors duration-300"
+            >
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-4">
+                <g.icon className="w-4.5 h-4.5 text-emerald-400" />
+              </div>
+              <h4 className="text-sm font-bold text-white mb-2">{g.title}</h4>
+              <p className="text-xs text-white/40 leading-relaxed">{g.description}</p>
+            </motion.div>
+          ))}
+        </div>
       </div>
-      <div className="mb-4"><InfiniteMarquee testimonials={row1} direction={1} speed={32} /></div>
-      <InfiniteMarquee testimonials={row2} direction={-1} speed={28} />
     </section>
   );
 };
@@ -600,7 +653,7 @@ const PricingSection = ({ onCreateContract, onOpenAuth }) => {
           {/* PLANO PREMIUM */}
           <motion.div initial={{ opacity: 0, y: 30, scale: 0.95 }} whileInView={{ opacity: 1, y: 0, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.1 }} className="relative">
             <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
-              <span className="px-4 py-1.5 rounded-full text-xs font-bold tracking-wider" style={{ background: "linear-gradient(135deg, #22c55e, #a3e635)", color: "#0d2010" }}>✦ MAIS POPULAR</span>
+              <span className="px-4 py-1.5 rounded-full text-xs font-bold tracking-wider" style={{ background: "linear-gradient(135deg, #10b981 0%, #84cc16 100%)", color: "#064e3b" }}>MAIS POPULAR</span>
             </div>
             <motion.div whileHover={{ boxShadow: "0 0 80px rgba(34,197,94,0.25)" }} className="relative rounded-3xl p-8 border border-emerald-500/40 bg-emerald-500/5 transition-all duration-300 h-full" style={{ boxShadow: "0 0 60px rgba(16,185,129,0.12), inset 0 1px 0 rgba(255,255,255,0.05)" }}>
               <div className="absolute inset-0 rounded-3xl pointer-events-none" style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(16,185,129,0.08) 0%, transparent 60%)" }} />
@@ -628,7 +681,7 @@ const PricingSection = ({ onCreateContract, onOpenAuth }) => {
                     { text: "Cores e fontes da sua marca" },
                     { text: "Layout exclusivo personalizado" },
                     { text: "Marca d'água com seu nome" },
-                    { text: "Preview antes de baixar" },
+                    { text: "Preview antes de baixar (disponível apenas no desktop)" },
                   ].map((f, i) => (
                     <motion.li key={f.text} initial={{ opacity: 0, x: -10 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }} className="flex items-start gap-3">
                       <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 bg-emerald-500/20 border border-emerald-500/30">
@@ -638,11 +691,11 @@ const PricingSection = ({ onCreateContract, onOpenAuth }) => {
                     </motion.li>
                   ))}
                 </ul>
-                <motion.button onClick={() => onCreateContract("premium")} whileHover={{ scale: 1.03, y: -2, boxShadow: "0 8px 40px rgba(34,197,94,0.5)" }} whileTap={{ scale: 0.98 }}
+                <motion.button onClick={() => onCreateContract("premium")} whileHover={{ scale: 1.03, y: -2, boxShadow: "0 8px 40px rgba(31,182,118,0.5)" }} whileTap={{ scale: 0.98 }}
                   className="w-full py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 overflow-hidden relative"
-                  style={{ background: "linear-gradient(135deg, #22c55e, #a3e635)", color: "#0d2010", boxShadow: "0 4px 24px rgba(34,197,94,0.3)" }}>
+                  style={{ background: "linear-gradient(135deg, #10b981 0%, #84cc16 100%)", color: "#064e3b", boxShadow: "0 4px 24px rgba(132,204,22,0.35)" }}>
                   <motion.span className="absolute inset-0 bg-white/10" initial={{ x: "-100%" }} whileHover={{ x: "100%" }} transition={{ duration: 0.4 }} />
-                  <Sparkles className="w-4 h-4 relative" /><span className="relative">Criar com Minha Marca</span>
+                  <span className="relative">Criar com Minha Marca</span>
                 </motion.button>
               </div>
             </motion.div>
@@ -721,15 +774,26 @@ const CTASection = ({ onCreateContract }) => {
       <div className="max-w-4xl mx-auto px-6 md:px-10 relative z-10 text-center">
         <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.7 }}>
           <motion.div whileHover={{ scale: 1.05 }} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 mb-8">
-            <Sparkles className="w-4 h-4 text-emerald-400" /><span className="text-sm font-medium text-emerald-400">Comece agora mesmo</span>
+            <span className="text-sm font-medium text-emerald-400">Comece agora mesmo</span>
           </motion.div>
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight" style={{ fontFamily: "'Parkinsans', sans-serif" }}>
             Pronto para criar seu<br />
             <span style={{ background: "linear-gradient(135deg, #10b981, #34d399)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>contrato profissional?</span>
           </h2>
-          <p className="text-white/40 mb-12 max-w-lg mx-auto leading-relaxed">Junte-se a centenas de pessoas que já simplificaram a criação de contratos com o Contratify.</p>
+          <p className="text-white/40 mb-10 max-w-lg mx-auto leading-relaxed">Junte-se a centenas de pessoas que já simplificaram a criação de contratos com o Contratify.</p>
+          <motion.button
+            onClick={onCreateContract}
+            whileHover={{ scale: 1.03, y: -2, boxShadow: "0 8px 40px rgba(31,182,118,0.5)" }}
+            whileTap={{ scale: 0.98 }}
+            className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl font-bold text-sm mb-12 relative overflow-hidden"
+            style={{ background: "linear-gradient(135deg, #10b981 0%, #84cc16 100%)", color: "#064e3b", boxShadow: "0 4px 24px rgba(132,204,22,0.35)" }}
+          >
+            <motion.span className="absolute inset-0 bg-white/10" initial={{ x: "-100%" }} whileHover={{ x: "100%" }} transition={{ duration: 0.4 }} />
+            <span className="relative">Criar Meu Contrato Agora</span>
+            <ArrowRight className="w-4 h-4 relative" />
+          </motion.button>
           <div className="flex flex-wrap justify-center gap-6">
-            {[{ icon: Shield, label: "100% Seguro" }, { icon: Clock, label: "Pronto em 2 minutos" }].map(({ icon: Icon, label }) => (
+            {[{ icon: Shield, label: "100% Seguro" }, { icon: Clock, label: "Pronto em 2 minutos" }, { icon: CreditCard, label: "Pagamento via Pix" }].map(({ icon: Icon, label }) => (
               <motion.div key={label} whileHover={{ y: -3 }} className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center"><Icon className="w-4 h-4 text-emerald-400" /></div>
                 <span className="text-sm text-white/60 font-medium">{label}</span>
@@ -753,7 +817,6 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto px-6 md:px-10">
         <div className="py-16 grid md:grid-cols-2 lg:grid-cols-4 gap-10">
           <div className="lg:col-span-1">
-            
             <p className="text-white/30 text-sm leading-relaxed mb-6">Contratos profissionais gerados por IA. Rápido, seguro e acessível.</p>
           </div>
           {[{ title: "Produto", items: links.produto }, { title: "Legal", items: links.legal }].map(({ title, items }) => (
@@ -772,16 +835,16 @@ const Footer = () => {
             <h4 className="text-xs font-bold text-white/50 uppercase tracking-[0.15em] mb-5">Contato</h4>
             <ul className="space-y-3">
               <li className="flex items-center gap-2.5 text-sm text-white/30">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 opacity-60"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 opacity-60"><rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg>
                 contratify2026@mail.com
               </li>
               <li className="flex items-center gap-2.5 text-sm text-white/30">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 opacity-60"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.64 1.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6.06 6.06l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7a2 2 0 0 1 1.72 2.01z"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 opacity-60"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.64 1.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6.06 6.06l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7a2 2 0 0 1 1.72 2.01z" /></svg>
                 (99) 991999125
               </li>
               <li>
                 <a href="https://instagram.com/contratify_" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 text-sm text-white/30 hover:text-white/70 transition-colors group">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 opacity-60 group-hover:opacity-100 transition-opacity"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 opacity-60 group-hover:opacity-100 transition-opacity"><rect width="20" height="20" x="2" y="2" rx="5" ry="5" /><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" /><line x1="17.5" x2="17.51" y1="6.5" y2="6.5" /></svg>
                   @contratify_
                 </a>
               </li>

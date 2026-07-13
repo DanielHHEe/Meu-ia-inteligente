@@ -261,7 +261,8 @@ export default function AdminDashboard() {
       }
       if(barRef.current){
         if(barInst.current) barInst.current.destroy();
-        barInst.current = new Ch(barRef.current,{ type:'line', data:{ labels:cByDay.labels, datasets:[{ data:cByDay.data, borderColor:barBord, backgroundColor:barBg, borderWidth:2, fill:true, tension:0.4, pointRadius:3, pointBackgroundColor:barBord, pointBorderColor:'transparent' }]}, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{ backgroundColor:dark?'#1c2128':'#fff', titleColor:th.text, bodyColor:th.mid, borderColor:th.border, borderWidth:1 } }, scales:{ x:{ grid:{color:gc}, ticks:{color:tc,font:{size:11}}, border:{display:false} }, y:{ grid:{color:gc}, ticks:{color:tc,font:{size:11}}, border:{display:false} } } } });
+        // CORREÇÃO: eixo Y forçado a inteiros — não existe "meio contrato"
+        barInst.current = new Ch(barRef.current,{ type:'line', data:{ labels:cByDay.labels, datasets:[{ data:cByDay.data, borderColor:barBord, backgroundColor:barBg, borderWidth:2, fill:true, tension:0.4, pointRadius:3, pointBackgroundColor:barBord, pointBorderColor:'transparent' }]}, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{ backgroundColor:dark?'#1c2128':'#fff', titleColor:th.text, bodyColor:th.mid, borderColor:th.border, borderWidth:1, callbacks:{ label:ctx=>`${ctx.parsed.y} contrato${ctx.parsed.y!==1?'s':''}` } } }, scales:{ x:{ grid:{color:gc}, ticks:{color:tc,font:{size:11}}, border:{display:false} }, y:{ grid:{color:gc}, ticks:{color:tc,font:{size:11},stepSize:1,precision:0,callback:v=>Number.isInteger(v)?v:null}, border:{display:false}, min:0 } } } });
       }
       if(pieRef.current && byType.length > 0){
         if(pieInst.current) pieInst.current.destroy();
@@ -398,9 +399,6 @@ export default function AdminDashboard() {
         transition:'transform 0.22s cubic-bezier(0.4,0,0.2,1)',
         transform: sideOpen ? 'translateX(0)' : undefined,
       }}>
-
-    
-
         {/* Nav */}
         <nav style={{ padding:'12px 10px', flex:1, overflowY:'auto' }}>
           <p style={{ fontSize:10, fontWeight:700, color:th.muted, textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:6, padding:'0 8px' }}>Menu</p>
@@ -490,7 +488,7 @@ export default function AdminDashboard() {
                 <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:16 }}>
                   <div>
                     <p style={{ fontSize:13, fontWeight:600, color:th.text }}>Faturamento por dia</p>
-                    <p style={{ fontSize:11, color:th.muted, marginTop:2 }}>Últimos 14 dias com receita</p>
+                    <p style={{ fontSize:11, color:th.muted, marginTop:2 }}>Receita acumulada por dia no período</p>
                   </div>
                   <span style={{ fontSize:13, fontWeight:600, color:th.text }}>{mask(fmtCurrency(totalR))}</span>
                 </div>
@@ -500,7 +498,7 @@ export default function AdminDashboard() {
                 <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:16 }}>
                   <div>
                     <p style={{ fontSize:13, fontWeight:600, color:th.text }}>Contratos por dia</p>
-                    <p style={{ fontSize:11, color:th.muted, marginTop:2 }}>Últimos 14 dias com geração</p>
+                    <p style={{ fontSize:11, color:th.muted, marginTop:2 }}>Quantidade gerada por dia no período</p>
                   </div>
                   <span style={{ fontSize:13, fontWeight:600, color:th.text }}>{fmtNum(totalC)} total</span>
                 </div>

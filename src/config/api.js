@@ -1,1152 +1,154 @@
 // ============================================================
-// CONFIG
+// api.js  —  Ponto de entrada principal
 // ============================================================
-export const API_CONFIG = {
-  model: 'gpt-4o-mini',
-};
 
-const isLocalDev = typeof window !== 'undefined' &&
-  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+export { API_CONFIG, isLocalDev, callAI }                             from './api.config.js';
+export { formatAnswers, formatMoneyField, extensoMonetario }           from './formatters.js';
+export { CONTRACT_TEMPLATES, FIELD_ORDER_BY_CONTRACT }                 from './contract.templates.js';
+export { SYSTEM_PROMPT, REQUIRED_FIELDS_INSTRUCTION, getInitialPrompt } from './contract.prompts.js';
+export { CONTRACT_CLAUSES, LEGAL_REF, PARTY_NAME_FIELDS, preprocessContractText } from './contract.clauses.js';
 
-const callAI = async (endpoint, body, forceDirect = false) => {
-  const useDirect = isLocalDev || forceDirect;
-  const url = useDirect ? 'https://api.openai.com/v1/chat/completions' : endpoint;
-  const headers = useDirect
-    ? { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}` }
-    : { 'Content-Type': 'application/json' };
-  const response = await fetch(url, { method: 'POST', headers, body: JSON.stringify(body) });
-  if (!response.ok) {
-    const err = await response.json();
-    throw new Error(err.error?.message || err.error || 'Erro na API');
-  }
-  return response.json();
-};
+import { API_CONFIG, isLocalDev, callAI } from './api.config.js';
+import { formatAnswers, parseValor }       from './formatters.js';
+import { CONTRACT_TEMPLATES, FIELD_ORDER_BY_CONTRACT } from './contract.templates.js';
+import { SYSTEM_PROMPT, REQUIRED_FIELDS_INSTRUCTION }  from './contract.prompts.js';
+import { CONTRACT_CLAUSES, LEGAL_REF, PARTY_NAME_FIELDS, preprocessContractText } from './contract.clauses.js';
 
 // ============================================================
-// FORMATADORES — CPF, CNPJ, telefone
+// stripMarkdown
 // ============================================================
-const formatCPF = (v) => {
-  const d = v.replace(/\D/g, '');
-  if (d.length !== 11) return v;
-  return d.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-};
-
-const formatCNPJ = (v) => {
-  const d = v.replace(/\D/g, '');
-  if (d.length !== 14) return v;
-  return d.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
-};
-
-const formatTelefone = (v) => {
-  const d = v.replace(/\D/g, '');
-  if (d.length === 11) return d.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
-  if (d.length === 10) return d.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
-  return v;
-};
-
-const formatDocumento = (v) => {
-  if (!v) return v;
-  const d = v.replace(/\D/g, '');
-  if (d.length === 11) return formatCPF(v);
-  if (d.length === 14) return formatCNPJ(v);
-  return v;
-};
-
-const formatAnswers = (answers) => {
-  const cpfFields = [
-    'contratante_cpf_cnpj', 'contratado_cpf_cnpj', 'locador_cpf_cnpj', 'locatario_cpf_cnpj',
-    'parte_a_cpf_cnpj', 'parte_b_cpf_cnpj', 'revelador_cpf_cnpj', 'receptor_cpf_cnpj',
-    'freelancer_cpf', 'vendedor_cpf_cnpj', 'comprador_cpf_cnpj', 'empreiteiro_cpf_cnpj',
-    'socio_a_cpf', 'socio_b_cpf', 'representada_cnpj', 'representante_cpf_cnpj',
-    'comodante_cpf_cnpj', 'comodatario_cpf_cnpj',
-  ];
-  const telFields = [
-    'contratante_telefone', 'contratado_telefone', 'locador_telefone', 'locatario_telefone',
-    'parte_a_telefone', 'parte_b_telefone', 'revelador_telefone', 'receptor_telefone',
-    'freelancer_telefone', 'vendedor_telefone', 'comprador_telefone', 'empreiteiro_telefone',
-    'socio_a_telefone', 'socio_b_telefone', 'representada_telefone', 'representante_telefone',
-    'comodante_telefone', 'comodatario_telefone',
-  ];
-  const out = { ...answers };
-  cpfFields.forEach(f => { if (out[f]) out[f] = formatDocumento(out[f]); });
-  telFields.forEach(f => { if (out[f]) out[f] = formatTelefone(out[f]); });
-  return out;
-};
+const stripMarkdown = (text) => text
+  .replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1')
+  .replace(/__(.*?)__/g, '$1').replace(/_(.*?)_/g, '$1')
+  .replace(/^#{1,6}\s+/gm, '')
+  .replace(/`{1,3}[^`]*`{1,3}/gs, m => m.replace(/`/g, ''));
 
 // ============================================================
-// TEMPLATES
+// sendMessageToIA — conduz a entrevista
 // ============================================================
-export const CONTRACT_TEMPLATES = {
-  'prestacao-servicos': {
-    title: 'Contrato de Prestação de Serviços',
-    template: `
-      CONTRATANTE: {contratante_nome}
-      CPF/CNPJ: {contratante_cpf_cnpj}
-      TELEFONE: {contratante_telefone}
-      EMAIL: {contratante_email}
-
-      CONTRATADO: {contratado_nome}
-      CPF/CNPJ: {contratado_cpf_cnpj}
-      TELEFONE: {contratado_telefone}
-      EMAIL: {contratado_email}
-
-      OBJETO: {descricao_servico}
-      LOCAL DE PRESTAÇÃO: {local_prestacao}
-      NÚMERO DE REVISÕES: {numero_revisoes}
-      INSUMOS/MATERIAIS: {responsavel_insumos}
-      SUBCONTRATAÇÃO PERMITIDA: {permite_subcontratacao}
-      PROPRIEDADE INTELECTUAL: {propriedade_intelectual}
-      ACESSOS/EQUIPAMENTOS FORNECIDOS: {acessos_fornecidos}
-      CLÁUSULA DE NÃO-CONCORRÊNCIA: {nao_concorrencia}
-      CANAL OFICIAL DE COMUNICAÇÃO: {canal_comunicacao}
-      GARANTIA PÓS-ENTREGA: {garantia_pos_entrega}
-
-      VALOR TOTAL: R$ {valor_total}
-      FORMA DE PAGAMENTO: {forma_pagamento}
-      PRAZO DE EXECUÇÃO: {prazo_execucao}
-
-      MULTA POR ATRASO (CONTRATADO): {multa_atraso_contratado}% ao dia, limitado a {multa_limite}%
-      MULTA POR RESCISÃO: {multa_rescisao}%
-
-      MODALIDADE DE ASSINATURA: {modalidade_assinatura}
-      CIDADE: {cidade}
-      ESTADO: {estado}
-    `
-  },
-  'aluguel': {
-    title: 'Contrato de Locação de Imóvel',
-    template: `
-      LOCADOR: {locador_nome}
-      ESTADO CIVIL: {locador_estado_civil}
-      CPF/CNPJ: {locador_cpf_cnpj}
-      TELEFONE: {locador_telefone}
-      EMAIL: {locador_email}
-
-      LOCATÁRIO: {locatario_nome}
-      ESTADO CIVIL: {locatario_estado_civil}
-      CPF/CNPJ: {locatario_cpf_cnpj}
-      TELEFONE: {locatario_telefone}
-      EMAIL: {locatario_email}
-
-      IMÓVEL: {descricao_imovel}
-      ENDEREÇO: {endereco_imovel}
-      MATRÍCULA DO IMÓVEL: {matricula_imovel}
-      DÍVIDAS/PENDÊNCIAS DO IMÓVEL: {dividas_imovel}
-
-      VALOR DO ALUGUEL: R$ {valor_aluguel}
-      DIA DE VENCIMENTO: {dia_vencimento}
-      DATA DE INÍCIO: {data_inicio}
-      PRAZO DA LOCAÇÃO: {prazo_locacao} meses
-
-      GARANTIA LOCATÍCIA: {tipo_garantia}
-      RESPONSÁVEL PELO IPTU: {responsavel_iptu}
-      RESPONSÁVEL PELO CONDOMÍNIO: {responsavel_condominio}
-      PERMITE SUBLOCAÇÃO: {permite_sublocacao}
-      PERMITE ANIMAIS: {permite_animais}
-      MANUTENÇÃO ORDINÁRIA/EXTRAORDINÁRIA: {responsavel_manutencao}
-      VISTORIA DE ENTRADA COM LAUDO: {vistoria_entrada}
-      IMÓVEL MOBILIADO/INVENTÁRIO: {imovel_mobiliado}
-      PREFERÊNCIA DE COMPRA DO LOCATÁRIO: {preferencia_compra}
-      AVISO PRÉVIO PARA RESCISÃO: {aviso_previo_rescisao}
-
-      MULTA POR ATRASO: {multa_atraso}%
-      JUROS POR ATRASO: {juros_atraso}% ao mês
-      CORREÇÃO MONETÁRIA: {correcao_monetaria}
-      PRAZO DE TOLERÂNCIA: {prazo_tolerancia} dias
-
-      MODALIDADE DE ASSINATURA: {modalidade_assinatura}
-      CIDADE: {cidade}
-      ESTADO: {estado}
-    `
-  },
-  'parceria': {
-    title: 'Contrato de Parceria Comercial',
-    template: `
-      PARTE A: {parte_a_nome}
-      CPF/CNPJ: {parte_a_cpf_cnpj}
-      TELEFONE: {parte_a_telefone}
-      EMAIL: {parte_a_email}
-
-      PARTE B: {parte_b_nome}
-      CPF/CNPJ: {parte_b_cpf_cnpj}
-      TELEFONE: {parte_b_telefone}
-      EMAIL: {parte_b_email}
-
-      OBJETO DA PARCERIA: {objeto_parceria}
-      NATUREZA JURÍDICA: {natureza_juridica}
-
-      CONTRIBUIÇÕES DA PARTE A: {contribuicao_a}
-      CONTRIBUIÇÕES DA PARTE B: {contribuicao_b}
-      APORTE FINANCEIRO INICIAL: {aporte_inicial}
-
-      PARTICIPAÇÃO NOS RESULTADOS: {participacao_resultados}
-      DISTRIBUIÇÃO DE PERDAS: {distribuicao_perdas}
-      PODERES DE REPRESENTAÇÃO: {poderes_representacao}
-      PRESTAÇÃO DE CONTAS: {periodicidade_contas}
-      LIQUIDAÇÃO EM CASO DE ENCERRAMENTO: {liquidacao_encerramento}
-      DESCUMPRIMENTO GRAVE: {descumprimento_grave}
-      SEGURO EMPRESARIAL: {seguro_empresarial}
-
-      PRAZO DA PARCERIA: {prazo_parceria}
-      CLÁUSULA DE NÃO-CONCORRÊNCIA: {nao_concorrencia}
-      CONTA BANCÁRIA CONJUNTA: {conta_conjunta}
-
-      MULTA POR DESCUMPRIMENTO: {multa_descumprimento}%
-      MULTA POR RESCISÃO ANTECIPADA: {multa_rescisao}%
-
-      MODALIDADE DE ASSINATURA: {modalidade_assinatura}
-      CIDADE: {cidade}
-      ESTADO: {estado}
-    `
-  },
-  'confidencialidade': {
-    title: 'Acordo de Confidencialidade (NDA)',
-    template: `
-      MODALIDADE DO ACORDO: {modalidade_nda}
-
-      PARTE REVELADORA: {revelador_nome}
-      CPF/CNPJ: {revelador_cpf_cnpj}
-      TELEFONE: {revelador_telefone}
-      EMAIL: {revelador_email}
-
-      PARTE RECEPTORA: {receptor_nome}
-      CPF/CNPJ: {receptor_cpf_cnpj}
-      TELEFONE: {receptor_telefone}
-      EMAIL: {receptor_email}
-
-      FINALIDADE DO COMPARTILHAMENTO: {finalidade_compartilhamento}
-      INFORMAÇÕES CONFIDENCIAIS: {informacoes_confidenciais}
-      COMPARTILHAMENTO COM TERCEIROS VINCULADOS: {compartilhamento_terceiros}
-      DESTINAÇÃO AO TÉRMINO: {destinacao_termino}
-      EXCEÇÕES DE CONFIDENCIALIDADE: {excecoes_confidencialidade}
-      PRAZO DE CONFIDENCIALIDADE: {prazo_confidencialidade}
-
-      MULTA POR VIOLAÇÃO: R$ {multa_violacao}
-      PERDAS E DANOS: {perdas_danos}
-
-      MODALIDADE DE ASSINATURA: {modalidade_assinatura}
-      CIDADE: {cidade}
-      ESTADO: {estado}
-    `
-  },
-  'trabalho-freelancer': {
-    title: 'Contrato de Trabalho Freelancer',
-    template: `
-      CONTRATANTE: {contratante_nome}
-      CPF/CNPJ: {contratante_cpf_cnpj}
-      TELEFONE: {contratante_telefone}
-      EMAIL: {contratante_email}
-
-      FREELANCER: {freelancer_nome}
-      CPF: {freelancer_cpf}
-      REGIME FISCAL: {freelancer_regime_fiscal}
-      RETENÇÃO DE IMPOSTOS: {retencao_impostos}
-      TELEFONE: {freelancer_telefone}
-      EMAIL: {freelancer_email}
-
-      ESCOPO DO TRABALHO: {escopo_trabalho}
-      NÚMERO DE REVISÕES INCLUSAS: {numero_revisoes}
-      USO EM PORTFÓLIO: {uso_portfolio}
-      CESSÃO DE DIREITOS AUTORAIS: {cessao_direitos}
-      BRIEFING FORMAL: {briefing_formal}
-      APROVAÇÃO SEM JUSTIFICATIVA: {aprovacao_sem_justificativa}
-      DIREITOS EM CASO DE CANCELAMENTO: {direitos_cancelamento}
-      FERRAMENTAS E CUSTOS OPERACIONAIS: {ferramentas_custos}
-      EXCLUSIVIDADE DURANTE EXECUÇÃO: {exclusividade_execucao}
-
-      VALOR DO PROJETO: R$ {valor_projeto}
-      FORMA DE PAGAMENTO: {forma_pagamento}
-      PRAZO DE ENTREGA: {prazo_entrega}
-
-      MULTA POR ATRASO NA ENTREGA: {multa_atraso_entrega}% ao dia
-      MULTA POR ATRASO NO PAGAMENTO: {multa_atraso_pagamento}% ao dia
-      MULTA POR RESCISÃO: {multa_rescisao}%
-
-      MODALIDADE DE ASSINATURA: {modalidade_assinatura}
-      CIDADE: {cidade}
-      ESTADO: {estado}
-    `
-  },
-  'compra-venda': {
-    title: 'Contrato de Compra e Venda',
-    template: `
-      VENDEDOR: {vendedor_nome}
-      CPF/CNPJ: {vendedor_cpf_cnpj}
-      TELEFONE: {vendedor_telefone}
-      EMAIL: {vendedor_email}
-
-      COMPRADOR: {comprador_nome}
-      CPF/CNPJ: {comprador_cpf_cnpj}
-      TELEFONE: {comprador_telefone}
-      EMAIL: {comprador_email}
-
-      CATEGORIA DO BEM: {categoria_bem}
-      BEM: {descricao_bem}
-      ESTADO DE CONSERVAÇÃO: {estado_conservacao}
-      DEFEITOS CONHECIDOS: {defeitos_conhecidos}
-      ÔNUS OU GRAVAMES: {onus_gravames}
-      COPROPRIETÁRIOS: {coproprietarios}
-
-      VALOR DA VENDA: R$ {valor_venda}
-      FORMA DE PAGAMENTO: {forma_pagamento}
-      ARRAS/SINAL: {arras}
-      DESPESAS DE TRANSFERÊNCIA: {despesas_transferencia}
-      PRAZO DE ENTREGA DO BEM: {prazo_entrega_bem}
-      DOCUMENTAÇÃO A ENTREGAR: {documentacao_entrega}
-      VISTORIA FORMAL: {vistoria_formal}
-      GARANTIA CONTRATUAL: {garantia_contratual}
-
-      MULTA POR ATRASO NO PAGAMENTO: {multa_atraso_pagamento}% ao dia
-      MULTA POR DESISTÊNCIA: {multa_desistencia}%
-
-      MODALIDADE DE ASSINATURA: {modalidade_assinatura}
-      CIDADE: {cidade}
-      ESTADO: {estado}
-    `
-  },
-  'empreitada': {
-    title: 'Contrato de Empreitada',
-    template: `
-      CONTRATANTE: {contratante_nome}
-      CPF/CNPJ: {contratante_cpf_cnpj}
-      TELEFONE: {contratante_telefone}
-      EMAIL: {contratante_email}
-
-      EMPREITEIRO: {empreiteiro_nome}
-      CPF/CNPJ: {empreiteiro_cpf_cnpj}
-      TELEFONE: {empreiteiro_telefone}
-      EMAIL: {empreiteiro_email}
-      REGISTRO PROFISSIONAL: {empreiteiro_registro}
-
-      TIPO DE OBRA/SERVIÇO: {tipo_obra}
-      DESCRIÇÃO DA OBRA: {descricao_obra}
-      ENDEREÇO DA OBRA: {endereco_obra}
-      MODALIDADE DA EMPREITADA: {modalidade_empreitada}
-
-      RESPONSÁVEL PELOS MATERIAIS: {responsavel_materiais}
-      RESPONSÁVEL PELOS EQUIPAMENTOS: {responsavel_equipamentos}
-      SUBEMPREITADA PERMITIDA: {permite_subempreitada}
-      RESPONSÁVEL PELO ART/RRT: {responsavel_art}
-      SEGURO DE OBRA: {seguro_obra}
-      LICENÇAS E ALVARÁS: {responsavel_licencas}
-
-      VALOR TOTAL: R$ {valor_total}
-      FORMA DE PAGAMENTO: {forma_pagamento}
-      CRONOGRAMA DE MEDIÇÕES: {cronograma_medicoes}
-      PRAZO DE EXECUÇÃO: {prazo_execucao}
-      PRAZO DE GARANTIA DA OBRA: {prazo_garantia}
-
-      MULTA POR ATRASO: {multa_atraso}% ao dia, limitado a {multa_limite}%
-      MULTA POR RESCISÃO: {multa_rescisao}%
-
-      MODALIDADE DE ASSINATURA: {modalidade_assinatura}
-      CIDADE: {cidade}
-      ESTADO: {estado}
-    `
-  },
-  'sociedade': {
-    title: 'Contrato Social de Sociedade Simples',
-    template: `
-      SÓCIO A: {socio_a_nome}
-      CPF: {socio_a_cpf}
-      ESTADO CIVIL: {socio_a_estado_civil}
-      TELEFONE: {socio_a_telefone}
-      EMAIL: {socio_a_email}
-      QUOTA: {socio_a_quota}%
-
-      SÓCIO B: {socio_b_nome}
-      CPF: {socio_b_cpf}
-      ESTADO CIVIL: {socio_b_estado_civil}
-      TELEFONE: {socio_b_telefone}
-      EMAIL: {socio_b_email}
-      QUOTA: {socio_b_quota}%
-
-      SÓCIOS ADICIONAIS: {socios_adicionais}
-
-      RAZÃO SOCIAL: {razao_social}
-      NOME FANTASIA: {nome_fantasia}
-      OBJETO SOCIAL: {objeto_social}
-      SEDE: {endereco_sede}
-      CAPITAL SOCIAL: R$ {capital_social}
-      INTEGRALIZAÇÃO DO CAPITAL: {integralizacao_capital}
-
-      ADMINISTRAÇÃO: {administracao}
-      PODERES DO ADMINISTRADOR: {poderes_administrador}
-      PRÓ-LABORE: {pro_labore}
-      DISTRIBUIÇÃO DE LUCROS: {distribuicao_lucros}
-      DISTRIBUIÇÃO DE PERDAS: {distribuicao_perdas}
-      RETIRADA DE SÓCIOS: {retirada_socios}
-      TRANSFERÊNCIA DE QUOTAS: {transferencia_quotas}
-      PRAZO DA SOCIEDADE: {prazo_sociedade}
-      NÃO-CONCORRÊNCIA: {nao_concorrencia}
-
-      MODALIDADE DE ASSINATURA: {modalidade_assinatura}
-      CIDADE: {cidade}
-      ESTADO: {estado}
-    `
-  },
-  'representacao-comercial': {
-    title: 'Contrato de Representação Comercial',
-    template: `
-      REPRESENTADA: {representada_nome}
-      CNPJ: {representada_cnpj}
-      TELEFONE: {representada_telefone}
-      EMAIL: {representada_email}
-
-      REPRESENTANTE: {representante_nome}
-      CPF/CNPJ: {representante_cpf_cnpj}
-      REGISTRO CORE: {representante_core}
-      TELEFONE: {representante_telefone}
-      EMAIL: {representante_email}
-
-      PRODUTOS/SERVIÇOS REPRESENTADOS: {produtos_representados}
-      TERRITÓRIO DE ATUAÇÃO: {territorio_atuacao}
-      EXCLUSIVIDADE TERRITORIAL: {exclusividade_territorial}
-      CLIENTES EXCLUÍDOS DA REPRESENTAÇÃO: {clientes_excluidos}
-
-      COMISSÃO: {percentual_comissao}% sobre {base_calculo_comissao}
-      PRAZO DE PAGAMENTO DA COMISSÃO: {prazo_pagamento_comissao}
-      ESTORNO DE COMISSÃO: {estorno_comissao}
-      META MÍNIMA DE VENDAS: {meta_minima}
-      CONSEQUÊNCIA DE NÃO ATINGIR META: {consequencia_meta}
-
-      PRAZO DO CONTRATO: {prazo_contrato}
-      AVISO PRÉVIO PARA RESCISÃO: {aviso_previo}
-      INDENIZAÇÃO POR RESCISÃO SEM JUSTA CAUSA: {indenizacao_rescisao}
-
-      MULTA POR DESCUMPRIMENTO: {multa_descumprimento}%
-
-      MODALIDADE DE ASSINATURA: {modalidade_assinatura}
-      CIDADE: {cidade}
-      ESTADO: {estado}
-    `
-  },
-  'comodato': {
-    title: 'Contrato de Comodato',
-    template: `
-      COMODANTE: {comodante_nome}
-      CPF/CNPJ: {comodante_cpf_cnpj}
-      TELEFONE: {comodante_telefone}
-      EMAIL: {comodante_email}
-
-      COMODATÁRIO: {comodatario_nome}
-      CPF/CNPJ: {comodatario_cpf_cnpj}
-      TELEFONE: {comodatario_telefone}
-      EMAIL: {comodatario_email}
-
-      BEM EMPRESTADO: {descricao_bem}
-      ESTADO DE CONSERVAÇÃO NA ENTREGA: {estado_conservacao}
-      FINALIDADE DO USO: {finalidade_uso}
-      LOCAL DE USO DO BEM: {local_uso}
-      VISTORIA DE ENTREGA COM LAUDO: {vistoria_entrega}
-
-      PRAZO DO COMODATO: {prazo_comodato}
-      RENOVAÇÃO AUTOMÁTICA: {renovacao_automatica}
-      AVISO PRÉVIO PARA DEVOLUÇÃO: {aviso_previo_devolucao}
-
-      RESPONSÁVEL PELA MANUTENÇÃO: {responsavel_manutencao}
-      RESPONSÁVEL PELO SEGURO: {responsavel_seguro}
-      PERMITE SUBEMPRÉSTIMO: {permite_subemprestimo}
-      PERMITE MODIFICAÇÕES NO BEM: {permite_modificacoes}
-
-      MULTA POR DANO AO BEM: {multa_dano}
-      MULTA POR ATRASO NA DEVOLUÇÃO: {multa_atraso_devolucao}% ao dia
-
-      MODALIDADE DE ASSINATURA: {modalidade_assinatura}
-      CIDADE: {cidade}
-      ESTADO: {estado}
-    `
-  }
-};
-
-// ============================================================
-// CAMPOS OBRIGATÓRIOS POR CONTRATO
-// ============================================================
-export const FIELD_ORDER_BY_CONTRACT = {
-  'prestacao-servicos': [
-    'contratante_nome', 'contratante_telefone', 'contratante_email', 'contratante_cpf_cnpj',
-    'contratado_nome', 'contratado_telefone', 'contratado_email', 'contratado_cpf_cnpj',
-    'responsavel_insumos', 'permite_subcontratacao', 'propriedade_intelectual', 'acessos_fornecidos',
-    'nao_concorrencia', 'canal_comunicacao', 'garantia_pos_entrega',
-    'descricao_servico', 'local_prestacao', 'numero_revisoes',
-    'valor_total', 'forma_pagamento', 'prazo_execucao',
-    'multa_atraso_contratado', 'multa_limite', 'multa_rescisao',
-    'modalidade_assinatura', 'cidade', 'estado'
-  ],
-  'aluguel': [
-    'locador_nome', 'locador_telefone', 'locador_email', 'locador_cpf_cnpj', 'locador_estado_civil',
-    'locatario_nome', 'locatario_telefone', 'locatario_email', 'locatario_cpf_cnpj', 'locatario_estado_civil',
-    'descricao_imovel', 'endereco_imovel', 'matricula_imovel', 'dividas_imovel',
-    'valor_aluguel', 'dia_vencimento', 'data_inicio', 'prazo_locacao',
-    'tipo_garantia', 'responsavel_iptu', 'responsavel_condominio',
-    'permite_sublocacao', 'permite_animais',
-    'responsavel_manutencao', 'vistoria_entrada', 'imovel_mobiliado',
-    'preferencia_compra', 'aviso_previo_rescisao',
-    'multa_atraso', 'juros_atraso', 'correcao_monetaria', 'prazo_tolerancia',
-    'modalidade_assinatura', 'cidade', 'estado'
-  ],
-  'parceria': [
-    'parte_a_nome', 'parte_a_telefone', 'parte_a_email', 'parte_a_cpf_cnpj',
-    'parte_b_nome', 'parte_b_telefone', 'parte_b_email', 'parte_b_cpf_cnpj',
-    'objeto_parceria', 'natureza_juridica',
-    'contribuicao_a', 'contribuicao_b', 'aporte_inicial',
-    'participacao_resultados', 'distribuicao_perdas',
-    'poderes_representacao', 'periodicidade_contas',
-    'liquidacao_encerramento', 'descumprimento_grave', 'seguro_empresarial',
-    'prazo_parceria', 'nao_concorrencia', 'conta_conjunta',
-    'multa_descumprimento', 'multa_rescisao',
-    'modalidade_assinatura', 'cidade', 'estado'
-  ],
-  'confidencialidade': [
-    'modalidade_nda',
-    'revelador_nome', 'revelador_telefone', 'revelador_email', 'revelador_cpf_cnpj',
-    'receptor_nome', 'receptor_telefone', 'receptor_email', 'receptor_cpf_cnpj',
-    'finalidade_compartilhamento', 'informacoes_confidenciais',
-    'compartilhamento_terceiros', 'destinacao_termino', 'excecoes_confidencialidade',
-    'prazo_confidencialidade', 'multa_violacao', 'perdas_danos',
-    'modalidade_assinatura', 'cidade', 'estado'
-  ],
-  'trabalho-freelancer': [
-    'contratante_nome', 'contratante_telefone', 'contratante_email', 'contratante_cpf_cnpj',
-    'freelancer_nome', 'freelancer_telefone', 'freelancer_email', 'freelancer_cpf',
-    'freelancer_regime_fiscal', 'retencao_impostos',
-    'escopo_trabalho', 'numero_revisoes',
-    'uso_portfolio', 'cessao_direitos', 'briefing_formal', 'aprovacao_sem_justificativa',
-    'direitos_cancelamento', 'ferramentas_custos', 'exclusividade_execucao',
-    'valor_projeto', 'forma_pagamento', 'prazo_entrega',
-    'multa_atraso_entrega', 'multa_atraso_pagamento', 'multa_rescisao',
-    'modalidade_assinatura', 'cidade', 'estado'
-  ],
-  'compra-venda': [
-    'vendedor_nome', 'vendedor_telefone', 'vendedor_email', 'vendedor_cpf_cnpj',
-    'comprador_nome', 'comprador_telefone', 'comprador_email', 'comprador_cpf_cnpj',
-    'categoria_bem', 'descricao_bem', 'estado_conservacao', 'defeitos_conhecidos',
-    'onus_gravames', 'coproprietarios',
-    'valor_venda', 'forma_pagamento',
-    'arras', 'despesas_transferencia', 'prazo_entrega_bem',
-    'documentacao_entrega', 'vistoria_formal', 'garantia_contratual',
-    'multa_atraso_pagamento', 'multa_desistencia',
-    'modalidade_assinatura', 'cidade', 'estado'
-  ],
-  'empreitada': [
-    'contratante_nome', 'contratante_telefone', 'contratante_email', 'contratante_cpf_cnpj',
-    'empreiteiro_nome', 'empreiteiro_telefone', 'empreiteiro_email', 'empreiteiro_cpf_cnpj',
-    'empreiteiro_registro',
-    'tipo_obra', 'descricao_obra', 'endereco_obra', 'modalidade_empreitada',
-    'responsavel_materiais', 'responsavel_equipamentos', 'permite_subempreitada',
-    'responsavel_art', 'seguro_obra', 'responsavel_licencas',
-    'valor_total', 'forma_pagamento', 'cronograma_medicoes', 'prazo_execucao', 'prazo_garantia',
-    'multa_atraso', 'multa_limite', 'multa_rescisao',
-    'modalidade_assinatura', 'cidade', 'estado'
-  ],
-  'sociedade': [
-    'socio_a_nome', 'socio_a_cpf', 'socio_a_estado_civil', 'socio_a_telefone', 'socio_a_email', 'socio_a_quota',
-    'socio_b_nome', 'socio_b_cpf', 'socio_b_estado_civil', 'socio_b_telefone', 'socio_b_email', 'socio_b_quota',
-    'socios_adicionais',
-    'razao_social', 'nome_fantasia', 'objeto_social', 'endereco_sede',
-    'capital_social', 'integralizacao_capital',
-    'administracao', 'poderes_administrador', 'pro_labore',
-    'distribuicao_lucros', 'distribuicao_perdas',
-    'retirada_socios', 'transferencia_quotas', 'prazo_sociedade', 'nao_concorrencia',
-    'modalidade_assinatura', 'cidade', 'estado'
-  ],
-  'representacao-comercial': [
-    'representada_nome', 'representada_cnpj', 'representada_telefone', 'representada_email',
-    'representante_nome', 'representante_cpf_cnpj', 'representante_core', 'representante_telefone', 'representante_email',
-    'produtos_representados', 'territorio_atuacao', 'exclusividade_territorial', 'clientes_excluidos',
-    'percentual_comissao', 'base_calculo_comissao', 'prazo_pagamento_comissao',
-    'estorno_comissao', 'meta_minima', 'consequencia_meta',
-    'prazo_contrato', 'aviso_previo', 'indenizacao_rescisao',
-    'multa_descumprimento',
-    'modalidade_assinatura', 'cidade', 'estado'
-  ],
-  'comodato': [
-    'comodante_nome', 'comodante_telefone', 'comodante_email', 'comodante_cpf_cnpj',
-    'comodatario_nome', 'comodatario_telefone', 'comodatario_email', 'comodatario_cpf_cnpj',
-    'descricao_bem', 'estado_conservacao', 'finalidade_uso', 'local_uso', 'vistoria_entrega',
-    'prazo_comodato', 'renovacao_automatica', 'aviso_previo_devolucao',
-    'responsavel_manutencao', 'responsavel_seguro', 'permite_subemprestimo', 'permite_modificacoes',
-    'multa_dano', 'multa_atraso_devolucao',
-    'modalidade_assinatura', 'cidade', 'estado'
-  ]
-};
-
-const ASSINATURA_INSTRUCTION = `
-PERGUNTA FINAL OBRIGATÓRIA — faça SEMPRE como penúltima pergunta:
-- Pergunte: "A assinatura do contrato será presencial ou online (por plataforma digital)?"
-- Se o usuário responder PRESENCIAL: pergunte a cidade e depois o estado (UF) onde o contrato será assinado
-- Se o usuário responder ONLINE: NÃO pergunte cidade nem estado. Registre modalidade_assinatura como "online" e deixe cidade e estado como "não aplicável"`;
-
-const REQUIRED_FIELDS_INSTRUCTION = {
-  'prestacao-servicos': `
-CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
-1. Nome completo do CONTRATANTE (quem paga pelo serviço)
-2. Número de telefone do CONTRATANTE
-3. Email do CONTRATANTE
-4. CPF ou CNPJ do CONTRATANTE
-5. Nome completo do CONTRATADO (quem presta o serviço)
-6. Número de telefone do CONTRATADO
-7. Email do CONTRATADO
-8. CPF ou CNPJ do CONTRATADO
-9. O serviço inclui compra de materiais ou insumos? Se sim, quem é responsável por esses custos — o contratante ou o contratado?
-10. O contratado pode subcontratar terceiros para executar parte do serviço, ou deve executar tudo pessoalmente?
-11. Quem ficará com a propriedade intelectual do resultado final (ex: design, código, texto criado)? O contratante, o contratado, ou será compartilhada?
-12. O contratante deve fornecer algum acesso, credencial ou equipamento para o contratado executar o serviço? Se sim, descreva o que será fornecido. Se não, informe "nenhum".
-13. O contratado pode prestar serviços para empresas concorrentes do contratante durante o contrato? (sim ou não — se não, informe por quanto tempo após o término essa restrição vale)
-14. Qual canal será considerado oficial para comunicações e aprovações entre as partes? (ex: email, WhatsApp, plataforma específica)
-15. Haverá garantia sobre o serviço após a entrega? Se sim, por quanto tempo o contratado responde por falhas ou vícios no que foi entregue?
-16. Descrição detalhada do serviço a ser prestado
-17. Local de prestação do serviço (ex: remoto, presencial no endereço X, híbrido)
-18. Número de revisões inclusas no valor (ex: 2 revisões, ilimitadas, nenhuma)
-19. Valor total do serviço (ex: R$ 5.000,00)
-20. Forma de pagamento (ex: PIX, boleto, transferência, parcelado)
-21. Prazo de execução (ex: 30 dias, 3 meses)
-22. Percentual de multa por atraso na entrega pelo CONTRATADO, por dia (ex: 0,5% ao dia)
-23. Limite máximo da multa por atraso (ex: 10% do valor total)
-24. Percentual de multa por rescisão antecipada (ex: 20% do valor total)
-${ASSINATURA_INSTRUCTION}`,
-  'aluguel': `
-CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
-1. Nome completo do LOCADOR (proprietário)
-2. Número de telefone do LOCADOR
-3. Email do LOCADOR
-4. CPF ou CNPJ do LOCADOR
-5. Estado civil do LOCADOR
-6. Nome completo do LOCATÁRIO (inquilino)
-7. Número de telefone do LOCATÁRIO
-8. Email do LOCATÁRIO
-9. CPF ou CNPJ do LOCATÁRIO
-10. Estado civil do LOCATÁRIO
-11. Descrição do imóvel (tipo, características)
-12. Endereço completo do imóvel
-13. Número de matrícula do imóvel no cartório
-14. O imóvel possui alguma dívida pendente de IPTU, condomínio ou financiamento?
-15. Valor mensal do aluguel
-16. Dia do mês para vencimento (ex: dia 10)
-17. Data de início da locação
-18. Prazo da locação em meses
-19. Tipo de garantia locatícia (ex: caução, fiador, seguro fiança, sem garantia)
-20. Quem é responsável pelo pagamento do IPTU — locador ou locatário?
-21. Quem é responsável pelo pagamento do condomínio — locador ou locatário?
-22. É permitida sublocação do imóvel? (sim ou não)
-23. É permitida a presença de animais de estimação? (sim ou não)
-24. Quem é responsável pelos reparos de manutenção ordinária e extraordinária?
-25. Será realizada vistoria formal com laudo fotográfico? (sim ou não)
-26. O imóvel será entregue mobiliado? Haverá inventário?
-27. Em caso de venda, o locatário terá direito de preferência? Em qual prazo?
-28. Qual o prazo de aviso prévio para desocupação?
-29. Percentual de multa por atraso no pagamento (ex: 10%)
-30. Percentual de juros ao mês por atraso (ex: 1% ao mês)
-31. Índice de correção monetária anual (ex: IGPM, IPCA)
-32. Prazo de tolerância para pagamento em dias (ex: 5 dias)
-${ASSINATURA_INSTRUCTION}`,
-  'parceria': `
-CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
-1. Nome completo da PARTE A
-2. Número de telefone da PARTE A
-3. Email da PARTE A
-4. CPF/CNPJ da PARTE A
-5. Nome completo da PARTE B
-6. Número de telefone da PARTE B
-7. Email da PARTE B
-8. CPF/CNPJ da PARTE B
-9. Objeto da parceria (o que será feito em conjunto)
-10. Natureza jurídica desta parceria (ex: parceria simples, SCP, joint venture)
-11. Contribuição da PARTE A
-12. Contribuição da PARTE B
-13. Haverá aporte financeiro inicial? Se sim, qual o valor de cada parte?
-14. Divisão dos resultados/lucros (ex: 50%/50%)
-15. Como serão distribuídas as perdas?
-16. Quem terá poderes para assinar em nome da parceria?
-17. Periodicidade da prestação de contas (ex: mensal, trimestral)
-18. O que acontece com os ativos em caso de encerramento?
-19. O que será considerado descumprimento grave?
-20. Haverá seguro empresarial? Quem contrata?
-21. Prazo da parceria (ex: 12 meses, indeterminado)
-22. Haverá cláusula de não-concorrência? Se sim, por quanto tempo?
-23. Haverá conta bancária conjunta? (sim ou não)
-24. Percentual de multa por descumprimento (ex: 10%)
-25. Percentual de multa por rescisão antecipada (ex: 15%)
-${ASSINATURA_INSTRUCTION}`,
-  'confidencialidade': `
-CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
-1. Este acordo é unilateral ou bilateral/mútuo?
-2. Nome completo da parte REVELADORA
-3. Número de telefone da parte REVELADORA
-4. Email da parte REVELADORA
-5. CPF/CNPJ da parte REVELADORA
-6. Nome completo da parte RECEPTORA
-7. Número de telefone da parte RECEPTORA
-8. Email da parte RECEPTORA
-9. CPF/CNPJ da parte RECEPTORA
-10. Finalidade do compartilhamento das informações confidenciais
-11. Descrição das informações confidenciais
-12. A parte receptora pode compartilhar com funcionários ou subcontratados? Com responsabilidade solidária?
-13. O que fazer com os documentos ao término do prazo?
-14. Há exceções à confidencialidade (informações já públicas)?
-15. Prazo de confidencialidade (ex: 2 anos, 5 anos)
-16. Valor da multa por violação (ex: R$ 50.000,00)
-17. Além da multa, haverá cobrança de perdas e danos? (sim ou não)
-${ASSINATURA_INSTRUCTION}`,
-  'trabalho-freelancer': `
-CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
-1. Nome completo do CONTRATANTE (cliente)
-2. Número de telefone do CONTRATANTE
-3. Email do CONTRATANTE
-4. CPF/CNPJ do CONTRATANTE
-5. Nome completo do FREELANCER
-6. Número de telefone do FREELANCER
-7. Email do FREELANCER
-8. CPF do FREELANCER
-9. O freelancer atua como MEI, PJ com CNPJ ou pessoa física?
-10. Haverá retenção de impostos? Quem recolhe?
-11. Escopo detalhado do trabalho
-12. Quantas rodadas de revisão estão inclusas?
-13. O freelancer pode exibir o trabalho em portfólio? (sim ou não)
-14. A cessão dos direitos autorais é total ou apenas licença de uso?
-15. O contratante fornecerá briefing formal? Em qual prazo?
-16. Após quantas tentativas sem aprovação justificada o trabalho é considerado entregue?
-17. Em caso de cancelamento, como ficam os direitos sobre o material produzido?
-18. Haverá custos operacionais extras? Quem paga?
-19. O freelancer pode trabalhar para concorrentes durante o projeto? (sim ou não)
-20. Valor do projeto (ex: R$ 3.000,00)
-21. Forma de pagamento
-22. Prazo de entrega
-23. Multa por atraso na entrega, por dia (ex: 0,5% ao dia)
-24. Multa por atraso no pagamento pelo contratante, por dia
-25. Percentual de multa por rescisão antecipada (ex: 20%)
-${ASSINATURA_INSTRUCTION}`,
-  'compra-venda': `
-CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
-1. Nome completo do VENDEDOR
-2. Número de telefone do VENDEDOR
-3. Email do VENDEDOR
-4. CPF/CNPJ do VENDEDOR
-5. Nome completo do COMPRADOR
-6. Número de telefone do COMPRADOR
-7. Email do COMPRADOR
-8. CPF/CNPJ do COMPRADOR
-9. Qual é a categoria do bem sendo vendido?
-10. Descrição detalhada do bem
-11. Estado de conservação do bem
-12. Existem defeitos conhecidos? Se sim, descreva. Se não, informe "nenhum".
-13. O bem possui ônus ou gravames? (sim ou não — se sim, descreva)
-14. O bem é de propriedade exclusiva do vendedor, ou há coproprietários?
-15. Valor total da venda
-16. Forma de pagamento
-17. Haverá pagamento de sinal (arras)? Se sim, qual o valor e o tipo?
-18. Quem arca com as despesas de transferência?
-19. Prazo para entrega do bem
-20. Quais documentos serão entregues com o bem?
-21. Será realizada vistoria formal? (sim ou não)
-22. Haverá garantia contratual além da legal? Se sim, por quanto tempo e o que cobre?
-23. Multa por atraso no pagamento, por dia (ex: 0,5% ao dia)
-24. Percentual de multa por desistência/rescisão (ex: 20%)
-${ASSINATURA_INSTRUCTION}`,
-  'empreitada': `
-CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
-1. Nome completo do CONTRATANTE (dono da obra)
-2. Número de telefone do CONTRATANTE
-3. Email do CONTRATANTE
-4. CPF ou CNPJ do CONTRATANTE
-5. Nome completo do EMPREITEIRO
-6. Número de telefone do EMPREITEIRO
-7. Email do EMPREITEIRO
-8. CPF ou CNPJ do EMPREITEIRO
-9. O empreiteiro possui registro profissional (CREA, CAU)? Se sim, informe o número.
-10. Qual é o tipo de obra ou serviço?
-11. Descrição detalhada da obra
-12. Endereço onde a obra será executada
-13. A empreitada é por preço global ou por medição/etapas?
-14. Quem fornece os materiais?
-15. Quem fornece os equipamentos?
-16. É permitida subempreitada? (sim ou não)
-17. Quem emite a ART ou RRT?
-18. Haverá seguro de obra? Quem contrata?
-19. Quem obtém as licenças e alvarás?
-20. Valor total da empreitada
-21. Forma de pagamento
-22. Como será feita a medição do avanço?
-23. Prazo total para conclusão da obra
-24. Prazo de garantia da obra após entrega
-25. Multa por atraso na entrega, por dia
-26. Limite máximo da multa por atraso
-27. Percentual de multa por rescisão antecipada
-${ASSINATURA_INSTRUCTION}`,
-  'sociedade': `
-CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
-1. Nome completo do SÓCIO A
-2. CPF do SÓCIO A
-3. Estado civil do SÓCIO A
-4. Número de telefone do SÓCIO A
-5. Email do SÓCIO A
-6. Percentual de quota do SÓCIO A (ex: 50%)
-7. Nome completo do SÓCIO B
-8. CPF do SÓCIO B
-9. Estado civil do SÓCIO B
-10. Número de telefone do SÓCIO B
-11. Email do SÓCIO B
-12. Percentual de quota do SÓCIO B (ex: 50%)
-13. Há mais sócios além do A e B? Se sim, informe os dados de cada um.
-14. Razão social da empresa
-15. Nome fantasia (se não houver, informe "sem nome fantasia")
-16. Objeto social (o que a empresa vai fazer)
-17. Endereço da sede
-18. Valor do capital social
-19. Como o capital será integralizado?
-20. Quem administrará a empresa?
-21. Quais os poderes do administrador?
-22. Haverá pró-labore? Se sim, qual o valor para cada sócio?
-23. Como será feita a distribuição dos lucros?
-24. Como serão distribuídas as perdas?
-25. O que acontece se um sócio quiser sair?
-26. Um sócio pode transferir sua quota sem aprovação dos demais? (sim ou não)
-27. Qual o prazo de duração da sociedade? (ex: indeterminado, 5 anos)
-28. Haverá proibição de concorrência? Por quanto tempo após a saída?
-${ASSINATURA_INSTRUCTION}`,
-  'representacao-comercial': `
-CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
-1. Nome ou razão social da empresa REPRESENTADA
-2. CNPJ da REPRESENTADA
-3. Número de telefone da REPRESENTADA
-4. Email da REPRESENTADA
-5. Nome do REPRESENTANTE COMERCIAL
-6. CPF ou CNPJ do REPRESENTANTE
-7. O representante possui registro no CORE? Se sim, informe o número.
-8. Número de telefone do REPRESENTANTE
-9. Email do REPRESENTANTE
-10. Quais produtos ou serviços serão representados?
-11. Qual o território de atuação?
-12. O representante terá exclusividade territorial? (sim ou não)
-13. Há clientes excluídos da representação? Se sim, liste-os.
-14. Percentual de comissão (ex: 5%)
-15. A comissão é calculada sobre o quê?
-16. Em qual prazo a comissão será paga?
-17. Se o cliente não pagar, a comissão será estornada? (sim ou não)
-18. Haverá meta mínima de vendas? Se sim, qual?
-19. O que acontece se a meta não for atingida?
-20. Prazo de duração do contrato
-21. Prazo de aviso prévio para encerramento
-22. Em caso de rescisão sem justa causa, haverá indenização? Se sim, qual o critério?
-23. Percentual de multa por descumprimento
-${ASSINATURA_INSTRUCTION}`,
-  'comodato': `
-CAMPOS OBRIGATÓRIOS — colete TODOS nesta ordem, um por vez:
-1. Nome completo do COMODANTE (dono do bem)
-2. Número de telefone do COMODANTE
-3. Email do COMODANTE
-4. CPF ou CNPJ do COMODANTE
-5. Nome completo do COMODATÁRIO
-6. Número de telefone do COMODATÁRIO
-7. Email do COMODATÁRIO
-8. CPF ou CNPJ do COMODATÁRIO
-9. O que está sendo emprestado? Descreva com detalhes.
-10. Estado de conservação do bem na entrega
-11. Para qual finalidade o comodatário usará o bem?
-12. Onde o bem ficará durante o comodato?
-13. Será realizada vistoria formal na entrega? (sim ou não)
-14. Prazo do empréstimo (ex: 30 dias, 6 meses, indeterminado)
-15. O contrato se renova automaticamente? (sim ou não)
-16. Com quanto tempo de antecedência o comodatário deve avisar a devolução?
-17. Quem é responsável pela manutenção do bem?
-18. Haverá seguro? Quem contrata?
-19. É permitido subempréstimo? (sim ou não)
-20. É permitido fazer modificações no bem? (sim ou não)
-21. Como será calculada a indenização em caso de dano?
-22. Percentual de multa por dia de atraso na devolução
-${ASSINATURA_INSTRUCTION}`
-};
-
-const CONTRACT_CLAUSES = {
-  'prestacao-servicos': [
-    'CLÁUSULA 1ª — DO OBJETO E DO ESCOPO DOS SERVIÇOS',
-    'CLÁUSULA 2ª — DAS OBRIGAÇÕES DO CONTRATADO',
-    'CLÁUSULA 3ª — DAS OBRIGAÇÕES DO CONTRATANTE',
-    'CLÁUSULA 4ª — DOS INSUMOS, MATERIAIS E DESPESAS OPERACIONAIS',
-    'CLÁUSULA 5ª — DA SUBCONTRATAÇÃO',
-    'CLÁUSULA 6ª — DO PREÇO, DA FORMA E DAS CONDIÇÕES DE PAGAMENTO',
-    'CLÁUSULA 7ª — DO PRAZO DE EXECUÇÃO E DA ENTREGA',
-    'CLÁUSULA 8ª — DAS REVISÕES E ALTERAÇÕES DO ESCOPO',
-    'CLÁUSULA 9ª — DA GARANTIA PÓS-ENTREGA E DA RESPONSABILIDADE POR VÍCIOS',
-    'CLÁUSULA 10ª — DAS PENALIDADES, DA MORA E DAS MULTAS CONTRATUAIS',
-    'CLÁUSULA 11ª — DA PROPRIEDADE INTELECTUAL E DOS DIREITOS AUTORAIS',
-    'CLÁUSULA 12ª — DA NÃO-CONCORRÊNCIA',
-    'CLÁUSULA 13ª — DO CANAL OFICIAL DE COMUNICAÇÃO E DAS APROVAÇÕES',
-    'CLÁUSULA 14ª — DA CONFIDENCIALIDADE E DO SIGILO PROFISSIONAL',
-    'CLÁUSULA 15ª — DA PROTEÇÃO DE DADOS PESSOAIS (LGPD — Lei 13.709/2018)',
-    'CLÁUSULA 16ª — DA ANTICORRUPÇÃO E DA CONFORMIDADE LEGAL (Lei 12.846/2013)',
-    'CLÁUSULA 17ª — DO CASO FORTUITO E DA FORÇA MAIOR',
-    'CLÁUSULA 18ª — DA RESCISÃO E DO DISTRATO',
-    'CLÁUSULA 19ª — DAS DISPOSIÇÕES GERAIS E DA INDEPENDÊNCIA DAS CLÁUSULAS',
-    'CLÁUSULA 20ª — DO FORO DE ELEIÇÃO'
-  ],
-  'aluguel': [
-    'CLÁUSULA 1ª — DO OBJETO E DA IDENTIFICAÇÃO DO IMÓVEL',
-    'CLÁUSULA 2ª — DO PRAZO, DO INÍCIO E DO TÉRMINO DA LOCAÇÃO',
-    'CLÁUSULA 3ª — DO VALOR DO ALUGUEL E DA FORMA DE PAGAMENTO',
-    'CLÁUSULA 4ª — DA GARANTIA LOCATÍCIA',
-    'CLÁUSULA 5ª — DA CORREÇÃO MONETÁRIA E DO REAJUSTE ANUAL',
-    'CLÁUSULA 6ª — DAS PENALIDADES, DA MORA E DOS ENCARGOS POR ATRASO',
-    'CLÁUSULA 7ª — DAS OBRIGAÇÕES DO LOCADOR',
-    'CLÁUSULA 8ª — DAS OBRIGAÇÕES DO LOCATÁRIO',
-    'CLÁUSULA 9ª — DAS DESPESAS, DO IPTU E DO CONDOMÍNIO',
-    'CLÁUSULA 10ª — DA SUBLOCAÇÃO E DO USO DO IMÓVEL',
-    'CLÁUSULA 11ª — DAS BENFEITORIAS, REPAROS E RESPONSABILIDADES DE MANUTENÇÃO',
-    'CLÁUSULA 12ª — DA VISTORIA DE ENTRADA E DO LAUDO DE CONSERVAÇÃO',
-    'CLÁUSULA 13ª — DO INVENTÁRIO DE MÓVEIS E EQUIPAMENTOS',
-    'CLÁUSULA 14ª — DO DIREITO DE PREFERÊNCIA DO LOCATÁRIO EM CASO DE VENDA (art. 27 Lei 8.245/91)',
-    'CLÁUSULA 15ª — DA RESCISÃO ANTECIPADA E DO AVISO PRÉVIO',
-    'CLÁUSULA 16ª — DA PROTEÇÃO DE DADOS PESSOAIS (LGPD — Lei 13.709/2018)',
-    'CLÁUSULA 17ª — DO CASO FORTUITO E DA FORÇA MAIOR',
-    'CLÁUSULA 18ª — DA VISTORIA DE SAÍDA E DA RESTITUIÇÃO DO IMÓVEL',
-    'CLÁUSULA 19ª — DAS DISPOSIÇÕES GERAIS',
-    'CLÁUSULA 20ª — DO FORO DE ELEIÇÃO'
-  ],
-  'parceria': [
-    'CLÁUSULA 1ª — DO OBJETO E DA NATUREZA JURÍDICA DA PARCERIA',
-    'CLÁUSULA 2ª — DAS CONTRIBUIÇÕES E APORTES DE CADA PARTE',
-    'CLÁUSULA 3ª — DA PARTICIPAÇÃO NOS RESULTADOS, LUCROS E PERDAS',
-    'CLÁUSULA 4ª — DA ADMINISTRAÇÃO, REPRESENTAÇÃO E ALÇADA DE DECISÃO',
-    'CLÁUSULA 5ª — DA PRESTAÇÃO DE CONTAS E DOS RELATÓRIOS FINANCEIROS',
-    'CLÁUSULA 6ª — DA CONTA BANCÁRIA E DA MOVIMENTAÇÃO FINANCEIRA',
-    'CLÁUSULA 7ª — DO SEGURO EMPRESARIAL',
-    'CLÁUSULA 8ª — DO PRAZO E DA VIGÊNCIA',
-    'CLÁUSULA 9ª — DA NÃO-CONCORRÊNCIA',
-    'CLÁUSULA 10ª — DAS PENALIDADES, DA MORA E DAS MULTAS CONTRATUAIS',
-    'CLÁUSULA 11ª — DA CONFIDENCIALIDADE E DO SIGILO COMERCIAL',
-    'CLÁUSULA 12ª — DA PROPRIEDADE INTELECTUAL DESENVOLVIDA EM PARCERIA',
-    'CLÁUSULA 13ª — DA PROTEÇÃO DE DADOS PESSOAIS (LGPD — Lei 13.709/2018)',
-    'CLÁUSULA 14ª — DA ANTICORRUPÇÃO E DA CONFORMIDADE LEGAL (Lei 12.846/2013)',
-    'CLÁUSULA 15ª — DO CASO FORTUITO E DA FORÇA MAIOR',
-    'CLÁUSULA 16ª — DA RESCISÃO, DO DISTRATO E DA LIQUIDAÇÃO DOS ATIVOS',
-    'CLÁUSULA 17ª — DAS DISPOSIÇÕES GERAIS',
-    'CLÁUSULA 18ª — DO FORO DE ELEIÇÃO'
-  ],
-  'confidencialidade': [
-    'CLÁUSULA 1ª — DO OBJETO, DA MODALIDADE E DA FINALIDADE DO ACORDO',
-    'CLÁUSULA 2ª — DA DEFINIÇÃO E DO ESCOPO DAS INFORMAÇÕES CONFIDENCIAIS',
-    'CLÁUSULA 3ª — DAS OBRIGAÇÕES E RESTRIÇÕES DA PARTE RECEPTORA',
-    'CLÁUSULA 4ª — DO COMPARTILHAMENTO COM TERCEIROS VINCULADOS E DA RESPONSABILIDADE SOLIDÁRIA',
-    'CLÁUSULA 5ª — DAS EXCEÇÕES À OBRIGAÇÃO DE CONFIDENCIALIDADE',
-    'CLÁUSULA 6ª — DO PRAZO DE VIGÊNCIA E DA SOBREVIVÊNCIA DAS OBRIGAÇÕES',
-    'CLÁUSULA 7ª — DA DESTINAÇÃO DAS INFORMAÇÕES AO TÉRMINO DO ACORDO',
-    'CLÁUSULA 8ª — DAS PENALIDADES, DA MULTA E DAS PERDAS E DANOS',
-    'CLÁUSULA 9ª — DA PROTEÇÃO DE DADOS PESSOAIS (LGPD — Lei 13.709/2018)',
-    'CLÁUSULA 10ª — DA ANTICORRUPÇÃO E DA CONFORMIDADE LEGAL (Lei 12.846/2013)',
-    'CLÁUSULA 11ª — DO CASO FORTUITO E DA FORÇA MAIOR',
-    'CLÁUSULA 12ª — DAS DISPOSIÇÕES GERAIS',
-    'CLÁUSULA 13ª — DO FORO DE ELEIÇÃO'
-  ],
-  'trabalho-freelancer': [
-    'CLÁUSULA 1ª — DO OBJETO E DO ESCOPO DO TRABALHO',
-    'CLÁUSULA 2ª — DAS OBRIGAÇÕES DO FREELANCER',
-    'CLÁUSULA 3ª — DAS OBRIGAÇÕES DO CONTRATANTE',
-    'CLÁUSULA 4ª — DO REGIME FISCAL E DAS OBRIGAÇÕES TRIBUTÁRIAS',
-    'CLÁUSULA 5ª — DAS FERRAMENTAS, SOFTWARES E CUSTOS OPERACIONAIS',
-    'CLÁUSULA 6ª — DA EXCLUSIVIDADE DURANTE A EXECUÇÃO DO PROJETO',
-    'CLÁUSULA 7ª — DO VALOR, DA FORMA E DAS CONDIÇÕES DE PAGAMENTO',
-    'CLÁUSULA 8ª — DO PRAZO DE ENTREGA, DAS REVISÕES E DO BRIEFING',
-    'CLÁUSULA 9ª — DO CRITÉRIO DE APROVAÇÃO E DA RECUSA INJUSTIFICADA',
-    'CLÁUSULA 10ª — DOS DIREITOS SOBRE O MATERIAL EM CASO DE CANCELAMENTO',
-    'CLÁUSULA 11ª — DAS PENALIDADES, DA MORA E DAS MULTAS CONTRATUAIS',
-    'CLÁUSULA 12ª — DA PROPRIEDADE INTELECTUAL E DA CESSÃO DE DIREITOS AUTORAIS',
-    'CLÁUSULA 13ª — DO USO EM PORTFÓLIO E DA DIVULGAÇÃO DO TRABALHO',
-    'CLÁUSULA 14ª — DA CONFIDENCIALIDADE E DO SIGILO PROFISSIONAL',
-    'CLÁUSULA 15ª — DA PROTEÇÃO DE DADOS PESSOAIS (LGPD — Lei 13.709/2018)',
-    'CLÁUSULA 16ª — DA ANTICORRUPÇÃO E DA CONFORMIDADE LEGAL (Lei 12.846/2013)',
-    'CLÁUSULA 17ª — DA AUSÊNCIA DE VÍNCULO EMPREGATÍCIO',
-    'CLÁUSULA 18ª — DO CASO FORTUITO E DA FORÇA MAIOR',
-    'CLÁUSULA 19ª — DA RESCISÃO E DO DISTRATO',
-    'CLÁUSULA 20ª — DAS DISPOSIÇÕES GERAIS',
-    'CLÁUSULA 21ª — DO FORO DE ELEIÇÃO'
-  ],
-  'compra-venda': [
-    'CLÁUSULA 1ª — DO OBJETO, DA CATEGORIA E DA DESCRIÇÃO DO BEM',
-    'CLÁUSULA 2ª — DO ESTADO DE CONSERVAÇÃO E DOS DEFEITOS CONHECIDOS',
-    'CLÁUSULA 3ª — DOS ÔNUS, GRAVAMES E DECLARAÇÕES DE REGULARIDADE',
-    'CLÁUSULA 4ª — DO PREÇO, DAS ARRAS E DAS CONDIÇÕES DE PAGAMENTO',
-    'CLÁUSULA 5ª — DAS DESPESAS DE TRANSFERÊNCIA E REGULARIZAÇÃO',
-    'CLÁUSULA 6ª — DA ENTREGA, DA TRADIÇÃO E DA DOCUMENTAÇÃO DO BEM',
-    'CLÁUSULA 7ª — DA VISTORIA E DO LAUDO DE INSPEÇÃO',
-    'CLÁUSULA 8ª — DAS GARANTIAS LEGAIS E CONTRATUAIS (Vícios Redibitórios)',
-    'CLÁUSULA 9ª — DAS PENALIDADES, DA MORA E DAS MULTAS CONTRATUAIS',
-    'CLÁUSULA 10ª — DAS DECLARAÇÕES E GARANTIAS DO VENDEDOR',
-    'CLÁUSULA 11ª — DA PROTEÇÃO DE DADOS PESSOAIS (LGPD — Lei 13.709/2018)',
-    'CLÁUSULA 12ª — DA ANTICORRUPÇÃO E DA CONFORMIDADE LEGAL (Lei 12.846/2013)',
-    'CLÁUSULA 13ª — DO CASO FORTUITO E DA FORÇA MAIOR',
-    'CLÁUSULA 14ª — DA RESCISÃO E DO VENCIMENTO ANTECIPADO',
-    'CLÁUSULA 15ª — DAS DISPOSIÇÕES GERAIS',
-    'CLÁUSULA 16ª — DO FORO DE ELEIÇÃO'
-  ],
-  'empreitada': [
-    'CLÁUSULA 1ª — DO OBJETO, DO TIPO E DA DESCRIÇÃO DA OBRA',
-    'CLÁUSULA 2ª — DA MODALIDADE DA EMPREITADA E DO ESCOPO DOS SERVIÇOS',
-    'CLÁUSULA 3ª — DAS OBRIGAÇÕES DO EMPREITEIRO',
-    'CLÁUSULA 4ª — DAS OBRIGAÇÕES DO CONTRATANTE',
-    'CLÁUSULA 5ª — DOS MATERIAIS, EQUIPAMENTOS E INSUMOS',
-    'CLÁUSULA 6ª — DA SUBEMPREITADA',
-    'CLÁUSULA 7ª — DA RESPONSABILIDADE TÉCNICA, ART/RRT E LICENÇAS',
-    'CLÁUSULA 8ª — DO SEGURO DE OBRA E DE RESPONSABILIDADE CIVIL',
-    'CLÁUSULA 9ª — DO PREÇO, DAS MEDIÇÕES E DAS CONDIÇÕES DE PAGAMENTO',
-    'CLÁUSULA 10ª — DO PRAZO DE EXECUÇÃO E DO CRONOGRAMA',
-    'CLÁUSULA 11ª — DA GARANTIA DA OBRA E DA RESPONSABILIDADE POR VÍCIOS (art. 618 CC)',
-    'CLÁUSULA 12ª — DAS PENALIDADES, DA MORA E DAS MULTAS CONTRATUAIS',
-    'CLÁUSULA 13ª — DA SEGURANÇA DO TRABALHO E DAS OBRIGAÇÕES TRABALHISTAS',
-    'CLÁUSULA 14ª — DA PROTEÇÃO DE DADOS PESSOAIS (LGPD — Lei 13.709/2018)',
-    'CLÁUSULA 15ª — DA ANTICORRUPÇÃO E DA CONFORMIDADE LEGAL (Lei 12.846/2013)',
-    'CLÁUSULA 16ª — DO CASO FORTUITO E DA FORÇA MAIOR',
-    'CLÁUSULA 17ª — DA RESCISÃO E DO DISTRATO',
-    'CLÁUSULA 18ª — DAS DISPOSIÇÕES GERAIS',
-    'CLÁUSULA 19ª — DO FORO DE ELEIÇÃO'
-  ],
-  'sociedade': [
-    'CLÁUSULA 1ª — DA DENOMINAÇÃO, DA SEDE E DO PRAZO DE DURAÇÃO',
-    'CLÁUSULA 2ª — DO OBJETO SOCIAL',
-    'CLÁUSULA 3ª — DO CAPITAL SOCIAL, DAS QUOTAS E DA INTEGRALIZAÇÃO',
-    'CLÁUSULA 4ª — DOS DIREITOS E OBRIGAÇÕES DOS SÓCIOS',
-    'CLÁUSULA 5ª — DA ADMINISTRAÇÃO E DOS PODERES DO ADMINISTRADOR',
-    'CLÁUSULA 6ª — DO PRÓ-LABORE E DA REMUNERAÇÃO DOS SÓCIOS',
-    'CLÁUSULA 7ª — DA APURAÇÃO DE RESULTADOS E DA DISTRIBUIÇÃO DE LUCROS',
-    'CLÁUSULA 8ª — DA DISTRIBUIÇÃO DE PERDAS E DA RESPONSABILIDADE DOS SÓCIOS',
-    'CLÁUSULA 9ª — DA CESSÃO E TRANSFERÊNCIA DE QUOTAS',
-    'CLÁUSULA 10ª — DA RETIRADA, EXCLUSÃO E FALECIMENTO DE SÓCIO',
-    'CLÁUSULA 11ª — DA NÃO-CONCORRÊNCIA E DO SIGILO COMERCIAL',
-    'CLÁUSULA 12ª — DA DISSOLUÇÃO E LIQUIDAÇÃO DA SOCIEDADE',
-    'CLÁUSULA 13ª — DA PROTEÇÃO DE DADOS PESSOAIS (LGPD — Lei 13.709/2018)',
-    'CLÁUSULA 14ª — DA ANTICORRUPÇÃO E DA CONFORMIDADE LEGAL (Lei 12.846/2013)',
-    'CLÁUSULA 15ª — DO CASO FORTUITO E DA FORÇA MAIOR',
-    'CLÁUSULA 16ª — DAS DISPOSIÇÕES GERAIS',
-    'CLÁUSULA 17ª — DO FORO DE ELEIÇÃO'
-  ],
-  'representacao-comercial': [
-    'CLÁUSULA 1ª — DO OBJETO E DA NATUREZA DA REPRESENTAÇÃO',
-    'CLÁUSULA 2ª — DO TERRITÓRIO DE ATUAÇÃO E DA EXCLUSIVIDADE',
-    'CLÁUSULA 3ª — DOS PRODUTOS E SERVIÇOS REPRESENTADOS',
-    'CLÁUSULA 4ª — DAS OBRIGAÇÕES DO REPRESENTANTE',
-    'CLÁUSULA 5ª — DAS OBRIGAÇÕES DA REPRESENTADA',
-    'CLÁUSULA 6ª — DA COMISSÃO, DO CÁLCULO E DO PRAZO DE PAGAMENTO',
-    'CLÁUSULA 7ª — DO ESTORNO DE COMISSÃO E DA INADIMPLÊNCIA DO CLIENTE',
-    'CLÁUSULA 8ª — DAS METAS E DOS RESULTADOS MÍNIMOS',
-    'CLÁUSULA 9ª — DO PRAZO DE VIGÊNCIA E DO AVISO PRÉVIO',
-    'CLÁUSULA 10ª — DA RESCISÃO, DA INDENIZAÇÃO E DOS DIREITOS DO REPRESENTANTE (Lei 4.886/65)',
-    'CLÁUSULA 11ª — DAS PENALIDADES E DAS MULTAS CONTRATUAIS',
-    'CLÁUSULA 12ª — DA CONFIDENCIALIDADE E DO SIGILO COMERCIAL',
-    'CLÁUSULA 13ª — DA PROTEÇÃO DE DADOS PESSOAIS (LGPD — Lei 13.709/2018)',
-    'CLÁUSULA 14ª — DA ANTICORRUPÇÃO E DA CONFORMIDADE LEGAL (Lei 12.846/2013)',
-    'CLÁUSULA 15ª — DO CASO FORTUITO E DA FORÇA MAIOR',
-    'CLÁUSULA 16ª — DAS DISPOSIÇÕES GERAIS',
-    'CLÁUSULA 17ª — DO FORO DE ELEIÇÃO'
-  ],
-  'comodato': [
-    'CLÁUSULA 1ª — DO OBJETO E DA DESCRIÇÃO DO BEM EMPRESTADO',
-    'CLÁUSULA 2ª — DA FINALIDADE E DO LOCAL DE USO DO BEM',
-    'CLÁUSULA 3ª — DA VISTORIA DE ENTREGA E DO ESTADO DE CONSERVAÇÃO',
-    'CLÁUSULA 4ª — DO PRAZO DO COMODATO E DA RENOVAÇÃO',
-    'CLÁUSULA 5ª — DAS OBRIGAÇÕES DO COMODATÁRIO',
-    'CLÁUSULA 6ª — DAS OBRIGAÇÕES DO COMODANTE',
-    'CLÁUSULA 7ª — DA MANUTENÇÃO E DOS REPAROS DO BEM',
-    'CLÁUSULA 8ª — DO SEGURO DO BEM',
-    'CLÁUSULA 9ª — DA PROIBIÇÃO DE SUBEMPRÉSTIMO E DE MODIFICAÇÕES',
-    'CLÁUSULA 10ª — DA DEVOLUÇÃO DO BEM E DO AVISO PRÉVIO',
-    'CLÁUSULA 11ª — DA RESPONSABILIDADE POR DANOS E DA INDENIZAÇÃO',
-    'CLÁUSULA 12ª — DAS PENALIDADES E DAS MULTAS CONTRATUAIS',
-    'CLÁUSULA 13ª — DA PROTEÇÃO DE DADOS PESSOAIS (LGPD — Lei 13.709/2018)',
-    'CLÁUSULA 14ª — DO CASO FORTUITO E DA FORÇA MAIOR',
-    'CLÁUSULA 15ª — DA RESCISÃO ANTECIPADA',
-    'CLÁUSULA 16ª — DAS DISPOSIÇÕES GERAIS',
-    'CLÁUSULA 17ª — DO FORO DE ELEIÇÃO'
-  ]
-};
-
-const LEGAL_REF = {
-  'prestacao-servicos': 'segundo o Código Civil Brasileiro (arts. 593 a 609) e legislação aplicável',
-  'aluguel': 'segundo a Lei 8.245/91 (Lei do Inquilinato) e o Código Civil Brasileiro',
-  'parceria': 'segundo o Código Civil Brasileiro e a legislação comercial aplicável',
-  'confidencialidade': 'segundo o Código Civil, a Lei de Propriedade Industrial (Lei 9.279/96) e a LGPD (Lei 13.709/2018)',
-  'trabalho-freelancer': 'segundo a Lei 11.196/05, LC 128/08, a Lei 9.610/98 (Direitos Autorais) e o Código Civil',
-  'compra-venda': 'segundo o Código Civil Brasileiro (arts. 481 a 532) e o Código de Defesa do Consumidor',
-  'empreitada': 'segundo o Código Civil Brasileiro (arts. 610 a 626), as normas da ABNT e a legislação trabalhista aplicável',
-  'sociedade': 'segundo o Código Civil Brasileiro (arts. 997 a 1.038) e a legislação empresarial aplicável',
-  'representacao-comercial': 'segundo a Lei 4.886/65, a Lei 8.420/92 e o Código Civil Brasileiro',
-  'comodato': 'segundo o Código Civil Brasileiro (arts. 579 a 585)'
-};
-
-const SYSTEM_PROMPT = `Você é um advogado experiente que está ajudando uma pessoa a montar um contrato.
-
-Seu trabalho é fazer perguntas simples e diretas, uma de cada vez, para coletar as informações necessárias. Fale como se estivesse conversando com alguém que não é da área jurídica — use palavras do dia a dia, frases curtas e evite termos difíceis. Quando precisar usar um termo técnico, explique brevemente o que ele significa.
-
-REGRAS DE FORMATAÇÃO — NUNCA VIOLE:
-- NUNCA use markdown: sem asteriscos (**), sem underline (__), sem hashtags (#), sem backticks
-- Escreva apenas em texto simples
-- Suas perguntas devem ser frases diretas e fáceis de entender
-
-REGRAS DE CONDUÇÃO — NUNCA VIOLE:
-1. Faça APENAS UMA pergunta por vez
-2. Siga a lista de campos obrigatórios em ordem — não pule nenhum campo
-3. NÃO gere o contrato durante a entrevista
-4. NÃO invente respostas nem complete informações que o usuário não deu
-5. Quando coletar TODOS os campos da lista, pergunte: "Deseja adicionar algo a mais para por no contrato?"
-6. Se o usuário disser "não" ou "nada", responda EXATAMENTE: "Perfeito! Vou gerar seu contrato agora."
-7. Se o usuário quiser adicionar algo, colete e repita a pergunta do passo 5
-8. NUNCA encerre sem ter coletado todos os campos, incluindo telefone e email de todas as partes
-9. CONFIRMAÇÃO FINAL: Após coletar todos os campos, antes de perguntar "Deseja adicionar algo a mais?", apresente um resumo com os dados principais (nomes das partes, valor, prazo) e pergunte: "Esses dados estão corretos? Posso confirmar e prosseguir?" — se o usuário confirmar, aí pergunte sobre adições.
-10. REGRA DE ASSINATURA: Sempre pergunte se a assinatura será presencial ou online ANTES de pedir cidade e estado. Se online, NÃO peça cidade nem estado — vá direto para a confirmação dos dados.
-11. IMPORTANTE — NÃO valide email, CPF nem CNPJ: Aceite sempre a resposta do usuário para esses campos e passe imediatamente para a próxima pergunta.`;
-
-export const getInitialPrompt = (contractType) => {
-  const prompts = {
-    'prestacao-servicos': `Ótimo! Você escolheu o Contrato de Prestação de Serviços. Vou fazer algumas perguntas para montar seu contrato completo.\n\nQual o nome completo do CONTRATANTE (quem vai pagar pelo serviço)?`,
-    'aluguel': `Ótimo! Você escolheu o Contrato de Aluguel. Vou fazer algumas perguntas para montar seu contrato completo.\n\nQual o nome completo do LOCADOR (proprietário do imóvel)?`,
-    'compra-venda': `Ótimo! Você escolheu o Contrato de Compra e Venda. Vou fazer algumas perguntas para montar seu contrato completo.\n\nQual o nome completo do VENDEDOR?`,
-    'parceria': `Ótimo! Você escolheu o Contrato de Parceria. Vou fazer algumas perguntas para montar seu contrato completo.\n\nQual o nome completo da PARTE A?`,
-    'confidencialidade': `Ótimo! Você escolheu o Termo de Confidencialidade (NDA). Vou fazer algumas perguntas para montar seu contrato completo.\n\nEste acordo será unilateral (apenas uma parte recebe informações confidenciais) ou bilateral/mútuo (ambas as partes trocarão informações entre si)?`,
-    'trabalho-freelancer': `Ótimo! Você escolheu o Contrato Freelancer. Vou fazer algumas perguntas para montar seu contrato completo.\n\nQual o nome completo do CONTRATANTE (o cliente que vai pagar)?`,
-    'empreitada': `Ótimo! Você escolheu o Contrato de Empreitada. Vou fazer algumas perguntas para montar seu contrato completo.\n\nQual o nome completo do CONTRATANTE (o dono da obra)?`,
-    'sociedade': `Ótimo! Você escolheu o Contrato Social de Sociedade. Vou fazer algumas perguntas para montar seu contrato completo.\n\nQual o nome completo do SÓCIO A?`,
-    'representacao-comercial': `Ótimo! Você escolheu o Contrato de Representação Comercial. Vou fazer algumas perguntas para montar seu contrato completo.\n\nQual o nome ou razão social da empresa REPRESENTADA (quem fabrica ou vende o produto)?`,
-    'comodato': `Ótimo! Você escolheu o Contrato de Comodato. Comodato é um empréstimo gratuito de um bem — o dono empresta sem cobrar nada por isso. Vou fazer algumas perguntas para montar seu contrato completo.\n\nQual o nome completo do COMODANTE (o dono do bem que vai emprestar)?`
-  };
-  return prompts[contractType] || `Ótimo! Vamos montar seu contrato.\n\nQual o nome completo da parte contratante?`;
-};
-
-const stripMarkdown = (text) => {
-  return text
-    .replace(/\*\*(.*?)\*\*/g, '$1')
-    .replace(/\*(.*?)\*/g, '$1')
-    .replace(/__(.*?)__/g, '$1')
-    .replace(/_(.*?)_/g, '$1')
-    .replace(/^#{1,6}\s+/gm, '')
-    .replace(/`{1,3}[^`]*`{1,3}/gs, (match) => match.replace(/`/g, ''));
-};
-
 export const sendMessageToIA = async (messages, contractType) => {
-  const userResponses = messages.filter(m => m.role === 'user').length;
-  const totalFields = (FIELD_ORDER_BY_CONTRACT[contractType] || []).length;
+  const userResponses     = messages.filter(m => m.role === 'user').length;
+  const totalFields       = (FIELD_ORDER_BY_CONTRACT[contractType] || []).length;
   const fieldsInstruction = REQUIRED_FIELDS_INSTRUCTION[contractType] || '';
+
   let progressNote = '';
   if (userResponses >= totalFields - 2) {
-    progressNote = `\n\n⚠️ ATENÇÃO: Você já recebeu ${userResponses} respostas. O total de campos é ${totalFields}. Verifique se TODOS foram coletados.`;
+    progressNote = `\n\n⚠️ ATENÇÃO: Você já coletou ${userResponses} respostas de ${totalFields} campos. Verifique se TODOS foram coletados antes de encerrar.`;
   }
+
   const data = await callAI('/api/chat', {
     model: API_CONFIG.model,
     messages: [
       { role: 'system', content: `${SYSTEM_PROMPT}${progressNote}\n\nTipo de contrato: ${contractType}\n${fieldsInstruction}` },
-      ...messages
+      ...messages,
     ],
-    temperature: 0.5,
+    temperature: 0.2,
     max_tokens: 500,
   });
+
   return stripMarkdown(data.choices[0].message.content);
 };
 
+// ============================================================
+// validateAnswerRelevance — NOVO
+//
+// Validação contextual/semântica genérica, usada em TODAS as
+// perguntas da entrevista (nome, endereço, descrição, matrícula,
+// valores, prazos, etc — inclusive as que já têm validação local
+// de formato, como CPF/CNPJ/telefone/email, como camada extra).
+//
+// Por que via IA e não regex: perguntas abertas (ex: "Qual é o
+// número de matrícula do imóvel?") não têm um formato fixo que dê
+// para validar com padrão — o problema real é semântico (o usuário
+// repetiu a própria pergunta, mandou texto aleatório, ou respondeu
+// algo sem nenhuma relação com o que foi perguntado). Só um modelo
+// de linguagem consegue julgar isso de forma confiável em qualquer
+// tipo de campo.
+//
+// Fail-safe: se a chamada falhar por qualquer motivo técnico
+// (rede, parsing, etc.), a resposta é aceita por padrão — nunca
+// travamos o usuário por causa de uma instabilidade da API.
+// ============================================================
+export const validateAnswerRelevance = async (question, answer, conversationContext = '') => {
+  const contextBlock = conversationContext
+    ? `\n\nCONTEXTO DA CONVERSA (perguntas e respostas anteriores da entrevista — use isso para identificar se a resposta do usuário é uma correção de algo já respondido antes, mesmo que não responda à pergunta atual):\n${conversationContext}\n`
+    : '';
+
+  const prompt = `Você é um validador de respostas em uma entrevista para coleta de dados de contrato.
+${contextBlock}
+PERGUNTA FEITA AO USUÁRIO AGORA:
+"${question}"
+
+RESPOSTA DO USUÁRIO:
+"${answer}"
+
+Analise se a RESPOSTA é uma interação válida nesse ponto da entrevista. Isso inclui três casos, todos válidos:
+1. O usuário respondeu à pergunta feita.
+2. O usuário fez uma pergunta de esclarecimento ou demonstrou dúvida sobre o que foi perguntado, em vez de responder (ex: "o que é isso?", "não entendi", "pode dar um exemplo?", "o que significa X?").
+3. O usuário está corrigindo uma informação que ele mesmo deu anteriormente na conversa (use o CONTEXTO DA CONVERSA acima para checar isso) — mesmo que a correção não tenha nenhuma relação com a pergunta feita agora.
+
+Considere INVÁLIDA a resposta somente se ela NÃO se encaixar em nenhum dos três casos acima — ou seja, se ela:
+- For uma repetição literal ou quase literal da própria pergunta
+- For um texto aleatório, sem relação com o que foi perguntado e sem relação com nada do que já foi dito na conversa
+- Não fizer sentido nem como resposta à pergunta atual, nem como dúvida sobre ela, nem como correção de algo já respondido antes
+
+Considere VÁLIDA a resposta se ela:
+- For uma resposta plausível e coerente com o que foi perguntado, mesmo que resumida, informal, incompleta ou com erros de digitação
+- Disser que não sabe, não tem ou não se aplica ("não sei", "não tenho", "não aplicável", "nenhum"), quando isso fizer sentido para o campo perguntado
+- Quando a pergunta pedir um PRAZO ou DURAÇÃO, também considere válida uma resposta relativa/qualitativa que define claramente até quando algo vale, mesmo sem um número fixo (ex: "até o fim do contrato", "até o serviço acabar", "enquanto durar o contrato", "durante a vigência do contrato") — isso é uma forma legítima de responder a uma pergunta de prazo, não uma resposta fora do assunto
+- Escolher uma das opções apresentadas na própria pergunta (ex: responder apenas "presencial", "remoto", "híbrido", "sim", "não") NÃO é repetição da pergunta — é uma seleção válida entre as opções oferecidas, e continua válida quando complementada com a informação extra pedida na mesma pergunta (ex: "presencial, no endereço X")
+- For uma resposta elaborada ou detalhada, que descreve condições, prazos de tolerância/carência, forma de cálculo ou outras explicações junto com a informação central pedida (ex: percentual, valor, sim/não) — desde que a informação central pedida esteja presente em algum lugar da resposta, mesmo cercada de contexto adicional. Uma resposta mais longa e explicativa NÃO é, por si só, motivo de invalidação
+- Quando a pergunta for sobre uma MULTA (fixa ou por atraso), também considere válida uma resposta que condiciona a multa a um prazo de tolerância antes de incidir (ex: "com tolerância de 3 dias, depois disso a multa é de 10%") — isso ainda é uma resposta sobre o valor/percentual da multa, não uma resposta fora do assunto
+- For uma pergunta de esclarecimento/dúvida sobre o que foi perguntado (caso 2 acima)
+- For uma correção de algo dito anteriormente na conversa (caso 3 acima), usando o CONTEXTO DA CONVERSA pra confirmar que aquele dado já apareceu antes
+
+Retorne APENAS um JSON, sem texto adicional, sem markdown, no formato exato:
+{"valido": true ou false, "motivo": "breve explicação em português, no máximo 15 palavras"}`;
+
+  try {
+    const data = await callAI('/api/chat', {
+      model: API_CONFIG.model,
+      messages: [
+        {
+          role: 'system',
+          content: 'Você é um validador rigoroso porém sensato de respostas de um formulário conversacional. Responda SOMENTE com JSON válido, sem nenhum texto fora do JSON.',
+        },
+        { role: 'user', content: prompt },
+      ],
+      temperature: 0,
+      max_tokens: 150,
+    });
+
+    let raw = data.choices[0].message.content.trim()
+      .replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '').trim();
+    const result = JSON.parse(raw);
+
+    return {
+      valido: result.valido !== false,
+      motivo: typeof result.motivo === 'string' ? result.motivo : '',
+    };
+  } catch (err) {
+    console.error('[validateAnswerRelevance] Falha na validação semântica — aceitando resposta por segurança:', err);
+    return { valido: true, motivo: '' };
+  }
+};
+
+// ============================================================
+// extractAnswersFromConversation
+// IA semântica lê a conversa completa e pega o valor MAIS
+// RECENTE de cada campo — inclusive quando o usuário corrigiu.
+// ============================================================
 export const extractAnswersFromConversation = async (messages, contractType) => {
   const fieldOrder = FIELD_ORDER_BY_CONTRACT[contractType] || [];
+
   const conversationText = messages
     .filter(m => m.role === 'user' || m.role === 'assistant')
     .map(m => `${m.role === 'assistant' ? 'ASSISTENTE' : 'USUÁRIO'}: ${m.content}`)
     .join('\n\n');
-  const extractionPrompt = `Leia a conversa abaixo entre um assistente jurídico e um usuário.
-Extraia EXATAMENTE os valores fornecidos pelo usuário para cada campo listado.
+
+  const extractionPrompt = `Leia a conversa abaixo e extraia o valor MAIS RECENTE de cada campo.
+
+REGRA CRÍTICA: Se o usuário corrigiu um valor durante a conversa, use SEMPRE o valor corrigido (o mais recente), não o original.
 
 CAMPOS ESPERADOS:
 ${JSON.stringify(fieldOrder, null, 2)}
@@ -1155,138 +157,988 @@ CONVERSA:
 ${conversationText}
 
 REGRAS ABSOLUTAS:
-1. Retorne SOMENTE um objeto JSON válido — sem texto, sem markdown, sem blocos de código
-2. Para cada campo, use o contexto da pergunta do assistente para identificar a qual campo pertence a resposta do usuário
+1. Retorne SOMENTE JSON válido — sem texto, sem markdown
+2. Para cada campo, use o ÚLTIMO valor mencionado pelo usuário (o mais recente prevalece)
 3. Se um campo não foi respondido, use string vazia ""
-4. NÃO invente valores — use apenas exatamente o que o usuário disse
-5. O campo "modalidade_assinatura" deve ser "presencial" ou "online" conforme informado pelo usuário
-6. Se a modalidade for "online", os campos "cidade" e "estado" devem ser "não aplicável"
-7. Se a modalidade for "presencial", extraia cidade e estado normalmente
+4. NÃO invente, complete, deduza ou arredonde valores — use EXATAMENTE o que o usuário escreveu, caractere por caractere (isso vale especialmente para e-mail, telefone, CPF/CNPJ, valores monetários, datas e prazos)
+5. "modalidade_assinatura": use "presencial" ou "online"
+6. Se online: "cidade" e "estado" = "não aplicável"
+7. Se presencial: extraia cidade e estado normalmente
 
-Formato de saída esperado: {"campo1":"valor","campo2":"outro valor"}`;
+Formato: {"campo1":"valor","campo2":"valor"}`;
+
   try {
-    // Extração usa /api/chat normalmente — é rápida, não vai dar timeout
     const data = await callAI('/api/chat', {
       model: API_CONFIG.model,
       messages: [
-        { role: 'system', content: 'Você é um extrator de dados preciso. Retorne APENAS JSON válido, sem nenhum texto adicional, sem markdown.' },
-        { role: 'user', content: extractionPrompt }
+        {
+          role: 'system',
+          content: 'Extrator de dados. Sempre use o valor MAIS RECENTE quando houver correções. Nunca invente, complete ou altere nenhum dado — copie exatamente o que o usuário informou. Retorne APENAS JSON válido.',
+        },
+        { role: 'user', content: extractionPrompt },
       ],
       temperature: 0,
-      max_tokens: 1500,
+      max_tokens: 2500,
     });
-    let raw = data.choices[0].message.content.trim();
-    raw = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '').trim();
-    return JSON.parse(raw);
+
+    let raw = data.choices[0].message.content.trim()
+      .replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '').trim();
+    const answers = JSON.parse(raw);
+
+    // Normaliza modalidade/cidade/estado
+    const modal = (answers.modalidade_assinatura || '').toLowerCase();
+    if (modal.includes('online') || modal.includes('digital')) {
+      answers.modalidade_assinatura = 'online';
+      answers.cidade = answers.cidade || 'não aplicável';
+      answers.estado = answers.estado || 'não aplicável';
+    } else if (modal.includes('presencial')) {
+      answers.modalidade_assinatura = 'presencial';
+    }
+
+    return answers;
+
   } catch (err) {
-    console.error('[extractAnswers] Fallback por posição:', err);
+    console.error('[extractAnswers] IA falhou, fallback posicional:', err);
     const answers = {};
     const userMessages = messages.filter(m => m.role === 'user').map(m => m.content);
     fieldOrder.forEach((field, index) => {
-      if (index < userMessages.length) answers[field] = userMessages[index];
+      if (index < userMessages.length) answers[field] = userMessages[index] || '';
     });
     return answers;
   }
 };
 
-export const generateContractFromConversation = async (messages, contractType) => {
-  const rawAnswers = await extractAnswersFromConversation(messages, contractType);
-  const answers = formatAnswers(rawAnswers);
-  const selectedTemplate = CONTRACT_TEMPLATES[contractType] || CONTRACT_TEMPLATES['prestacao-servicos'];
-  const contractTitle = selectedTemplate.title.toUpperCase();
-  const legalRef = LEGAL_REF[contractType] || 'segundo o Código Civil Brasileiro';
-  const hoje = new Date();
-  const dataAtual = hoje.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
-  const isOnline = answers.modalidade_assinatura?.toLowerCase().includes('online');
-  let filledTemplate = selectedTemplate.template;
-  Object.keys(answers).forEach(key => {
-    filledTemplate = filledTemplate.replace(new RegExp(`{${key}}`, 'g'), answers[key] || '');
+// ============================================================
+// callClauseAPI — gera UMA cláusula via API (sem stream)
+// Cada chamada é pequena e focada — sem pressão de tokens.
+// ============================================================
+const callClauseAPI = async (systemMessages) => {
+  if (isLocalDev) {
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: API_CONFIG.model,
+        messages: systemMessages,
+        temperature: 0.3,
+        max_tokens: 2000, // 2000 por cláusula — suficiente para qualquer cláusula em pt-BR
+      }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: 'Erro desconhecido' }));
+      throw new Error(err.error?.message || err.error || 'Erro na API OpenAI');
+    }
+    const data = await res.json();
+    return data.choices?.[0]?.message?.content || '';
+
+  } else {
+    const res = await fetch('/api/generate-contract', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: API_CONFIG.model,
+        messages: systemMessages,
+        temperature: 0.3,
+        max_tokens: 2000, // 2000 por cláusula — suficiente para qualquer cláusula em pt-BR
+      }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: 'Erro desconhecido' }));
+      throw new Error(err.error || 'Erro ao gerar cláusula');
+    }
+    const ct = res.headers.get('content-type') || '';
+    if (ct.includes('application/json')) {
+      const data = await res.json();
+      return data.choices?.[0]?.message?.content || data.content || data.text || '';
+    }
+    // SSE stream (caso o servidor retorne stream mesmo sem pedir)
+    const reader = res.body.getReader();
+    const dec    = new TextDecoder();
+    let text = '';
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      for (const line of dec.decode(value, { stream: true }).split('\n')) {
+        const t = line.trim();
+        if (!t || t === 'data: [DONE]' || !t.startsWith('data: ')) continue;
+        try {
+          const d = JSON.parse(t.slice(6))?.choices?.[0]?.delta?.content;
+          if (d) text += d;
+        } catch (_e) {}
+      }
+    }
+    return text;
+  }
+};
+
+// ============================================================
+// generateClause — gera uma única cláusula com retry próprio
+// ============================================================
+const generateClause = async (clausula, idx, numClausula, dataBlock, contractTitle, legalRef, dataAtual, foroInstrucao, isLastClause, toleranciaSentence, multaDiariaSentence, multaAtrasoLimiteSentence) => {
+
+  const systemPrompt = `Você é um Advogado Sênior especialista em Direito Civil e Empresarial Brasileiro.
+Escreva APENAS a cláusula solicitada — nada mais, nada antes, nada depois.
+
+REGRAS ABSOLUTAS SOBRE OS DADOS:
+- Use SOMENTE os dados fornecidos em "DADOS DO CONTRATO". Eles são a ÚNICA fonte de verdade.
+- NUNCA invente, complete, assuma, deduza, arredonde ou altere qualquer nome, valor, data, prazo, percentual, e-mail, telefone, CPF/CNPJ ou qualquer outra informação que não esteja explicitamente presente em "DADOS DO CONTRATO".
+- Se um dado necessário para a cláusula não constar em "DADOS DO CONTRATO", NÃO o invente e NÃO tente adivinhar — escreva a cláusula de forma genérica, sem citar esse dado específico.
+- PRAZOS EM DIAS/MESES/ANOS/HORAS SÃO DADOS, NÃO DETALHES DE ESTILO: nunca crie um prazo específico (ex.: "notificação com 30 dias de antecedência", "resposta em até 5 dias úteis", "48 horas para responder") que não esteja em "DADOS DO CONTRATO". Se a cláusula normalmente precisaria de um prazo mas ele não foi informado, escreva de forma genérica ("mediante notificação prévia por escrito", "em prazo razoável", "tão logo possível"), sem inventar um número.
+- O MOMENTO DE CUMPRIMENTO DE UMA OBRIGAÇÃO TAMBÉM É DADO, NÃO PRAXE DO CONTRATO: assim como um prazo em dias, o momento em que uma obrigação deve ocorrer (ex.: "no ato da assinatura", "à vista", "antes da entrega", "após a entrega", "em parcela única") é um dado — não um detalhe estilístico que pode ser preenchido com o que é mais comum nesse tipo de contrato. Se os DADOS DO CONTRATO não especificarem QUANDO uma obrigação (como o pagamento) deve ocorrer, NÃO invente esse momento, mesmo que pareça óbvio ou usual — redija a cláusula de forma genérica quanto a esse ponto específico, sem afirmar um momento que não foi informado.
+- CONDIÇÕES E PRAZOS DE TOLERÂNCIA/CARÊNCIA VINCULADOS A UM DADO SÃO PARTE DELE, NUNCA OS OMITA: quando um dado em "DADOS DO CONTRATO" vier acompanhado de uma condição, prazo de tolerância/carência ou circunstância que define quando ou como ele se aplica (ex.: "multa de 2% apenas se o atraso passar de 3 dias após a entrega"), essa condição é parte inseparável do dado, tão importante quanto o valor numérico. NUNCA simplifique um dado removendo a condição e mantendo só o número — a cláusula deve reproduzir a condição junto com o valor, exatamente como foi informada pelo usuário.
+- NÃO adicione obrigações, condições, direitos de oposição/veto, exigências de aviso prévio, reciprocidade de penalidades ou qualquer regra que não decorra EXPLICITAMENTE do que está em "DADOS DO CONTRATO". Elabore juridicamente apenas sobre o que foi informado — nunca crie uma nova obrigação, condição ou direito que o usuário não mencionou, mesmo que pareça juridicamente razoável ou usual em contratos desse tipo.
+- Quando um dado em "DADOS DO CONTRATO" for um texto descritivo (ex.: endereço completo, descrição do serviço, forma de comunicação), reproduza esse texto INTEGRALMENTE na cláusula pertinente, sempre que a cláusula fizer referência a esse dado. NUNCA substitua um dado descritivo fornecido por uma referência vaga como "no endereço especificado" ou "conforme descrito" sem incluir o próprio dado.
+- Reproduza e-mails, telefones e CPF/CNPJ EXATAMENTE como aparecem em "DADOS DO CONTRATO", caractere por caractere, sem adicionar, remover ou reposicionar espaços.
+- Cálculos matemáticos simples (ex.: aplicar um percentual já informado sobre um valor já informado) são permitidos, mas o resultado deve ser exato e não pode ser apresentado como se fosse um novo dado fornecido pelo usuário.
+
+REGRAS ABSOLUTAS DE REDAÇÃO:
+- Verbos SEMPRE conjugados: deverá, poderá, será, estará, terá — NUNCA infinitivo (dever, poder, ser, estar, ter) quando forem o verbo principal da frase.
+  Exemplos do que NÃO fazer (encontrados em gerações anteriores e que devem ser evitados):
+    ERRADO: "Este foro ser exclusivo" → CERTO: "Este foro será exclusivo"
+    ERRADO: "O CONTRATADO ser responsável" → CERTO: "O CONTRATADO será responsável"
+    ERRADO: "O CONTRATADO não estar sujeito a multa" → CERTO: "O CONTRATADO não estará sujeito a multa"
+    ERRADO: "A subcontratação não eximir o CONTRATADO" → CERTO: "A subcontratação não eximirá o CONTRATADO"
+  Antes de finalizar cada frase, identifique o verbo principal e confirme que ele está conjugado (normalmente no futuro do presente: -á, -ão), nunca na forma de infinitivo.
+- Palavras SEMPRE completas: CONTRATANTE, CONTRATADO, PAGAMENTO — nunca abrevie
+- Nomes de partes com espaço: "pelo CONTRATANTE" — NUNCA "peloCONTRATANTE"
+- Use os valores exatamente como estão nos dados — não recalcule nem reformate números, datas ou percentuais
+- Mínimo 2 parágrafos (§1º e §2º), cada um com mínimo 3 frases completas
+- Cláusulas de penalidade, rescisão e foro: mínimo 3 parágrafos
+- Texto puro — zero asteriscos, zero markdown
+- Revise mentalmente a frase antes de escrevê-la: sem palavras cortadas, sem palavras grudadas, sem erros de concordância verbal ou nominal, sem pontuação duplicada ou ausente`;
+
+  const isForoClause = /FORO/i.test(clausula);
+  const foroExtra    = isForoClause ? `\n\nINSTRUÇÃO DE FORO: ${foroInstrucao}` : '';
+
+  const isObjetoClause = /DO OBJETO/i.test(clausula);
+  const objetoExtra = isObjetoClause
+    ? '\n\nINSTRUÇÃO DE OBJETO/ESCOPO: Se os DADOS DO CONTRATO contiverem alguma informação sobre o local, endereço ou modalidade de execução do serviço/objeto (ex.: remoto, presencial, endereço específico), inclua essa informação explicitamente e por extenso nesta cláusula, reproduzindo qualquer endereço fornecido exatamente como consta nos dados — nunca substitua um endereço fornecido por uma referência vaga como "no endereço especificado".'
+    : '';
+
+  const isInsumosClause = /INSUMOS|MATERIAIS/i.test(clausula);
+  const insumosExtra = isInsumosClause
+    ? '\n\nINSTRUÇÃO DE INSUMOS/MATERIAIS: Se os DADOS DO CONTRATO indicarem que não há compra de materiais ou insumos envolvida (ex.: resposta "não" ou "nenhum" para essa pergunta, sem detalhamento adicional), escreva esta cláusula de forma neutra e breve, apenas registrando que o serviço/objeto não envolve fornecimento ou compra de materiais ou insumos por nenhuma das partes. NÃO atribua responsabilidade por custos, despesas ou aquisição de materiais a nenhuma das partes além do que foi expressamente informado nos DADOS DO CONTRATO.'
+    : '';
+
+  // FIX: reforço direcionado pra cláusulas de multa/penalidade/pagamento —
+  // a instrução genérica sobre "não omitir condições" (mais acima no
+  // systemPrompt) não se mostrou suficiente na prática: em testes reais,
+  // quando dois dados de multa tinham o MESMO valor numérico (ex.: multa
+  // fixa de 2% condicionada a um prazo de tolerância, e multa diária
+  // também de 2%), a IA os fundiu em uma única frase genérica, descartando
+  // tanto a condição de tolerância quanto a distinção entre as duas
+  // multas. Esta instrução usa um exemplo concreto e idêntico ao caso real
+  // que falhou, para reduzir a chance de repetição do mesmo erro.
+  const isMultaClause = /MULTA|PENALIDADE|MORA|PAGAMENTO/i.test(clausula);
+  const multaExtra = isMultaClause
+    ? `\n\nINSTRUÇÃO DE MULTAS/PENALIDADES: Se os DADOS DO CONTRATO contiverem MAIS DE UM dado sobre multa (ex.: uma multa fixa e uma multa por dia, ou uma multa por atraso e uma multa por rescisão), trate cada uma como uma OBRIGAÇÃO SEPARADA nesta cláusula — nunca funda duas multas diferentes em uma única frase, MESMO QUE o valor numérico das duas seja igual entre si (ex.: multa fixa de 2% e multa diária também de 2% são DUAS coisas diferentes, e ambas devem aparecer, cada uma explicada por completo). Se um dado de multa vier acompanhado de uma condição, prazo de carência/tolerância ou circunstância que define quando ela passa a incidir (ex.: "só incide após 3 dias de atraso contados da entrega"), essa condição é parte do dado e deve aparecer explicitamente no texto, junto com o valor — nunca escreva apenas o valor isolado, descartando a condição.
+Exemplo do que fazer quando os DADOS DO CONTRATO tiverem algo como "multa fixa de 2%, aplicável somente após 3 dias de tolerância contados da entrega" E TAMBÉM "multa diária de 2% após esse mesmo prazo de tolerância": a cláusula deve mencionar as DUAS coisas de forma explícita e distinta — por exemplo, "em caso de atraso no pagamento superior a 3 (três) dias, contados da entrega do bem, o COMPRADOR incorrerá em multa fixa de 2% sobre o valor da venda, acrescida de multa diária de 2% sobre o valor da venda por cada dia de atraso adicional" — nunca apenas "incidirá multa de 2%" de forma genérica, sem a condição de prazo e sem diferenciar a multa fixa da multa diária.`
+    : '';
+
+  const lastExtra    = isLastClause
+    ? '\n\nAPÓS esta cláusula, escreva EXATAMENTE esta linha:\nE, por estarem assim justas e contratadas, as partes firmam o presente instrumento.'
+    : '';
+
+  // FIX: em vez de confiar na IA para preservar corretamente uma condição
+  // de tolerância/carência dentro do texto livre da multa (o que falhou
+  // repetidamente em testes reais — a condição era omitida, ou pior,
+  // contradita com frases como "independentemente do número de dias de
+  // atraso"), a frase que descreve essa condição é montada de forma
+  // determinística em código (ver extractToleranceDays, em
+  // generateContractFromConversation) e passada aqui como texto
+  // OBRIGATÓRIO e LITERAL — o mesmo mecanismo do "lastExtra" acima, que
+  // em nenhum teste até hoje falhou em ser reproduzido exatamente.
+  const toleranciaExtra = (isMultaClause && toleranciaSentence)
+    ? `\n\nINSTRUÇÃO OBRIGATÓRIA DE PRAZO DE TOLERÂNCIA: Inclua nesta cláusula, literalmente e sem alterar nenhuma palavra, a seguinte frase: "${toleranciaSentence}" — e NÃO escreva, em nenhuma parte desta cláusula, algo que contradiga essa tolerância (ex.: "independentemente do número de dias de atraso", "desde o primeiro dia de atraso", "a partir do atraso" sem menção à tolerância, ou equivalentes).`
+    : '';
+
+  // FIX: a instrução solta "multaExtra" (mais acima), pedindo pra IA tratar
+  // multa fixa e multa diária como obrigações separadas, se mostrou
+  // insuficiente em testes reais — em mais de uma geração, a multa diária
+  // foi simplesmente omitida da cláusula, mesmo com o dado correto
+  // disponível. Por isso, quando existe uma multa diária nos dados, a
+  // frase que a menciona também passa a ser IMPOSTA como texto literal
+  // obrigatório — mesmo mecanismo comprovado da tolerância acima — em vez
+  // de depender apenas da instrução solta.
+  const multaDiariaExtra = (isMultaClause && multaDiariaSentence)
+    ? `\n\nINSTRUÇÃO OBRIGATÓRIA DE MULTA DIÁRIA: Inclua nesta cláusula, literalmente e sem alterar nenhuma palavra, a seguinte frase: "${multaDiariaSentence}"`
+    : '';
+
+  // FIX: mesma proteção acima (multaDiariaExtra), adaptada para a pergunta
+  // COMPOSTA de multa por atraso (taxa diária + limite máximo numa
+  // pergunta só), usada em prestação de serviços e empreitada. Aplicada
+  // por precaução, mesmo sem um caso real de falha registrado para essa
+  // estrutura específica — segue o mesmo raciocínio das duas anteriores.
+  const multaAtrasoLimiteExtra = (isMultaClause && multaAtrasoLimiteSentence)
+    ? `\n\nINSTRUÇÃO OBRIGATÓRIA DE MULTA POR ATRASO COM LIMITE: Inclua nesta cláusula, literalmente e sem alterar nenhuma palavra, a seguinte frase: "${multaAtrasoLimiteSentence}"`
+    : '';
+
+  const userPrompt = `Contrato: ${contractTitle} — ${legalRef}
+Data: ${dataAtual}
+
+DADOS DO CONTRATO (fonte única e exclusiva de verdade — não use nenhum dado fora desta lista):
+${dataBlock}
+
+Redija a seguinte cláusula com profundidade jurídica completa:
+${clausula}
+
+Formato obrigatório:
+${clausula}
+
+§1º [mínimo 3 frases com verbos conjugados]
+
+§2º [mínimo 3 frases com verbos conjugados]
+${foroExtra}${objetoExtra}${insumosExtra}${multaExtra}${toleranciaExtra}${multaDiariaExtra}${multaAtrasoLimiteExtra}${lastExtra}`;
+
+
+  // Tenta até 2 vezes por cláusula
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    const text = await callClauseAPI([
+      { role: 'system', content: systemPrompt },
+      { role: 'user',   content: userPrompt   },
+    ]);
+
+    if (!text || text.trim().length < 100) {
+      console.warn(`[Cláusula ${numClausula}] Tentativa ${attempt}: resposta muito curta, retentando...`);
+      if (attempt === 2) throw new Error(`Cláusula ${numClausula} não foi gerada corretamente.`);
+      continue;
+    }
+
+    // Verifica se a cláusula tem pelo menos um §
+    if (!/§\d/i.test(text)) {
+      console.warn(`[Cláusula ${numClausula}] Tentativa ${attempt}: sem parágrafos §, retentando...`);
+      if (attempt === 2) return text; // entrega o que tiver
+      continue;
+    }
+
+    return text.trim();
+  }
+
+  return '';
+};
+
+// ============================================================
+// Helpers de validação de integridade dos dados
+// ============================================================
+
+// Extrai todos os e-mails presentes em um texto
+const extractEmails = (text) =>
+  (text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g) || []);
+
+// Extrai todos os valores monetários "R$ x.xxx,xx" de um texto, já
+// normalizados para número (ex.: "R$ 5.000,00" → 5000)
+const extractMoneyValues = (text) => {
+  const matches = text.match(/R\$\s*[\d.,]+/g) || [];
+  return matches
+    .map(m => parseFloat(m.replace(/R\$\s*/, '').replace(/\./g, '').replace(',', '.')))
+    .filter(n => !isNaN(n));
+};
+
+// Extrai todos os percentuais "10%" / "10,5%" de um texto
+const extractPercentages = (text) => {
+  const matches = text.match(/\d+(?:[.,]\d+)?\s*%/g) || [];
+  return matches.map(m => parseFloat(m.replace(',', '.').replace('%', '').trim()));
+};
+
+// Extrai prazos ("10 dias", "3 meses", "48 horas", "2 anos", "5 dias úteis")
+// de um texto, normalizando a unidade para permitir comparação exata.
+//
+// FIX: a regex original só reconhecia o número ANTES de um parênteses
+// explicativo (ex.: "5 (cinco) dias"). Quando o usuário escreve o número
+// DENTRO dos parênteses, antes da unidade (ex.: "(15) dias" — como em
+// "será de (15) dias"), a versão antiga não capturava o prazo, fazendo
+// o sistema "esquecer" que aquele prazo já tinha sido informado. Os
+// trechos `\(?\s*` e `\s*\)?` abaixo cobrem esse formato adicional sem
+// alterar o comportamento para o formato já suportado.
+//
+// FIX 2: em vez de listar manualmente cada palavra com e sem acento
+// (ex.: "úteis"/"uteis", "mês"/"mes"), o texto é normalizado removendo
+// TODOS os acentos via Unicode (NFD + remoção de diacríticos) antes de
+// comparar. Isso corrige de uma vez só qualquer variação de acentuação
+// em qualquer palavra — não só as que já tínhamos previsto — porque a
+// resposta do usuário e o texto do contrato passam pelo mesmo processo
+// de normalização antes de serem comparados.
+const stripAccents = (s) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+const extractDeadlines = (text) => {
+  const normalized = stripAccents(text.toLowerCase());
+  const regex = /\(?\s*(\d+)\s*\)?(?:\s*\([^)]*\)\s*)?\s*(dias?\s*uteis|dias?|meses|mes|anos?|horas?)/gi;
+  const results = [];
+  let match;
+  while ((match = regex.exec(normalized)) !== null) {
+    const num = parseInt(match[1], 10);
+    let unit  = match[2].replace(/\s+/g, ' ').trim();
+    if (/uteis/.test(unit))          unit = 'dias uteis';
+    else if (/^dia/.test(unit))      unit = 'dias';
+    else if (/^mes/.test(unit))      unit = 'meses';
+    else if (/^ano/.test(unit))      unit = 'anos';
+    else if (/^hora/.test(unit))     unit = 'horas';
+    results.push({ num, unit });
+  }
+  return results;
+};
+
+// ============================================================
+// extractToleranceDays — detecta um prazo de tolerância/carência
+// mencionado numa resposta livre do usuário (ex.: "3 dias de
+// tolerância", "carência de 5 dias"), retornando o número de dias
+// encontrado, ou null se não houver nenhum.
+//
+// Por quê: em testes reais, quando essa condição ficava embutida no meio
+// de uma resposta longa sobre multa, a IA que redige a cláusula ora a
+// omitia, ora chegava a contradizê-la (ex.: escrevendo "independentemente
+// do número de dias de atraso"), mesmo com instruções reforçadas no
+// prompt pedindo para preservá-la. Por isso, o prazo de tolerância passa
+// a ser extraído aqui de forma determinística, e a frase que o descreve
+// é montada em código (ver generateContractFromConversation) e imposta
+// como texto literal obrigatório na cláusula de multas — nunca mais
+// dependendo da IA "lembrar" de reproduzi-la corretamente.
+// ============================================================
+const extractToleranceDays = (text) => {
+  if (!text || typeof text !== 'string') return null;
+  const normalized = stripAccents(text.toLowerCase());
+  let match = normalized.match(/(\d+)\s*dias?\s*(de\s*)?(tolerancia|carencia)/);
+  if (match) return parseInt(match[1], 10);
+  match = normalized.match(/(tolerancia|carencia)\s*(de\s*)?(\d+)\s*dias?/);
+  if (match) return parseInt(match[3], 10);
+  return null;
+};
+
+// ============================================================
+// extractMultaFixaRawAnswers — captura, DIRETO da conversa (sem IA), a
+// resposta literal do usuário a cada pergunta de "multa fixa" (todas as
+// 5 perguntas desse tipo, em qualquer um dos 5 tipos de contrato que as
+// têm, usam essa mesma frase-chave).
+//
+// Por quê: extractToleranceDays só encontra o prazo de tolerância se a
+// palavra estiver presente no valor armazenado do campo. Esse valor vem
+// de extractAnswersFromConversation, que é ELE MESMO uma chamada de IA —
+// e em um teste real, essa extração devolveu a resposta sem a condição
+// de tolerância, mesmo com instrução explícita para copiá-la literalmente.
+// Como a pergunta de multa fixa é sempre identificável por texto fixo,
+// não há necessidade de uma IA para achar a resposta a ela: a resposta é
+// sempre a mensagem do usuário logo em seguida na conversa. Isso garante
+// que extractToleranceDays sempre receba o texto exato digitado pelo
+// usuário, independentemente de qualquer resumo ou paráfrase que a
+// extração por IA possa ter feito.
+// ============================================================
+const extractMultaFixaRawAnswers = (conversationMessages) => {
+  const results = [];
+  for (let i = 0; i < conversationMessages.length - 1; i++) {
+    const msg = conversationMessages[i];
+    if (
+      msg && msg.role === 'assistant' && typeof msg.content === 'string' &&
+      msg.content.toLowerCase().includes('multa fixa')
+    ) {
+      const next = conversationMessages[i + 1];
+      if (next && next.role === 'user' && typeof next.content === 'string') {
+        results.push({ question: msg.content, answer: next.content });
+      }
+    }
+  }
+  return results;
+};
+
+// ============================================================
+// extractMultaDiariaRawAnswers — mesmo mecanismo acima, mas para as
+// perguntas de multa "por dia"/"ao dia" (sem limite/máximo — essas já
+// têm sua própria pergunta composta e não sofrem deste problema). Mesma
+// justificativa: garantir que o dado usado na cláusula seja o texto
+// exato digitado pelo usuário, sem depender da extração por IA.
+// ============================================================
+const isMultaDiariaQuestion = (text) => {
+  if (!text || typeof text !== 'string') return false;
+  const lower = text.toLowerCase();
+  return lower.includes('multa') && lower.includes('atraso') &&
+    /por dia|ao dia/.test(lower) &&
+    !/limite|m[áa]ximo/.test(lower);
+};
+
+const extractMultaDiariaRawAnswers = (conversationMessages) => {
+  const results = [];
+  for (let i = 0; i < conversationMessages.length - 1; i++) {
+    const msg = conversationMessages[i];
+    if (msg && msg.role === 'assistant' && isMultaDiariaQuestion(msg.content)) {
+      const next = conversationMessages[i + 1];
+      if (next && next.role === 'user' && typeof next.content === 'string') {
+        results.push({ question: msg.content, answer: next.content });
+      }
+    }
+  }
+  return results;
+};
+
+// ============================================================
+// extractMultaAtrasoLimiteRawAnswers — mesmo mecanismo acima, mas para a
+// pergunta COMPOSTA de multa por atraso (taxa diária + limite máximo numa
+// pergunta só), usada em prestação de serviços e empreitada. Mesma
+// justificativa das duas funções anteriores.
+// ============================================================
+const isMultaAtrasoLimiteQuestion = (text) => {
+  if (!text || typeof text !== 'string') return false;
+  const lower = text.toLowerCase();
+  return lower.includes('multa') && lower.includes('atraso') && /limite|m[áa]ximo/.test(lower);
+};
+
+const extractMultaAtrasoLimiteRawAnswers = (conversationMessages) => {
+  const results = [];
+  for (let i = 0; i < conversationMessages.length - 1; i++) {
+    const msg = conversationMessages[i];
+    if (msg && msg.role === 'assistant' && isMultaAtrasoLimiteQuestion(msg.content)) {
+      const next = conversationMessages[i + 1];
+      if (next && next.role === 'user' && typeof next.content === 'string') {
+        results.push({ question: msg.content, answer: next.content });
+      }
+    }
+  }
+  return results;
+};
+
+// ============================================================
+// fixBareFiniteVerbs — corrige automaticamente "ser"/"estar" usados
+// no infinitivo como verbo principal da frase (erro recorrente do
+// modelo), convertendo para a conjugação correta.
+//
+// Por que apenas "ser" e "estar": são os dois verbos onde o erro
+// aparece de forma sistemática e previsível neste tipo de contrato,
+// e a conjugação correta é sempre a mesma (será / está). Para outros
+// verbos (eximir, ensejar, gerar etc.) a conjugação certa depende
+// do tempo verbal pretendido, então uma correção automática às
+// cegas arriscaria trocar um erro por outro — por isso esses casos
+// apenas geram um aviso (ver validateContract) para revisão manual.
+//
+// A correção só é aplicada quando a palavra NÃO é antecedida por um
+// verbo/partícula que legitimamente introduz um infinitivo (ex.:
+// "deverá ser", "poderá estar", "a ser", "de ser"), para não quebrar
+// construções corretas.
+// ============================================================
+const FINITE_VERB_FIX = { ser: 'será', estar: 'está' };
+const EXCLUDE_BEFORE_INFINITIVE = new Set([
+  'a', 'de', 'para', 'por', 'sem', 'vir', 'ir',
+  'dever', 'deve', 'deverá', 'deverão', 'deveria', 'deveriam',
+  'poder', 'pode', 'poderá', 'poderão', 'poderia', 'poderiam',
+  'devendo', 'podendo', 'possa', 'possam', 'venha', 'venham',
+]);
+
+const fixBareFiniteVerbs = (text) => {
+  const tokens = text.split(/(\s+)/); // preserva os espaços originais
+  for (let i = 0; i < tokens.length; i++) {
+    const raw = tokens[i];
+    const cleaned = raw.replace(/^[.,;:!?()"'“”]+|[.,;:!?()"'“”]+$/g, '');
+    const lower = cleaned.toLowerCase();
+    if (lower !== 'ser' && lower !== 'estar') continue;
+
+    // Encontra a palavra anterior não-espaço
+    let j = i - 1;
+    while (j >= 0 && /^\s+$/.test(tokens[j])) j--;
+    const prevClean = j >= 0
+      ? tokens[j].replace(/^[.,;:!?()"'“”]+|[.,;:!?()"'“”]+$/g, '').toLowerCase()
+      : '';
+    if (EXCLUDE_BEFORE_INFINITIVE.has(prevClean)) continue;
+
+    const conjugated = FINITE_VERB_FIX[lower];
+    const finalWord = cleaned[0] === cleaned[0].toUpperCase()
+      ? conjugated.charAt(0).toUpperCase() + conjugated.slice(1)
+      : conjugated;
+
+    const leadingPunct  = (raw.match(/^[.,;:!?()"'“”]+/) || [''])[0];
+    const trailingPunct = (raw.match(/[.,;:!?()"'“”]+$/) || [''])[0];
+    tokens[i] = leadingPunct + finalWord + trailingPunct;
+  }
+  return tokens.join('');
+};
+
+// ============================================================
+// validateContract — valida o contrato montado
+//
+// Retorna dois tipos de problema:
+// - errors: avisos de qualidade (não bloqueiam a entrega)
+// - criticalErrors: inconsistências de DADOS (e-mail, valores
+//   monetários inventados/alterados) — BLOQUEIAM a entrega,
+//   pois representam exatamente o tipo de erro que este contrato
+//   nunca pode conter: informação fictícia ou modificada.
+// ============================================================
+const validateContract = (contractText, answers, contractType, conversationMessages = []) => {
+  const errors = [];
+  const criticalErrors = [];
+
+  // ── 1. Presença de todas as cláusulas esperadas ─────────────
+  const expectedClauses = CONTRACT_CLAUSES[contractType] || [];
+  expectedClauses.forEach((_, idx) => {
+    const num   = idx + 1;
+    const regex = new RegExp(`CL[ÁA]USULA\\s+${num}[ªa°]`, 'i');
+    if (!regex.test(contractText)) {
+      errors.push(`Cláusula ${num} ausente`);
+    }
   });
-  filledTemplate = filledTemplate.replace(/{[^}]+}/g, '');
+
+  // ── 2. Encerramento adequado ─────────────────────────────────
+  const lastChars = contractText.trim().slice(-300);
+  if (!/firmam o presente instrumento/i.test(lastChars) &&
+      !/assim justas e contratadas/i.test(lastChars)) {
+    errors.push('Sem encerramento adequado');
+  }
+
+  // ── 3. Tamanho mínimo ─────────────────────────────────────────
+  const minChars = expectedClauses.length * 150;
+  if (contractText.length < minChars) {
+    errors.push(`Contrato muito curto (${contractText.length} chars)`);
+  }
+
+  // ── 4. CRÍTICO — Integridade de e-mails ──────────────────────
+  // Nenhum e-mail no contrato final pode ser diferente dos e-mails
+  // informados pelo usuário durante a entrevista.
+  const providedEmails = new Set(
+    Object.entries(answers)
+      .filter(([k, v]) => k.toLowerCase().includes('email') && typeof v === 'string' && v.trim() !== '')
+      .map(([, v]) => v.trim().toLowerCase())
+  );
+  const foundEmails = extractEmails(contractText).map(e => e.trim().toLowerCase());
+  const invalidEmails = [...new Set(foundEmails.filter(e => !providedEmails.has(e)))];
+  invalidEmails.forEach(email => {
+    criticalErrors.push(`E-mail "${email}" encontrado no contrato não corresponde a nenhum e-mail informado pelo usuário — possível dado corrompido ou inventado.`);
+  });
+
+  // ── 5. CRÍTICO — Integridade de valores monetários ───────────
+  // Todo valor "R$ X" no contrato deve corresponder exatamente a um
+  // valor informado pelo usuário, ou a um percentual informado
+  // aplicado sobre um valor informado (ex.: cálculo de multa).
+  const providedMoneyValuesFromText = Object.values(answers)
+    .filter(v => typeof v === 'string' && /R\$\s*[\d.,]+/.test(v))
+    .flatMap(v => extractMoneyValues(v));
+
+  // FIX: alguns campos monetários (que existem em VÁRIOS tipos de
+  // contrato, não só aluguel) podem ter sido respondidos pelo usuário
+  // sem o prefixo "R$" (ex.: usuário digita apenas "500" para o campo
+  // de arras/sinal). Sem o "R$" literal, a extração acima não reconhece
+  // esse valor como "informado" — e quando a cláusula o escreve
+  // corretamente formatado como "R$ 500,00", o validador acusava
+  // (erroneamente) invenção de dado. Para os campos abaixo — que são
+  // tipicamente monetários em algum tipo de contrato — também tentamos
+  // extrair o número diretamente, com ou sem "R$". Campos que não
+  // contiverem um número (ex.: uma resposta descritiva) são
+  // simplesmente ignorados aqui (parseValor retorna NaN e é filtrado).
+  const MONETARY_HINT_FIELDS = [
+    'valor_total', 'valor_aluguel', 'valor_projeto', 'valor_venda',
+    'capital_social', 'aporte_inicial', 'multa_violacao',
+    'arras', 'pro_labore', 'multa_dano', 'meta_minima',
+    'contribuicao_a', 'contribuicao_b', 'despesas_transferencia', 'indenizacao_rescisao',
+  ];
+  const providedMoneyValuesFromFields = MONETARY_HINT_FIELDS
+    .map(f => answers[f])
+    .filter(v => typeof v === 'string' && v.trim() !== '')
+    .map(v => parseValor(v))
+    .filter(n => Number.isFinite(n) && n > 0);
+
+  const providedMoneyValues = [...providedMoneyValuesFromText, ...providedMoneyValuesFromFields];
+
+  const providedPercentagesFromText = Object.values(answers)
+    .filter(v => typeof v === 'string' && /%/.test(v))
+    .flatMap(v => extractPercentages(v));
+
+  // FIX: mesmo raciocínio acima, mas para campos percentuais (ex.:
+  // usuário responde "10" em vez de "10%" para a multa por atraso).
+  // Presente em prestação de serviços, aluguel, parceria, freelancer,
+  // compra e venda, empreitada, representação comercial e comodato.
+  const PERCENTAGE_HINT_FIELDS = [
+    'multa_atraso', 'multa_atraso_contratado', 'multa_atraso_entrega', 'multa_atraso_pagamento',
+    'multa_atraso_devolucao', 'multa_limite', 'multa_rescisao', 'multa_descumprimento',
+    'multa_desistencia', 'juros_atraso', 'percentual_comissao',
+    'multa_atraso_fixa', 'multa_atraso_fixa_contratado', 'multa_atraso_fixa_entrega',
+    'multa_atraso_fixa_pagamento', 'multa_atraso_fixa_devolucao',
+  ];
+  const providedPercentagesFromFields = PERCENTAGE_HINT_FIELDS
+    .map(f => answers[f])
+    .filter(v => typeof v === 'string' && v.trim() !== '' && !/%/.test(v))
+    .map(v => parseValor(v))
+    .filter(n => Number.isFinite(n) && n > 0);
+
+  const providedPercentages = [...providedPercentagesFromText, ...providedPercentagesFromFields];
+
+  const TOLERANCE = 0.02; // tolerância de arredondamento (centavos)
+  // FIX: além de bater exatamente com um valor informado ou com um percentual
+  // aplicado sobre um valor informado, agora também reconhece MÚLTIPLOS
+  // INTEIROS simples de um valor informado (ex.: caução de "3 meses de
+  // aluguel" = valor do aluguel × 3). Esse tipo de cálculo é comum em
+  // cláusulas de garantia/caução e é uma conta legítima a partir do dado
+  // fornecido — não uma invenção. O limite de 12x cobre os múltiplos usuais
+  // (mensal a anual) sem abrir espaço para valores realmente arbitrários.
+  const MAX_KNOWN_MULTIPLIER = 12;
+  const isKnownAmount = (amount) => {
+    if (providedMoneyValues.some(v => Math.abs(v - amount) <= TOLERANCE)) return true;
+    const isKnownPercentage = providedMoneyValues.some(base =>
+      providedPercentages.some(pct => Math.abs((base * pct / 100) - amount) <= TOLERANCE)
+    );
+    if (isKnownPercentage) return true;
+    return providedMoneyValues.some(base => {
+      if (base <= 0) return false;
+      for (let n = 1; n <= MAX_KNOWN_MULTIPLIER; n++) {
+        if (Math.abs(base * n - amount) <= TOLERANCE) return true;
+      }
+      return false;
+    });
+  };
+
+  if (providedMoneyValues.length > 0) {
+    const foundAmounts = extractMoneyValues(contractText);
+    const invalidAmounts = [...new Set(foundAmounts.filter(a => !isKnownAmount(a)))];
+    invalidAmounts.forEach(amount => {
+      criticalErrors.push(`Valor "R$ ${amount.toFixed(2)}" encontrado no contrato não corresponde a nenhum valor informado pelo usuário nem é calculável a partir dos dados fornecidos.`);
+    });
+  }
+
+  // ── 5b. CRÍTICO — Integridade de prazos (dias/meses/anos/horas) ──
+  // Qualquer prazo numérico mencionado no contrato (ex.: "10 dias",
+  // "30 dias", "48 horas") deve corresponder exatamente a um prazo que
+  // o usuário informou em algum momento da entrevista. Prazos que a IA
+  // "preenche" por conta própria para soar mais completo (prazo de
+  // notificação de rescisão, prazo de resposta a vícios, prazo de
+  // aviso prévio etc.) são exatamente o tipo de dado fictício que não
+  // pode aparecer no contrato final.
+  const providedDeadlines = Object.values(answers)
+    .filter(v => typeof v === 'string')
+    .flatMap(v => extractDeadlines(v));
+
+  // FIX: cláusulas padrão do próprio template (ex.: "DO REAJUSTE ANUAL", que
+  // existe em todo contrato de aluguel independentemente do que o usuário
+  // respondeu) fazem a IA traduzir palavras de periodicidade — "anual",
+  // "semestral", "mensal" etc. — em um número de meses/dias. Isso é uma
+  // tradução linguística padrão e inequívoca, não uma invenção de dado
+  // (assim como "3 meses de aluguel" acima). Por isso, se a palavra de
+  // periodicidade correspondente aparecer em algum lugar das respostas do
+  // usuário OU da conversa completa, o prazo derivado dela é considerado
+  // legítimo, mesmo que o número em si não tenha sido digitado literalmente.
+  const PERIODICITY_TO_DEADLINE = [
+    { words: ['anual', 'anualmente'], num: 12, unit: 'meses' },
+    { words: ['semestral', 'semestralmente'], num: 6, unit: 'meses' },
+    { words: ['trimestral', 'trimestralmente'], num: 3, unit: 'meses' },
+    { words: ['bimestral', 'bimestralmente'], num: 2, unit: 'meses' },
+    { words: ['mensal', 'mensalmente'], num: 1, unit: 'meses' },
+    { words: ['quinzenal', 'quinzenalmente'], num: 15, unit: 'dias' },
+    { words: ['semanal', 'semanalmente'], num: 7, unit: 'dias' },
+  ];
+  const answersText = Object.values(answers)
+    .filter(v => typeof v === 'string')
+    .join(' ')
+    .toLowerCase();
+  const conversationText = (conversationMessages || [])
+    .filter(m => m && typeof m.content === 'string')
+    .map(m => m.content)
+    .join(' ')
+    .toLowerCase();
+  const allKnownText = `${answersText} ${conversationText}`;
+
+  const isKnownDeadline = (num, unit) => {
+    if (providedDeadlines.some(d => d.num === num && d.unit === unit)) return true;
+    return PERIODICITY_TO_DEADLINE.some(({ words, num: n, unit: u }) =>
+      n === num && u === unit && words.some(w => allKnownText.includes(w))
+    );
+  };
+
+  if (providedDeadlines.length > 0) {
+    const foundDeadlines = extractDeadlines(contractText);
+    const seen = new Set();
+    foundDeadlines.forEach(({ num, unit }) => {
+      const key = `${num}|${unit}`;
+      if (seen.has(key)) return;
+      seen.add(key);
+      if (!isKnownDeadline(num, unit)) {
+        criticalErrors.push(`Prazo "${num} ${unit}" encontrado no contrato não corresponde a nenhum prazo informado pelo usuário — possível prazo inventado pela IA.`);
+      }
+    });
+  }
+
+  // ── 6. Aviso — possível verbo em infinitivo não conjugado ────
+  // "ser" e "estar" já são corrigidos automaticamente (fixBareFiniteVerbs),
+  // então, se aparecerem aqui, é porque escaparam da correção — o que
+  // ainda assim vale registrar. Para os demais verbos (eximir, ensejar,
+  // gerar etc.) não há correção automática segura, então apenas avisamos.
+  const SUSPECT_INFINITIVES = /\b(dever|poder|ser|estar|ter|eximir|ensejar|gerar)\b/gi;
+  const foundInfinitives = [...new Set((contractText.match(SUSPECT_INFINITIVES) || []).map(w => w.toLowerCase()))];
+  if (foundInfinitives.length > 0) {
+    errors.push(`Possíveis verbos não conjugados (infinitivo) encontrados: ${foundInfinitives.join(', ')} — revisar conjugação.`);
+  }
+
+  // ── 7. Aviso — possível palavra colada (minúscula+maiúscula sem espaço) ──
+  const textoSemTermos = contractText.replace(/CONTRATANTE|CONTRATADO|CLÁUSULA|LGPD|PIX|CPF|CNPJ/g, '');
+  if (/[a-záéíóúâêîôûãõç]{2,}[A-ZÁÉÍÓÚÂÊÎÔÛÃÕÇ]{2,}/.test(textoSemTermos)) {
+    errors.push('Possível palavra colada (letra minúscula seguida de maiúscula sem espaço) — revisar formatação.');
+  }
+
+  // ── 8. Aviso — espaços duplos ─────────────────────────────────
+  if (/[^\S\n]{2,}/.test(contractText)) {
+    errors.push('Espaços duplos encontrados no texto — revisar formatação.');
+  }
+
+  return { errors, criticalErrors };
+};
+
+// ============================================================
+// generateContractFromConversation
+//
+// NOVA ARQUITETURA: Geração cláusula por cláusula
+//
+// Por que resolve as palavras cortadas/embaralhadas:
+// - Cada chamada tem contexto pequeno (~500 tokens de input)
+// - A IA foca em 1 cláusula — sem "cansaço" do contexto longo
+// - Se uma cláusula falhar, só ela é regenerada, não o contrato todo
+// - Progresso visível: callback onProgress(atual, total, nomeCláusula)
+//
+// VALIDAÇÃO OBRIGATÓRIA ANTES DA ENTREGA:
+// Ao final, o contrato passa por validateContract(). Se qualquer
+// inconsistência CRÍTICA de dados for encontrada (e-mail ou valor
+// monetário que não corresponde ao que o usuário informou), a
+// função lança um erro e o contrato NÃO é entregue ao usuário.
+// ============================================================
+export const generateContractFromConversation = async (messages, contractType, onProgress) => {
+
+  // 1. Extrai respostas (IA semântica — pega correções do usuário)
+  if (onProgress) onProgress(0, 100, 'Extraindo dados da conversa...');
+  const rawAnswers = await extractAnswersFromConversation(messages, contractType);
+  const answers    = formatAnswers(rawAnswers);
+
+  // FIX: sobrescreve os campos multa_atraso_fixa* com a resposta capturada
+  // DIRETO da conversa (ver extractMultaFixaRawAnswers acima), em vez de
+  // confiar no que a extração por IA (extractAnswersFromConversation)
+  // guardou para eles. Isso garante que a condição de tolerância, quando
+  // mencionada pelo usuário, nunca se perca entre a conversa e o dado
+  // usado para montar a cláusula — mesmo que a extração por IA tenha
+  // resumido ou reformulado a resposta original.
+  const multaFixaRaw    = extractMultaFixaRawAnswers(messages);
+  const multaFixaFields = (FIELD_ORDER_BY_CONTRACT[contractType] || []).filter(f => /^multa_atraso_fixa/.test(f));
+  multaFixaRaw.forEach(({ question, answer }) => {
+    if (multaFixaFields.length === 1) {
+      answers[multaFixaFields[0]] = answer;
+    } else if (multaFixaFields.length > 1) {
+      const qLower = question.toLowerCase();
+      const matchedField =
+        multaFixaFields.find(f => qLower.includes('entrega') && f.includes('entrega')) ||
+        multaFixaFields.find(f => qLower.includes('pagamento') && f.includes('pagamento')) ||
+        multaFixaFields.find(f => qLower.includes('devolu') && f.includes('devolu'));
+      if (matchedField) answers[matchedField] = answer;
+    }
+  });
+
+  const multaDiariaRaw    = extractMultaDiariaRawAnswers(messages);
+  const multaDiariaFields = (FIELD_ORDER_BY_CONTRACT[contractType] || []).filter(f => /^multa_atraso_(entrega|pagamento|devolucao)$/.test(f));
+  multaDiariaRaw.forEach(({ question, answer }) => {
+    if (multaDiariaFields.length === 1) {
+      answers[multaDiariaFields[0]] = answer;
+    } else if (multaDiariaFields.length > 1) {
+      const qLower = question.toLowerCase();
+      const matchedField =
+        multaDiariaFields.find(f => qLower.includes('entrega') && f.includes('entrega')) ||
+        multaDiariaFields.find(f => qLower.includes('pagamento') && f.includes('pagamento')) ||
+        multaDiariaFields.find(f => qLower.includes('devolu') && f.includes('devolu'));
+      if (matchedField) answers[matchedField] = answer;
+    }
+  });
+
+  // FIX: mesma sobrescrita determinística acima, agora para a resposta da
+  // pergunta COMPOSTA de multa por atraso (taxa diária + limite máximo
+  // numa pergunta só), usada em prestação de serviços ('multa_atraso_contratado')
+  // e empreitada ('multa_atraso'). A resposta bruta é guardada num campo
+  // interno auxiliar (não faz parte do template) só para alimentar a frase
+  // determinística montada mais abaixo — os campos multa_atraso_contratado/
+  // multa_atraso/multa_limite usados no template continuam vindo da
+  // extração por IA normalmente.
+  const multaAtrasoLimiteRaw = extractMultaAtrasoLimiteRawAnswers(messages);
+  const multaAtrasoLimiteRawAnswer = multaAtrasoLimiteRaw.length > 0 ? multaAtrasoLimiteRaw[0].answer : '';
+
+  // 2. Monta metadados
+  const selectedTemplate = CONTRACT_TEMPLATES[contractType] || CONTRACT_TEMPLATES['prestacao-servicos'];
+  const contractTitle    = selectedTemplate.title.toUpperCase();
+  const legalRef         = LEGAL_REF[contractType] || 'segundo o Código Civil Brasileiro';
+  const hoje             = new Date();
+  const dataAtual        = hoje.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
+  const isOnline         = answers.modalidade_assinatura?.toLowerCase().includes('online');
+
   const dataBlock = Object.entries(answers)
     .filter(([, v]) => v && v.trim() !== '')
     .map(([k, v]) => `• ${k}: ${v}`)
     .join('\n');
-  const clausulasList = (CONTRACT_CLAUSES[contractType] || []).map(c => `   - ${c}`).join('\n');
+
   const foroInstrucao = isOnline
-    ? `A assinatura será realizada de forma ONLINE/DIGITAL. Na cláusula de foro de eleição, informe que as partes elegem o foro do domicílio do réu.`
-    : `A assinatura será PRESENCIAL na cidade de ${answers.cidade || ''}, Estado do ${answers.estado || ''}. Use esses dados na cláusula de eleição de foro.`;
-  const prompt = `Você é um Advogado Sênior especialista em Direito Civil e Empresarial Brasileiro. Elabore o instrumento contratual abaixo com rigor técnico-jurídico.
+    ? 'Assinatura ONLINE/DIGITAL. Na cláusula de foro, as partes elegem o foro do domicílio do réu.'
+    : `Assinatura PRESENCIAL na cidade de ${answers.cidade || ''}, estado ${answers.estado || ''}. Use exatamente esses dados na cláusula de foro.`;
 
-⚠️ DATA OBRIGATÓRIA: A data de assinatura deste contrato é ${dataAtual}. USE EXATAMENTE ESTA DATA.
-
-Com base nas informações abaixo, redija um ${contractTitle} completo, ${legalRef}.
-
-DADOS DO CONTRATO:
-${dataBlock}
-
-TEMPLATE DE REFERÊNCIA:
-${filledTemplate}
-
-INSTRUÇÕES OBRIGATÓRIAS:
-1. USE SOMENTE os dados fornecidos — JAMAIS invente valores
-2. NÃO utilize placeholders — substitua TUDO pelos valores reais
-3. CADA CLÁUSULA deve ter cabeçalho em NEGRITO e CAIXA ALTA, parágrafos numerados (§1º, §2º...)
-4. Inclua LGPD, Anticorrupção e Força Maior
-5. NÃO inclua seção de assinaturas ou testemunhas
-6. A frase de encerramento: "E, por estarem assim justas e contratadas, as partes firmam o presente instrumento."
-7. ${foroInstrucao}
-
-ESTRUTURA OBRIGATÓRIA:
-${clausulasList}
-
-REDIJA O CONTRATO COMPLETO AGORA.`;
-
-  const systemMessages = [
-    { role: 'system', content: 'Você é um Advogado Sênior especialista em Direito Civil e Empresarial com 20+ anos de experiência. Redija contratos profissionais, extensos e juridicamente impecáveis. NUNCA use placeholders. NUNCA invente dados. NUNCA mencione testemunhas.' },
-    { role: 'user', content: prompt }
-  ];
-
-  let contractResponse;
-  if (isLocalDev) {
-    contractResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}` },
-      body: JSON.stringify({ model: API_CONFIG.model, messages: systemMessages, temperature: 0.2, max_tokens: 8000, stream: true }),
-    });
-  } else {
-    contractResponse = await fetch('/api/generate-contract', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: API_CONFIG.model, messages: systemMessages, temperature: 0.2, max_tokens: 8000 }),
-    });
-  }
-
-  if (!contractResponse.ok) {
-    const err = await contractResponse.json().catch(() => ({ error: 'Erro desconhecido' }));
-    throw new Error(err.error || 'Erro ao gerar contrato');
-  }
-
-  const reader = contractResponse.body.getReader();
-  const decoder = new TextDecoder();
-  let contractText = '';
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    const chunk = decoder.decode(value, { stream: true });
-    for (const line of chunk.split('\n')) {
-      const t = line.trim();
-      if (!t || t === 'data: [DONE]' || !t.startsWith('data: ')) continue;
-      try {
-        const json = JSON.parse(t.slice(6));
-        const delta = json.choices?.[0]?.delta?.content;
-        if (delta) contractText += delta;
-      } catch (_e) { /* ignora linha inválida */ }
+  // FIX: monta de forma determinística (sem IA) a frase que descreve um
+  // prazo de tolerância/carência de multa, quando o usuário mencionou um
+  // em qualquer campo de multa fixa (multa_atraso_fixa*, presente em
+  // prestação de serviços, empreitada, freelancer, compra e venda e
+  // comodato). Essa frase é imposta como texto literal obrigatório na
+  // cláusula de multas (ver generateClause) — ver extractToleranceDays
+  // para o porquê disso não ficar a cargo da IA.
+  let multaToleranciaSentence = '';
+  for (const [field, value] of Object.entries(answers)) {
+    if (/^multa_atraso_fixa/.test(field) && typeof value === 'string') {
+      const days = extractToleranceDays(value);
+      if (days) {
+        multaToleranciaSentence = `A multa fixa mencionada nesta cláusula somente será exigível caso o atraso ultrapasse ${days} dias, contados a partir do evento que originou a obrigação (ex.: a entrega do bem ou do serviço); durante esse prazo de tolerância, nenhuma penalidade incidirá.`;
+        break;
+      }
     }
   }
 
-  let contract = contractText;
-  contract = contract.replace(/\[[A-ZÁÉÍÓÚÂÊÎÔÛÃÕÇ\s_]+\]/gi, '');
-  contract = contract.replace(/\{[^}]+\}/g, '');
-  Object.keys(answers).forEach(key => {
-    const value = answers[key] || '';
-    [new RegExp(`{${key}}`, 'gi'), new RegExp(`\\[${key}\\]`, 'gi')]
-      .forEach(p => { contract = contract.replace(p, value); });
-  });
-  return contract;
+  // FIX: assim como a tolerância acima, a instrução solta pedindo pra IA
+  // tratar multa fixa e multa diária como obrigações separadas
+  // (multaExtra, em generateClause) se mostrou insuficiente em testes
+  // reais — a multa diária foi omitida por completo em mais de uma
+  // geração, mesmo com o dado correto disponível em "DADOS DO CONTRATO".
+  // Por isso, quando existe uma multa diária (extraída deterministicamente
+  // da conversa — ver extractMultaDiariaRawAnswers), a frase que a
+  // menciona também é montada aqui em código e imposta como texto literal
+  // obrigatório na cláusula de multas.
+  const NEGATIVE_MULTA_PATTERN = /(n[ãa]o\s*(h[áa]|haver[áa]|tem|existe))|sem\s*multa|nenhuma?/i;
+  let multaDiariaSentence = '';
+  for (const [field, value] of Object.entries(answers)) {
+    if (/^multa_atraso_(entrega|pagamento|devolucao)$/.test(field) && typeof value === 'string') {
+      if (NEGATIVE_MULTA_PATTERN.test(value)) continue;
+      const percentMatch = value.match(/\d+(?:[.,]\d+)?\s*%/);
+      const moneyMatch    = value.match(/R\$\s*[\d.,]+/i);
+      const valorExtraido = (percentMatch && percentMatch[0]) || (moneyMatch && moneyMatch[0]);
+      if (valorExtraido) {
+        multaDiariaSentence = `Além da multa fixa mencionada nesta cláusula, incidirá também uma multa diária de ${valorExtraido} sobre o valor da venda, por cada dia de atraso${multaToleranciaSentence ? ', contada a partir do término do prazo de tolerância aqui estabelecido' : ''}.`;
+        break;
+      }
+    }
+  }
+
+  // FIX: mesma lógica das duas frases anteriores, agora para a pergunta
+  // composta de prestação de serviços e empreitada (taxa diária + limite
+  // máximo numa resposta só). Aplicada por precaução — essa estrutura
+  // nunca mostrou o mesmo bug em testes reais, mas segue o mesmo
+  // raciocínio: não depender só da instrução solta no prompt.
+  let multaAtrasoLimiteSentence = '';
+  if (multaAtrasoLimiteRawAnswer && !NEGATIVE_MULTA_PATTERN.test(multaAtrasoLimiteRawAnswer)) {
+    const percentuais = multaAtrasoLimiteRawAnswer.match(/\d+(?:[.,]\d+)?\s*%/g) || [];
+    if (percentuais.length >= 2) {
+      multaAtrasoLimiteSentence = `Incidirá multa por atraso de ${percentuais[0]} ao dia, limitada a um total de ${percentuais[1]} sobre o valor do contrato.`;
+    } else if (percentuais.length === 1) {
+      multaAtrasoLimiteSentence = `Incidirá multa por atraso de ${percentuais[0]} ao dia.`;
+    }
+  }
+
+  const clauses    = CONTRACT_CLAUSES[contractType] || [];
+  const totalSteps = clauses.length + 2; // +2: extração e montagem final
+
+  // 3. Monta o cabeçalho do contrato (determinístico — sem IA)
+  const header = buildHeader(contractTitle, answers, selectedTemplate, dataAtual);
+
+  // 4. Gera cada cláusula individualmente
+  const clauseTexts = [];
+  for (let i = 0; i < clauses.length; i++) {
+    const clausula    = clauses[i];
+    const numClausula = i + 1;
+    const isLast      = i === clauses.length - 1;
+
+    if (onProgress) {
+      const pct = Math.round(((i + 1) / totalSteps) * 90);
+      onProgress(pct, 100, `Gerando ${clausula.split('—')[0].trim()}...`);
+    }
+
+    console.log(`[generateContract] Gerando cláusula ${numClausula}/${clauses.length}: ${clausula}`);
+
+    try {
+      const clauseText = await generateClause(
+        clausula, i, numClausula,
+        dataBlock, contractTitle, legalRef, dataAtual,
+        foroInstrucao, isLast, multaToleranciaSentence, multaDiariaSentence, multaAtrasoLimiteSentence
+      );
+      clauseTexts.push(clauseText);
+    } catch (err) {
+      console.error(`[generateContract] Cláusula ${numClausula} falhou:`, err.message);
+      // Insere placeholder para não quebrar a numeração
+      clauseTexts.push(`${clausula}\n\n§1º Esta cláusula será complementada conforme acordado entre as partes.\n\n§2º As disposições gerais do presente instrumento se aplicam integralmente.`);
+    }
+  }
+
+  if (onProgress) onProgress(95, 100, 'Montando contrato final...');
+
+  // 5. Monta o contrato completo
+  let fullContract = header + '\n\n' + clauseTexts.join('\n\n');
+
+  // 6. Pós-processamento
+  fullContract = fullContract.replace(/\[[A-ZÁÉÍÓÚÂÊÎÔÛÃÕÇ\s_]+\]/gi, '');
+  fullContract = fullContract.replace(/\{[^}]+\}/g, '');
+  fullContract = preprocessContractText(fullContract);
+  // Corrige automaticamente "ser"/"estar" usados no infinitivo como
+  // verbo principal (ex.: "Este foro ser exclusivo" → "...será exclusivo")
+  fullContract = fixBareFiniteVerbs(fullContract);
+
+  // 7. Validação final — OBRIGATÓRIA antes da entrega
+  const { errors: validationErrors, criticalErrors } = validateContract(fullContract, answers, contractType, messages);
+  if (validationErrors.length > 0) {
+    console.warn('[generateContract] Avisos de validação:', validationErrors);
+  }
+  if (criticalErrors.length > 0) {
+    console.error('[generateContract] Erros críticos de integridade — entrega bloqueada:', criticalErrors);
+    throw new Error(
+      'O contrato não pôde ser entregue porque foram encontradas inconsistências nos dados ' +
+      '(informações diferentes das fornecidas por você):\n- ' + criticalErrors.join('\n- ') +
+      '\n\nPor favor, tente gerar o contrato novamente.'
+    );
+  }
+
+  // 8. Signatários
+  const fields      = PARTY_NAME_FIELDS[contractType] || ['contratante_nome', 'contratado_nome'];
+  const signerNames = fields.map(f => answers[f] || '').filter(Boolean);
+
+  if (onProgress) onProgress(100, 100, 'Contrato pronto!');
+
+  return { contract: fullContract, signerNames, validationErrors };
+};
+
+// ============================================================
+// buildHeader — monta o cabeçalho do contrato em código puro
+// Usa APENAS campos de identificação das partes (nome, CPF,
+// telefone, email) — NÃO inclui o template completo para não
+// contaminar o contexto da IA com dados que ela vai repetir.
+// ============================================================
+const buildHeader = (contractTitle, answers, selectedTemplate, dataAtual) => {
+  // Campos que identificam as partes — sempre vão no cabeçalho
+  const IDENTITY_FIELDS = [
+    'contratante_nome', 'contratante_cpf_cnpj', 'contratante_telefone', 'contratante_email',
+    'contratado_nome',  'contratado_cpf_cnpj',  'contratado_telefone',  'contratado_email',
+    'locador_nome',     'locador_cpf_cnpj',     'locador_telefone',     'locador_email',     'locador_estado_civil',
+    'locatario_nome',   'locatario_cpf_cnpj',   'locatario_telefone',   'locatario_email',   'locatario_estado_civil',
+    'parte_a_nome',     'parte_a_cpf_cnpj',     'parte_a_telefone',     'parte_a_email',
+    'parte_b_nome',     'parte_b_cpf_cnpj',     'parte_b_telefone',     'parte_b_email',
+    'revelador_nome',   'revelador_cpf_cnpj',   'revelador_telefone',   'revelador_email',
+    'receptor_nome',    'receptor_cpf_cnpj',    'receptor_telefone',    'receptor_email',
+    'freelancer_nome',  'freelancer_cpf',        'freelancer_telefone',  'freelancer_email',
+    'vendedor_nome',    'vendedor_cpf_cnpj',    'vendedor_telefone',    'vendedor_email',
+    'comprador_nome',   'comprador_cpf_cnpj',   'comprador_telefone',   'comprador_email',
+    'empreiteiro_nome', 'empreiteiro_cpf_cnpj', 'empreiteiro_telefone', 'empreiteiro_email',
+    'socio_a_nome',     'socio_a_cpf',          'socio_a_telefone',     'socio_a_email',
+    'socio_b_nome',     'socio_b_cpf',          'socio_b_telefone',     'socio_b_email',
+    'representada_nome','representada_cnpj',     'representada_telefone','representada_email',
+    'representante_nome','representante_cpf_cnpj','representante_telefone','representante_email',
+    'comodante_nome',   'comodante_cpf_cnpj',   'comodante_telefone',   'comodante_email',
+    'comodatario_nome', 'comodatario_cpf_cnpj', 'comodatario_telefone', 'comodatario_email',
+  ];
+
+  // Monta as linhas do cabeçalho apenas com campos de identidade
+  const lines = IDENTITY_FIELDS
+    .filter(field => answers[field] && answers[field].trim() !== '')
+    .map(field => {
+      // Converte o nome do campo para label legível
+      const label = field
+        .replace(/_nome$/, '')
+        .replace(/_cpf_cnpj$/, ' CPF/CNPJ')
+        .replace(/_cpf$/, ' CPF')
+        .replace(/_cnpj$/, ' CNPJ')
+        .replace(/_telefone$/, ' TELEFONE')
+        .replace(/_email$/, ' EMAIL')
+        .replace(/_estado_civil$/, ' ESTADO CIVIL')
+        .replace(/_/g, ' ')
+        .toUpperCase()
+        .trim();
+      return `${label}: ${answers[field]}`;
+    });
+
+  return `${contractTitle}\n\nDATA DE ASSINATURA: ${dataAtual}\n\n${lines.join('\n')}`;
 };
