@@ -376,8 +376,8 @@ export default function AdminDashboard() {
           .hide-mobile { display:none!important }
           .mobile-full { width:100%!important; margin-left:0!important }
           .g2  { grid-template-columns:1fr!important }
-          .g3  { grid-template-columns:1fr 1fr!important }
-          .g5  { grid-template-columns:1fr 1fr!important }
+          .g3  { grid-template-columns:1fr!important }
+          .g5  { grid-template-columns:1fr!important }
           .gpie{ grid-template-columns:1fr!important }
         }
         .show-mob { display:flex }
@@ -716,8 +716,8 @@ export default function AdminDashboard() {
           .show-mob { display:flex!important }
           main  { padding-bottom:80px!important }
           .g2   { grid-template-columns:1fr!important }
-          .g3   { grid-template-columns:1fr 1fr!important }
-          .g5   { grid-template-columns:1fr 1fr!important }
+          .g3   { grid-template-columns:1fr!important }
+          .g5   { grid-template-columns:1fr!important }
           .gpie { grid-template-columns:1fr!important }
         }
         @media(min-width:769px){ .show-mob { display:none!important } }
