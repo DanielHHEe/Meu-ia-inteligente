@@ -168,7 +168,6 @@ const WhatsAppButton = () => {
       whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}
       className="fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 rounded-full"
       style={{ background: "linear-gradient(135deg, #25d366, #128c7e)", boxShadow: "0 4px 24px rgba(37,211,102,0.45)" }}>
-      <span className="absolute inset-0 rounded-full animate-ping" style={{ background: "rgba(37,211,102,0.3)" }} />
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" className="w-7 h-7 relative z-10" fill="white">
         <path d="M16 2C8.268 2 2 8.268 2 16c0 2.478.67 4.8 1.832 6.793L2 30l7.418-1.807A13.94 13.94 0 0 0 16 30c7.732 0 14-6.268 14-14S23.732 2 16 2zm0 25.6a11.54 11.54 0 0 1-5.885-1.608l-.422-.25-4.403 1.072 1.102-4.288-.276-.44A11.56 11.56 0 0 1 4.4 16C4.4 9.59 9.59 4.4 16 4.4S27.6 9.59 27.6 16 22.41 27.6 16 27.6zm6.34-8.62c-.347-.174-2.055-1.014-2.374-1.13-.32-.116-.552-.174-.784.174-.232.347-.9 1.13-1.103 1.362-.203.232-.406.26-.753.087-.347-.174-1.466-.54-2.792-1.722-1.032-.92-1.728-2.055-1.931-2.402-.203-.347-.022-.535.152-.708.157-.156.347-.406.52-.61.174-.203.232-.347.347-.579.116-.232.058-.435-.029-.61-.087-.174-.784-1.89-1.074-2.588-.283-.68-.57-.587-.784-.598l-.667-.012c-.232 0-.61.087-.928.435-.319.347-1.218 1.19-1.218 2.9s1.247 3.364 1.42 3.596c.174.232 2.453 3.745 5.944 5.252.831.359 1.48.573 1.985.733.834.265 1.593.228 2.193.138.669-.1 2.055-.84 2.345-1.651.29-.812.29-1.508.203-1.651-.086-.145-.318-.232-.666-.406z" />
       </svg>
@@ -205,7 +204,7 @@ const Header = ({ onCreateContract, onOpenAuth }) => {
               src="/contrati.png"
               alt="Contratify"
               whileHover={{ scale: 1.05 }}
-              className="h-12 md:h-14 lg:h-16 w-auto object-contain"
+              className="h-16 md:h-14 lg:h-16 w-auto object-contain"
             />
           </a>
           <nav className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">

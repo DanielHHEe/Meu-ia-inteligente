@@ -67,6 +67,7 @@ const I = {
   eye:     ['M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z','M12 9a3 3 0 100 6 3 3 0 000-6z'],
   eyeOff:  ['M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24','M1 1l22 22'],
   calendar:['M1 4h22v16H1z','M16 2v4','M8 2v4','M1 10h22'],
+  tag:     ['M20.59 13.41L11 3.83V3H4v7h.83l9.58 9.59a2 2 0 002.83 0l3.35-3.35a2 2 0 000-2.83z','M7 7.01l.01-.011'],
 };
 
 const DateFilter = ({ from, to, onFrom, onTo, onClear, th }) => (
@@ -125,8 +126,8 @@ export default function AdminDashboard() {
   const [cT, _setCT] = useState(() => lsGet('adm_cT', today));
   const [pF, _setPF] = useState(() => lsGet('adm_pF', first));
   const [pT, _setPT] = useState(() => lsGet('adm_pT', today));
-  const [uF, _setUF] = useState(() => lsGet('adm_uF', ''));
-  const [uT, _setUT] = useState(() => lsGet('adm_uT', ''));
+  const [tF, _setTF] = useState(() => lsGet('adm_tF', first));
+  const [tT, _setTT] = useState(() => lsGet('adm_tT', today));
 
   const setOF = v => { _setOF(v); lsSet('adm_oF', v); };
   const setOT = v => { _setOT(v); lsSet('adm_oT', v); };
@@ -134,8 +135,8 @@ export default function AdminDashboard() {
   const setCT = v => { _setCT(v); lsSet('adm_cT', v); };
   const setPF = v => { _setPF(v); lsSet('adm_pF', v); };
   const setPT = v => { _setPT(v); lsSet('adm_pT', v); };
-  const setUF = v => { _setUF(v); lsSet('adm_uF', v); };
-  const setUT = v => { _setUT(v); lsSet('adm_uT', v); };
+  const setTF = v => { _setTF(v); lsSet('adm_tF', v); };
+  const setTT = v => { _setTT(v); lsSet('adm_tT', v); };
 
   const th = {
     bg:      dark ? '#0d1117' : '#f4f4f5',
@@ -194,6 +195,14 @@ export default function AdminDashboard() {
   const fOP = payments.filter(p  => inRange(p.paid_at,    oF, oT));
   const fC  = contracts.filter(c => inRange(c.created_at, cF, cT));
   const fP  = payments.filter(p  => inRange(p.paid_at,    pF, pT));
+  const fT  = contracts.filter(c => inRange(c.created_at, tF, tT));
+
+  const typesFull = (() => {
+    const d = {};
+    fT.forEach(c => { const n = CONTRACT_NAMES[c.contract_type]||c.contract_type; d[n]=(d[n]||0)+1; });
+    return Object.entries(d).sort((a,b)=>b[1]-a[1]);
+  })();
+  const typesTotal = fT.length;
 
   const totalC = fOC.length;
   const paidC  = fOC.filter(c => c.is_paid).length;
@@ -252,17 +261,17 @@ export default function AdminDashboard() {
     const Ch = window.Chart;
     const accentLine = dark ? '#2f81f7' : '#3b82f6';
     const accentFill = dark ? 'rgba(47,129,247,0.07)' : 'rgba(59,130,246,0.06)';
-    const barBg   = dark ? 'rgba(47,129,247,0.15)' : 'rgba(59,130,246,0.1)';
-    const barBord = dark ? '#2f81f7' : '#93c5fd';
+    const barColor = dark ? '#2f81f7' : '#3b82f6';
+    const barHover = dark ? '#58a6ff' : '#60a5fa';
     setTimeout(()=>{
       if(revRef.current){
         if(revInst.current) revInst.current.destroy();
-        revInst.current = new Ch(revRef.current,{ type:'line', data:{ labels:revByDay.labels, datasets:[{ data:revByDay.data, borderColor:accentLine, backgroundColor:accentFill, borderWidth:2, fill:true, tension:0.4, pointRadius:3, pointBackgroundColor:accentLine, pointBorderColor:'transparent' }]}, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{ backgroundColor:dark?'#1c2128':'#fff', titleColor:th.text, bodyColor:th.mid, borderColor:th.border, borderWidth:1, callbacks:{ label:ctx=>`R$ ${ctx.parsed.y.toFixed(2)}` } } }, scales:{ x:{ grid:{color:gc}, ticks:{color:tc,font:{size:11}}, border:{display:false} }, y:{ grid:{color:gc}, ticks:{color:tc,font:{size:11},callback:v=>`R$${v}`}, border:{display:false} } } } });
+        revInst.current = new Ch(revRef.current,{ type:'line', data:{ labels:revByDay.labels, datasets:[{ data:revByDay.data, borderColor:accentLine, backgroundColor:accentFill, borderWidth:2, fill:true, tension:0.4, pointRadius:3, pointBackgroundColor:accentLine, pointBorderColor:'transparent' }]}, options:{ responsive:true, maintainAspectRatio:false, interaction:{ mode:'index', intersect:false }, plugins:{ legend:{display:false}, tooltip:{ enabled:true, backgroundColor:dark?'#1c2128':'#fff', titleColor:th.text, bodyColor:th.mid, borderColor:th.border, borderWidth:1, callbacks:{ label:ctx=>`R$ ${ctx.parsed.y.toFixed(2)}` } } }, scales:{ x:{ grid:{color:gc}, ticks:{color:tc,font:{size:11}}, border:{display:false} }, y:{ grid:{color:gc}, ticks:{color:tc,font:{size:11},callback:v=>`R$${v}`}, border:{display:false} } } } });
       }
       if(barRef.current){
         if(barInst.current) barInst.current.destroy();
         // CORREÇÃO: eixo Y forçado a inteiros — não existe "meio contrato"
-        barInst.current = new Ch(barRef.current,{ type:'line', data:{ labels:cByDay.labels, datasets:[{ data:cByDay.data, borderColor:barBord, backgroundColor:barBg, borderWidth:2, fill:true, tension:0.4, pointRadius:3, pointBackgroundColor:barBord, pointBorderColor:'transparent' }]}, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{ backgroundColor:dark?'#1c2128':'#fff', titleColor:th.text, bodyColor:th.mid, borderColor:th.border, borderWidth:1, callbacks:{ label:ctx=>`${ctx.parsed.y} contrato${ctx.parsed.y!==1?'s':''}` } } }, scales:{ x:{ grid:{color:gc}, ticks:{color:tc,font:{size:11}}, border:{display:false} }, y:{ grid:{color:gc}, ticks:{color:tc,font:{size:11},stepSize:1,precision:0,callback:v=>Number.isInteger(v)?v:null}, border:{display:false}, min:0 } } } });
+        barInst.current = new Ch(barRef.current,{ type:'bar', data:{ labels:cByDay.labels, datasets:[{ data:cByDay.data, backgroundColor:barColor, hoverBackgroundColor:barHover, borderRadius:4, maxBarThickness:26 }]}, options:{ responsive:true, maintainAspectRatio:false, layout:{ padding:{ top:6, bottom:4 } }, interaction:{ mode:'index', intersect:false }, plugins:{ legend:{display:false}, tooltip:{ enabled:true, backgroundColor:dark?'#1c2128':'#fff', titleColor:th.text, bodyColor:th.mid, borderColor:th.border, borderWidth:1, callbacks:{ label:ctx=>`${ctx.parsed.y} contrato${ctx.parsed.y!==1?'s':''}` } } }, scales:{ x:{ grid:{display:false}, ticks:{color:tc,font:{size:11}}, border:{display:false} }, y:{ grid:{color:gc}, ticks:{color:tc,font:{size:11},stepSize:1,precision:0,callback:v=>Number.isInteger(v)?v:null}, border:{display:false}, min:0, suggestedMax: Math.max(...cByDay.data, 1) + 1 } } } });
       }
       if(pieRef.current && byType.length > 0){
         if(pieInst.current) pieInst.current.destroy();
@@ -281,6 +290,7 @@ export default function AdminDashboard() {
   const navItems = [
     { id:'overview',  label:'Visão Geral', icon:I.grid  },
     { id:'contracts', label:'Contratos',   icon:I.file  },
+    { id:'types',     label:'Tipos',       icon:I.tag   },
     { id:'payments',  label:'Pagamentos',  icon:I.card  },
     { id:'users',     label:'Usuários',    icon:I.users },
   ];
@@ -289,14 +299,37 @@ export default function AdminDashboard() {
   const avTxt = ['#52525b','#1d4ed8','#be185d','#065f46','#92400e'];
   const initials = (name,email) => name ? name.split(' ').slice(0,2).map(n=>n[0]).join('').toUpperCase() : (email||'--').slice(0,2).toUpperCase();
 
-  const filtUsers = users.filter(u =>
-    (!search || u.email?.toLowerCase().includes(search.toLowerCase()) || u.full_name?.toLowerCase().includes(search.toLowerCase())) &&
-    inRange(u.created_at, uF, uT)
+  const profileByUid = new Map(users.map(u => [u.id, u]));
+  const allUserIds = [...new Set([
+    ...contracts.map(c => c.user_id),
+    ...payments.map(p => p.user_id),
+    ...users.map(u => u.id),
+  ].filter(Boolean))];
+  const mergedUsers = allUserIds.map(uid => {
+    const profile = profileByUid.get(uid);
+    const email = profile?.email
+      || contracts.find(c => c.user_id === uid)?.user_email
+      || payments.find(p => p.user_id === uid)?.user_email
+      || '—';
+    return {
+      id: uid,
+      email,
+      full_name: profile?.full_name,
+      created_at: profile?.created_at,
+      last_sign_in_at: profile?.last_sign_in_at,
+      total_contracts: profile?.total_contracts ?? contracts.filter(c => c.user_id === uid).length,
+      paid_contracts:  profile?.paid_contracts  ?? contracts.filter(c => c.user_id === uid && c.is_paid).length,
+      total_spent:     profile?.total_spent     ?? payments.filter(p => p.user_id === uid).reduce((s,p)=>s+Number(p.amount||0),0),
+    };
+  });
+
+  const filtUsers = mergedUsers.filter(u =>
+    (!search || u.email?.toLowerCase().includes(search.toLowerCase()) || u.full_name?.toLowerCase().includes(search.toLowerCase()))
   );
-  const usersGen  = [...new Map(contracts.filter(c=>inRange(c.created_at,uF,uT)).map(c=>[c.user_id,c.user_email])).entries()]
-    .map(([uid,email]) => ({ uid, email, count:contracts.filter(c=>c.user_id===uid&&inRange(c.created_at,uF,uT)).length }));
-  const usersPaid = [...new Map(payments.filter(p=>inRange(p.paid_at,uF,uT)).map(p=>[p.user_id,p.user_email])).entries()]
-    .map(([uid,email]) => ({ uid, email, count:payments.filter(p=>p.user_id===uid&&inRange(p.paid_at,uF,uT)).length, total:payments.filter(p=>p.user_id===uid&&inRange(p.paid_at,uF,uT)).reduce((s,p)=>s+Number(p.amount||0),0) }));
+  const usersGen  = [...new Map(contracts.map(c=>[c.user_id,c.user_email])).entries()]
+    .map(([uid,email]) => ({ uid, email, count:contracts.filter(c=>c.user_id===uid).length }));
+  const usersPaid = [...new Map(payments.map(p=>[p.user_id,p.user_email])).entries()]
+    .map(([uid,email]) => ({ uid, email, count:payments.filter(p=>p.user_id===uid).length, total:payments.filter(p=>p.user_id===uid).reduce((s,p)=>s+Number(p.amount||0),0) }));
 
   const Card = ({ children, style={} }) => (
     <div style={{ background:th.card, border:`1px solid ${th.border}`, borderRadius:12, ...style }}>{children}</div>
@@ -335,20 +368,20 @@ export default function AdminDashboard() {
         <div style={{ width:32, height:32, borderRadius:'50%', background:avBg[ci], display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
           <span style={{ fontSize:11, fontWeight:700, color:avTxt[ci] }}>{initials(name, email)}</span>
         </div>
-        <p style={{ flex:1, fontSize:12, color:th.text, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', minWidth:0 }}>{email}</p>
+        <p style={{ flex:1, fontSize:12, color:th.text, wordBreak:'break-word', minWidth:0 }}>{email}</p>
         {right}
       </div>
     );
   };
 
-  const StatCard = ({ label, value, sub, icon }) => (
+  const StatCard = ({ label, value, sub, icon, valueColor }) => (
     <div style={{ background:th.card, border:`1px solid ${th.border}`, borderRadius:12, padding:'18px 20px 16px' }}>
       <div style={{ marginBottom:14 }}>
         <div style={{ width:32, height:32, borderRadius:8, background:th.input, border:`1px solid ${th.border}`, display:'flex', alignItems:'center', justifyContent:'center' }}>
           <Ic d={icon} size={15} color={th.mid} sw={1.5} />
         </div>
       </div>
-      <p style={{ fontSize:20, fontWeight:600, color:th.text, letterSpacing:'-0.02em', lineHeight:1, marginBottom:6 }}>
+      <p style={{ fontSize:20, fontWeight:600, color:valueColor||th.text, letterSpacing:'-0.02em', lineHeight:1, marginBottom:6 }}>
         {hidden ? <span style={{ letterSpacing:3, fontSize:14, color:th.muted }}>••••••</span> : value}
       </p>
       <p style={{ fontSize:12, color:th.text, fontWeight:500, marginBottom:3 }}>{label}</p>
@@ -476,9 +509,9 @@ export default function AdminDashboard() {
             <DateFilter from={oF} to={oT} onFrom={setOF} onTo={setOT} onClear={()=>clearTo(setOF,setOT)} th={th} />
 
             <div style={{ display:'grid', gridTemplateColumns:'repeat(5,1fr)', gap:12, marginBottom:20 }} className="g5">
+              <StatCard label="Faturamento"        value={mask(fmtCurrency(totalR))}   sub={`Ticket médio ${mask(fmtCurrency(avgT))}`}    icon={I.dollar} valueColor={th.green} />
               <StatCard label="Contratos gerados" value={fmtNum(totalC)}               sub={`${conv}% convertidos`}                      icon={I.file}  />
               <StatCard label="Contratos pagos"   value={fmtNum(paidC)}                sub={`de ${fmtNum(totalC)} gerados`}               icon={I.check} />
-              <StatCard label="Faturamento"        value={mask(fmtCurrency(totalR))}   sub={`Ticket médio ${mask(fmtCurrency(avgT))}`}    icon={I.dollar}/>
               <StatCard label="Usuários únicos"   value={maskNum(fmtNum(uniqU))}       sub="com contratos no período"                     icon={I.user}  />
               <StatCard label="Plano premium"     value={maskNum(fmtNum(fOC.filter(c=>c.plan==='premium').length))} sub={`Padrão: ${maskNum(fmtNum(fOC.filter(c=>c.plan!=='premium').length))}`} icon={I.star} />
             </div>
@@ -561,7 +594,7 @@ export default function AdminDashboard() {
                       <tbody>
                         {fC.map((c,i) => (
                           <tr key={c.id} style={{ background:i%2===0?th.rowAlt:th.row }}>
-                            <TD style={{ color:th.text, maxWidth:200, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{c.user_email}</TD>
+                            <TD style={{ color:th.text, wordBreak:'break-word' }}>{c.user_email}</TD>
                             <TD style={{ whiteSpace:'nowrap' }}>{CONTRACT_NAMES[c.contract_type]||c.contract_type}</TD>
                             <td style={{ padding:'12px 16px', borderBottom:`1px solid ${th.sub}` }}><Badge v={c.plan==='premium'?'p':'n'}>{c.plan==='premium'?'Premium':'Padrão'}</Badge></td>
                             <td style={{ padding:'12px 16px', borderBottom:`1px solid ${th.sub}` }}><Badge v={c.is_paid?'g':'a'}>{c.is_paid?'Pago':'Pendente'}</Badge></td>
@@ -576,12 +609,42 @@ export default function AdminDashboard() {
             </Card>
           </>)}
 
+          {/* ── TIPOS DE CONTRATO ── */}
+          {section==='types' && (<>
+            <DateFilter from={tF} to={tT} onFrom={setTF} onTo={setTT} onClear={()=>clearTo(setTF,setTT)} th={th} />
+            <Card>
+              <SectionHeader title="Tipos de contratos gerados" count={`${fmtNum(typesTotal)} contratos`} />
+              {typesFull.length === 0
+                ? <div style={{ padding:60, textAlign:'center', color:th.muted, fontSize:13 }}>Nenhum contrato no período</div>
+                : <div style={{ padding:'18px 20px', display:'flex', flexDirection:'column', gap:16 }}>
+                    {typesFull.map(([name,count],i) => {
+                      const pct = typesTotal>0 ? (count/typesTotal*100) : 0;
+                      return (
+                        <div key={name}>
+                          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:7, gap:8 }}>
+                            <div style={{ display:'flex', alignItems:'center', gap:8, minWidth:0 }}>
+                              <div style={{ width:8, height:8, borderRadius:2, background:CHART_COLORS[i%CHART_COLORS.length], flexShrink:0 }} />
+                              <span style={{ fontSize:13, color:th.text, fontWeight:500, wordBreak:'break-word' }}>{name}</span>
+                            </div>
+                            <span style={{ fontSize:12, color:th.muted, fontWeight:600, flexShrink:0, whiteSpace:'nowrap' }}>{fmtNum(count)} ({pct.toFixed(1)}%)</span>
+                          </div>
+                          <div style={{ height:8, background:th.input, borderRadius:6, overflow:'hidden', border:`1px solid ${th.border}` }}>
+                            <div style={{ height:'100%', width:`${pct}%`, background:CHART_COLORS[i%CHART_COLORS.length], borderRadius:6, transition:'width 0.3s ease' }} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+              }
+            </Card>
+          </>)}
+
           {/* ── PAYMENTS ── */}
           {section==='payments' && (<>
             <DateFilter from={pF} to={pT} onFrom={setPF} onTo={setPT} onClear={()=>clearTo(setPF,setPT)} th={th} />
             <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:12, marginBottom:16 }} className="g3">
               {[
-                { label:'Total recebido', value:mask(fmtCurrency(fP.reduce((s,p)=>s+Number(p.amount||0),0))), sub:`${fP.length} transações`, icon:I.dollar },
+                { label:'Total recebido', value:mask(fmtCurrency(fP.reduce((s,p)=>s+Number(p.amount||0),0))), sub:`${fP.length} transações`, icon:I.dollar, green:true },
                 { label:'Ticket médio',   value:mask(fmtCurrency(fP.length>0?fP.reduce((s,p)=>s+Number(p.amount||0),0)/fP.length:0)), sub:'por pagamento', icon:I.trend },
                 { label:'Transações',     value:maskNum(fmtNum(fP.length)), sub:'no período selecionado', icon:I.card },
               ].map((s,i) => (
@@ -591,7 +654,7 @@ export default function AdminDashboard() {
                       <Ic d={s.icon} size={15} color={th.mid} sw={1.5} />
                     </div>
                   </div>
-                  <p style={{ fontSize:20, fontWeight:600, color:th.text, letterSpacing:'-0.02em', lineHeight:1, marginBottom:6 }}>{s.value}</p>
+                  <p style={{ fontSize:20, fontWeight:600, color:s.green?th.green:th.text, letterSpacing:'-0.02em', lineHeight:1, marginBottom:6 }}>{s.value}</p>
                   <p style={{ fontSize:12, color:th.text, fontWeight:500, marginBottom:3 }}>{s.label}</p>
                   <p style={{ fontSize:11, color:th.muted }}>{s.sub}</p>
                 </div>
@@ -607,7 +670,7 @@ export default function AdminDashboard() {
                       <tbody>
                         {fP.map((p,i) => (
                           <tr key={p.id} style={{ background:i%2===0?th.rowAlt:th.row }}>
-                            <TD style={{ color:th.text, maxWidth:200, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{p.user_email}</TD>
+                            <TD style={{ color:th.text, wordBreak:'break-word' }}>{p.user_email}</TD>
                             <TD>{CONTRACT_NAMES[p.contract_type]||p.contract_type}</TD>
                             <td style={{ padding:'12px 16px', borderBottom:`1px solid ${th.sub}` }}><Badge v={p.plan==='premium'?'p':'n'}>{p.plan==='premium'?'Premium':'Padrão'}</Badge></td>
                             <td style={{ padding:'12px 16px', borderBottom:`1px solid ${th.sub}` }}><Badge v="g">PIX</Badge></td>
@@ -624,34 +687,25 @@ export default function AdminDashboard() {
 
           {/* ── USERS ── */}
           {section==='users' && (<>
-            <DateFilter from={uF} to={uT} onFrom={setUF} onTo={setUT} onClear={()=>clearTo(setUF,setUT)} th={th} />
-            {(uF||uT) && (
-              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12, marginBottom:16 }} className="g2">
-                {[
-                  { title:'Geraram contratos', list:usersGen, right:u=><span style={{ fontSize:11, color:th.muted, flexShrink:0 }}>{u.count} contrato{u.count!==1?'s':''}</span>, empty:'Nenhum contrato no período' },
-                  { title:'Realizaram pagamentos', list:usersPaid, right:u=><span style={{ fontSize:12, fontWeight:600, color:th.green, flexShrink:0 }}>{mask(fmtCurrency(u.total))}</span>, empty:'Nenhum pagamento no período' },
-                ].map((panel,pi) => (
-                  <Card key={pi} style={{ overflow:'hidden' }}>
-                    <div style={{ padding:'14px 18px', borderBottom:`1px solid ${th.border}` }}>
-                      <p style={{ fontSize:13, fontWeight:600, color:th.text }}>{panel.title}</p>
-                      <p style={{ fontSize:11, color:th.muted, marginTop:2 }}>{panel.list.length} usuário{panel.list.length!==1?'s':''}</p>
-                    </div>
-                    {panel.list.length === 0
-                      ? <div style={{ padding:28, textAlign:'center', color:th.muted, fontSize:12 }}>{panel.empty}</div>
-                      : <div style={{ padding:'10px 12px', display:'flex', flexDirection:'column', gap:6, maxHeight:240, overflowY:'auto' }}>
-                          {panel.list.map((u,i) => <AvatarRow key={u.uid} email={u.email} i={i} right={panel.right(u)} />)}
-                        </div>
-                    }
-                  </Card>
-                ))}
-              </div>
-            )}
-            {!(uF||uT) && (
-              <div style={{ padding:'12px 18px', background:th.card, border:`1px solid ${th.border}`, borderRadius:10, marginBottom:16, display:'flex', alignItems:'center', gap:10 }}>
-                <Ic d={I.calendar} size={14} color={th.muted} />
-                <p style={{ fontSize:12, color:th.muted }}>Selecione um período acima para ver os usuários que atuaram nesse intervalo.</p>
-              </div>
-            )}
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12, marginBottom:16 }} className="g2">
+              {[
+                { title:'Geraram contratos', list:usersGen, right:u=><span style={{ fontSize:11, color:th.muted, flexShrink:0 }}>{u.count} contrato{u.count!==1?'s':''}</span>, empty:'Nenhum contrato no período' },
+                { title:'Realizaram pagamentos', list:usersPaid, right:u=><span style={{ fontSize:12, fontWeight:600, color:th.green, flexShrink:0 }}>{mask(fmtCurrency(u.total))}</span>, empty:'Nenhum pagamento no período' },
+              ].map((panel,pi) => (
+                <Card key={pi} style={{ overflow:'hidden' }}>
+                  <div style={{ padding:'14px 18px', borderBottom:`1px solid ${th.border}` }}>
+                    <p style={{ fontSize:13, fontWeight:600, color:th.text }}>{panel.title}</p>
+                    <p style={{ fontSize:11, color:th.muted, marginTop:2 }}>{panel.list.length} usuário{panel.list.length!==1?'s':''}</p>
+                  </div>
+                  {panel.list.length === 0
+                    ? <div style={{ padding:28, textAlign:'center', color:th.muted, fontSize:12 }}>{panel.empty}</div>
+                    : <div style={{ padding:'10px 12px', display:'flex', flexDirection:'column', gap:6, maxHeight:240, overflowY:'auto' }}>
+                        {panel.list.map((u,i) => <AvatarRow key={u.uid} email={u.email} i={i} right={panel.right(u)} />)}
+                      </div>
+                  }
+                </Card>
+              ))}
+            </div>
             <Card>
               <div style={{ padding:'14px 18px', borderBottom:`1px solid ${th.border}`, display:'flex', alignItems:'center', gap:10, flexWrap:'wrap' }}>
                 <p style={{ fontSize:14, fontWeight:600, color:th.text, flexShrink:0 }}>Todos os usuários</p>
@@ -676,12 +730,12 @@ export default function AdminDashboard() {
                                   <div style={{ width:30, height:30, borderRadius:'50%', background:avBg[ci], display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
                                     <span style={{ fontSize:10, fontWeight:700, color:avTxt[ci] }}>{initials(u.full_name,u.email)}</span>
                                   </div>
-                                  <span style={{ color:th.text, fontWeight:500, fontSize:13, maxWidth:110, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+                                  <span style={{ color:th.text, fontWeight:500, fontSize:13, wordBreak:'break-word' }}>
                                     {u.full_name||u.email?.split('@')[0]||'—'}
                                   </span>
                                 </div>
                               </td>
-                              <TD style={{ maxWidth:180, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{u.email}</TD>
+                              <TD style={{ wordBreak:'break-word' }}>{u.email}</TD>
                               <td style={{ padding:'12px 16px', borderBottom:`1px solid ${th.sub}` }}><Badge v={Number(u.total_contracts)>0?'b':'n'}>{maskNum(fmtNum(u.total_contracts))}</Badge></td>
                               <td style={{ padding:'12px 16px', borderBottom:`1px solid ${th.sub}` }}><Badge v={Number(u.paid_contracts)>0?'g':'n'}>{maskNum(fmtNum(u.paid_contracts))}</Badge></td>
                               <TD style={{ fontWeight:600 }}>{mask(fmtCurrency(u.total_spent))}</TD>
