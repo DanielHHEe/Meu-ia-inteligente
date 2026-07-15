@@ -204,7 +204,7 @@ const Header = ({ onCreateContract, onOpenAuth }) => {
               src="/contrati.png"
               alt="Contratify"
               whileHover={{ scale: 1.05 }}
-              className="h-16 md:h-14 lg:h-16 w-auto object-contain"
+              className="h-12 md:h-14 lg:h-16 w-auto object-contain"
             />
           </a>
           <nav className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
