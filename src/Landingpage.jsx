@@ -887,6 +887,8 @@ const LandingPage = ({ onOpenAuth }) => {
       <WhatsAppButton />
     </div>
   );
+
+  {/* Mobile bottom nav */}
 };
 
 export default LandingPage;

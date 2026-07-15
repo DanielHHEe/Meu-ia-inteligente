@@ -764,6 +764,10 @@ export default function AdminDashboard() {
         ))}
       </nav>
 
+      {/* Mobile bottom nav */}
+
+      
+
       <style>{`
         @media(max-width:768px){
           .hide-mobile { display:none!important }
