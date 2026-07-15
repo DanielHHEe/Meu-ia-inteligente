@@ -198,13 +198,13 @@ const Header = ({ onCreateContract, onOpenAuth }) => {
     <motion.header initial={{ y: -100, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.6 }}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled || isMenuOpen ? "bg-[#080d14]/98 backdrop-blur-xl shadow-2xl shadow-black/30 border-b border-white/5" : "bg-transparent"}`}>
       <div className="max-w-7xl mx-auto px-6 md:px-10">
-        <div className="flex items-center justify-between h-16 md:h-20 lg:h-24">
+        <div className="flex items-center justify-between h-24 md:h-20 lg:h-24">
           <a href="#" className="flex items-center flex-shrink-0">
             <motion.img
               src="/contrati.png"
               alt="Contratify"
               whileHover={{ scale: 1.05 }}
-              className="h-16 md:h-14 lg:h-16 w-auto object-contain"
+              className="h-24 md:h-14 lg:h-16 w-auto object-contain"
             />
           </a>
           <nav className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
